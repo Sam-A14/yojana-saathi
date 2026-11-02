@@ -32,17 +32,22 @@ def reset_schema(engine: Engine) -> None:
 
 
 @pytest.fixture(scope="session")
-def engine() -> Iterator[Engine]:
-    """A real PostgreSQL database, migrated with Alembic exactly as production is."""
-    from app.config import to_driver_url
-
+def test_database_url() -> str:
     url = os.environ.get("TEST_DATABASE_URL")
     if not url:
         # Silent skipping in CI would hide a broken setup, so CI must fail instead.
         if os.environ.get("CI"):
             pytest.fail("TEST_DATABASE_URL must be set in CI")
         pytest.skip("TEST_DATABASE_URL not set; see backend/.env.example")
-    driver_url = to_driver_url(url)
+    return url
+
+
+@pytest.fixture(scope="session")
+def engine(test_database_url: str) -> Iterator[Engine]:
+    """A real PostgreSQL database, migrated with Alembic exactly as production is."""
+    from app.config import to_driver_url
+
+    driver_url = to_driver_url(test_database_url)
     database_name = driver_url.rsplit("/", 1)[-1].split("?")[0]
     # The fixture wipes the schema, so refuse anything not clearly meant for tests.
     if not database_name.endswith("_test"):

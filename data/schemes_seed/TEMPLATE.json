@@ -1,0 +1,47 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": true,
+    "source_reached": false,
+    "notes": [
+      "TEMPLATE: copy this file to <slug>.json (the file name must equal the slug), replace every value, then delete this notes block or fill it in honestly.",
+      "Set source_reached to true only if you read the official page yourself.",
+      "Leave verified_at as null until a human has checked the rules against the official source."
+    ],
+    "not_encoded": [
+      "Write here any official condition the rule fields cannot express yet."
+    ]
+  },
+  "slug": "replace-with-scheme-slug",
+  "name_en": "Scheme name in English",
+  "name_hi": "योजना का नाम हिंदी में",
+  "level": "central",
+  "state": null,
+  "category": "replace_with_category",
+  "official_url": "https://example.gov.in/scheme",
+  "status": "active",
+  "version": {
+    "rules": {
+      "all": [
+        {"field": "age", "op": "gte", "value": 18},
+        {"any": [
+          {"field": "category", "op": "in", "value": ["SC", "ST", "OBC"]},
+          {"field": "area_type", "op": "eq", "value": "rural"}
+        ]},
+        {"field": "has_bank_account_aadhaar_linked", "op": "is_true"}
+      ],
+      "fixable": ["has_bank_account_aadhaar_linked"]
+    },
+    "benefit_text_en": "What the family receives, in plain words.",
+    "benefit_text_hi": "परिवार को क्या मिलता है, सरल शब्दों में।",
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://example.gov.in/scheme/guidelines",
+    "verified_at": null,
+    "approved_by": null,
+    "documents": [
+      {"code": "aadhaar_card", "required": true, "applies_to": "applicant"},
+      {"code": "ration_card", "required": false, "applies_to": "household"}
+    ]
+  }
+}

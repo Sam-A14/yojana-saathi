@@ -1,0 +1,49 @@
+name: Seed database
+
+# Manual only. Loads data/documents.json and data/schemes_seed/*.json into the production
+# database. Render's free tier has no shell, so this is how the data gets in.
+# Safe to run twice: unchanged data is left alone (see data/README.md).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Two seed runs at once could race on the same rows.
+concurrency:
+  group: seed-database
+  cancel-in-progress: false
+
+jobs:
+  seed:
+    # Seeding from an unreviewed branch would put unreviewed data in production.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: pip install -r requirements.txt
+      - name: Load documents and schemes
+        # explicit shell: gives "pipefail", so a failing loader fails the step even through tee
+        shell: bash
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::The DATABASE_URL secret is not set. See 'Seed the database' in README.md."
+            exit 1
+          fi
+          python -m app.db.seed | tee seed-summary.txt
+          {
+            echo '### Seed database: what changed'
+            echo '```'
+            cat seed-summary.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

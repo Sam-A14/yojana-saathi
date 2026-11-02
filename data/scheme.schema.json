@@ -1,0 +1,526 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Sam-A14/yojana-saathi/data/scheme.schema.json",
+  "title": "Yojana Saathi scheme seed file (data/schemes_seed/<slug>.json)",
+  "$comment": "One file = one scheme + one version. The allowed 'field' names below are a strict list: a typo while labelling must fail here, not silently become 'unknown'. Keep this list in sync with backend/app/rules/fields.py once that file exists (tests/test_seed_files.py checks the has_* names against data/documents.json).",
+  "type": "object",
+  "required": [
+    "slug",
+    "name_en",
+    "level",
+    "category",
+    "official_url",
+    "version"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional. Lets VS Code check the file while you type."
+    },
+    "labeller_notes": {
+      "$ref": "#/$defs/labeller_notes"
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Also the file name: <slug>.json"
+    },
+    "name_en": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name_hi": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "level": {
+      "enum": [
+        "central",
+        "state"
+      ]
+    },
+    "state": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "State code such as UP. null for central schemes."
+    },
+    "category": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "For example farmer, student, widow_pension."
+    },
+    "official_url": {
+      "type": "string",
+      "pattern": "^https?://"
+    },
+    "status": {
+      "enum": [
+        "active",
+        "closed",
+        "paused",
+        "merged",
+        "renamed"
+      ],
+      "default": "active"
+    },
+    "version": {
+      "$ref": "#/$defs/version"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "level": {
+            "const": "central"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "state": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "level": {
+            "const": "state"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "state"
+        ],
+        "properties": {
+          "state": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "labeller_notes": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "For humans only. Not loaded into the database.",
+      "properties": {
+        "example": {
+          "type": "boolean",
+          "description": "true = example data, verify before use."
+        },
+        "source_reached": {
+          "type": "boolean",
+          "description": "Did you read the official page when writing this file?"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "not_encoded": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Official conditions the rule fields cannot express yet."
+        }
+      }
+    },
+    "version": {
+      "type": "object",
+      "required": [
+        "rules",
+        "source_url",
+        "documents"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "rules": {
+          "$ref": "#/$defs/rules"
+        },
+        "benefit_text_en": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "benefit_text_hi": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "deadline_start": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "deadline_end": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "source_url": {
+          "type": "string",
+          "pattern": "^https?://",
+          "description": "The page the rules were read from."
+        },
+        "verified_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "description": "Date a human checked the rules against the official source. null = not verified."
+        },
+        "approved_by": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/scheme_document"
+          }
+        }
+      }
+    },
+    "scheme_document": {
+      "type": "object",
+      "required": [
+        "code"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Must exist in data/documents.json."
+        },
+        "required": {
+          "type": "boolean",
+          "default": true
+        },
+        "applies_to": {
+          "enum": [
+            "applicant",
+            "household"
+          ],
+          "default": "applicant"
+        }
+      }
+    },
+    "rules": {
+      "type": "object",
+      "required": [
+        "all"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "all": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/node"
+          }
+        },
+        "fixable": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/field"
+          },
+          "description": "Fields whose failure is fixable (for example by getting a document). Failing only these makes a near miss."
+        }
+      }
+    },
+    "field": {
+      "enum": [
+        "age",
+        "gender",
+        "marital_status",
+        "occupation",
+        "education",
+        "is_student",
+        "disability",
+        "state",
+        "district",
+        "area_type",
+        "income_band_max",
+        "category",
+        "has_aadhaar_card",
+        "has_income_certificate",
+        "has_caste_certificate",
+        "has_domicile_certificate",
+        "has_ration_card",
+        "has_bpl_card",
+        "has_bank_account_aadhaar_linked",
+        "has_land_record",
+        "has_birth_certificate",
+        "has_voter_id",
+        "has_disability_certificate",
+        "has_spouse_death_certificate",
+        "has_marriage_certificate",
+        "has_marksheet",
+        "has_family_register"
+      ]
+    },
+    "node": {
+      "type": "object",
+      "description": "A condition (has 'field'), or a group: all, any, or not.",
+      "anyOf": [
+        {
+          "required": [
+            "field"
+          ]
+        },
+        {
+          "required": [
+            "all"
+          ]
+        },
+        {
+          "required": [
+            "any"
+          ]
+        },
+        {
+          "required": [
+            "not"
+          ]
+        }
+      ],
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "field"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/condition"
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "all"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "properties": {
+              "all": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "$ref": "#/$defs/node"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "any"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "properties": {
+              "any": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "$ref": "#/$defs/node"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "not"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "properties": {
+              "not": {
+                "$ref": "#/$defs/node"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "condition": {
+      "type": "object",
+      "required": [
+        "field",
+        "op"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "$ref": "#/$defs/field"
+        },
+        "op": {
+          "enum": [
+            "eq",
+            "neq",
+            "in",
+            "not_in",
+            "gte",
+            "lte",
+            "between",
+            "is_true"
+          ]
+        },
+        "value": {}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "eq",
+                  "neq"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "value"
+            ],
+            "properties": {
+              "value": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "gte",
+                  "lte"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "value"
+            ],
+            "properties": {
+              "value": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "in",
+                  "not_in"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "value"
+            ],
+            "properties": {
+              "value": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "between"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "value"
+            ],
+            "properties": {
+              "value": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "is_true"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": false
+            }
+          }
+        }
+      ]
+    }
+  }
+}

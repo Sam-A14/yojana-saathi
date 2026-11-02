@@ -1,0 +1,50 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": true,
+    "source_reached": false,
+    "notes": [
+      "EXAMPLE, VERIFY BEFORE USE. Written from memory of public information, NOT from the official page: nsap.nic.in could not be reached when this file was written.",
+      "Check the age limit and the pension amounts against https://nsap.nic.in/ before trusting anything here.",
+      "The scheme asks for a below-poverty-line family. A BPL card is used here as a stand-in; states keep their own BPL lists, so this is only an approximation.",
+      "This is the Centre's scheme. States add their own amount and may have their own widow pension with different rules."
+    ],
+    "not_encoded": [
+      "Exact BPL test used by each state.",
+      "State top-up amounts and any separate state widow pension (including Uttar Pradesh).",
+      "Proof of age and the application route through the local office."
+    ]
+  },
+  "slug": "ignwps",
+  "name_en": "Indira Gandhi National Widow Pension Scheme (IGNWPS)",
+  "name_hi": "इंदिरा गांधी राष्ट्रीय विधवा पेंशन योजना",
+  "level": "central",
+  "state": null,
+  "category": "widow_pension",
+  "official_url": "https://nsap.nic.in/",
+  "status": "active",
+  "version": {
+    "rules": {
+      "all": [
+        {"field": "gender", "op": "eq", "value": "female"},
+        {"field": "marital_status", "op": "eq", "value": "widow"},
+        {"field": "age", "op": "gte", "value": 40},
+        {"field": "has_bpl_card", "op": "is_true"}
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "Example, verify before use: a monthly pension from the Centre for widows from age 40 in below-poverty-line families, about Rs 300 a month, higher from age 80. States may add to it.",
+    "benefit_text_hi": "उदाहरण, उपयोग से पहले जाँचें: 40 साल या उससे अधिक उम्र की गरीबी रेखा से नीचे की विधवाओं को केंद्र से मासिक पेंशन, लगभग 300 रुपये प्रति माह, 80 साल के बाद अधिक। राज्य इसमें और जोड़ सकते हैं।",
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://nsap.nic.in/",
+    "verified_at": null,
+    "approved_by": "seed-example-unverified",
+    "documents": [
+      {"code": "aadhaar_card", "required": true, "applies_to": "applicant"},
+      {"code": "spouse_death_certificate", "required": true, "applies_to": "applicant"},
+      {"code": "bpl_card", "required": true, "applies_to": "household"},
+      {"code": "bank_account_aadhaar_linked", "required": true, "applies_to": "applicant"}
+    ]
+  }
+}

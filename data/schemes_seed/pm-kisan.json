@@ -1,0 +1,46 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": true,
+    "source_reached": false,
+    "notes": [
+      "EXAMPLE, VERIFY BEFORE USE. Written from memory of public information, NOT from the official page: pmkisan.gov.in could not be reached when this file was written.",
+      "Check the amount, the instalments and the exclusion list against https://pmkisan.gov.in/ before trusting anything here.",
+      "occupation = farmer is a simplification. The official test is whether the family holds cultivable land, so a landholder with another job may be wrongly marked not eligible."
+    ],
+    "not_encoded": [
+      "Exclusions (as remembered, unverified): institutional landholders; holders of constitutional posts; serving or retired government officers and employees (lower grades excepted); pensioners above a monthly pension limit; people who paid income tax in the last assessment year; registered doctors, engineers, lawyers, chartered accountants and architects.",
+      "Registration and e-KYC steps on the PM-KISAN portal.",
+      "Which family members count as one 'family' for the benefit."
+    ]
+  },
+  "slug": "pm-kisan",
+  "name_en": "PM-KISAN (Pradhan Mantri Kisan Samman Nidhi)",
+  "name_hi": "प्रधानमंत्री किसान सम्मान निधि (पीएम-किसान)",
+  "level": "central",
+  "state": null,
+  "category": "farmer",
+  "official_url": "https://pmkisan.gov.in/",
+  "status": "active",
+  "version": {
+    "rules": {
+      "all": [
+        {"field": "occupation", "op": "eq", "value": "farmer"},
+        {"field": "has_land_record", "op": "is_true"}
+      ],
+      "fixable": ["has_land_record"]
+    },
+    "benefit_text_en": "Example, verify before use: income support of Rs 6,000 a year for landholding farmer families, paid in three instalments of Rs 2,000 straight into the bank account.",
+    "benefit_text_hi": "उदाहरण, उपयोग से पहले जाँचें: भूमि वाले किसान परिवारों को साल में 6,000 रुपये की सहायता, 2,000 रुपये की तीन किस्तों में सीधे बैंक खाते में।",
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://pmkisan.gov.in/",
+    "verified_at": null,
+    "approved_by": "seed-example-unverified",
+    "documents": [
+      {"code": "aadhaar_card", "required": true, "applies_to": "applicant"},
+      {"code": "land_record", "required": true, "applies_to": "applicant"},
+      {"code": "bank_account_aadhaar_linked", "required": true, "applies_to": "applicant"}
+    ]
+  }
+}

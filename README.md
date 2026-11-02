@@ -6,7 +6,7 @@ Free, in Hindi and English.
 
 > Guidance only, not an official decision. Not a government app.
 
-Status: skeleton plus database layer (tables and migrations). The full plan is in [`PROJECT_SPEC.md`](PROJECT_SPEC.md); working
+Status: skeleton, database layer (tables and migrations), and scheme data format with a seed loader. The full plan is in [`PROJECT_SPEC.md`](PROJECT_SPEC.md); working
 rules are in [`CLAUDE.md`](CLAUDE.md).
 
 ## Folder structure
@@ -15,7 +15,7 @@ rules are in [`CLAUDE.md`](CLAUDE.md).
 yojana-saathi/
 ├── backend/            FastAPI app (Python 3.12)
 │   ├── app/            main.py (routes, CORS), config.py (settings from env)
-│   │   └── db/         SQLAlchemy models (db/models/), engine and session
+│   │   └── db/         SQLAlchemy models (db/models/), engine and session, seed.py (seed loader)
 │   ├── alembic/        database migrations (versions/0001_initial_schema.py)
 │   ├── tests/          pytest tests (database tests need PostgreSQL)
 │   ├── requirements.txt
@@ -23,9 +23,10 @@ yojana-saathi/
 ├── frontend/           Next.js (App Router, TypeScript, Tailwind)
 │   ├── app/            pages and layout
 │   └── .env.example
-├── data/               hand-made scheme and test data (empty for now)
+├── data/               hand-labelled data: documents.json, scheme JSON Schema, schemes_seed/
+│                       (see data/README.md for how to label a scheme)
 ├── docs/decisions/     one short note per design decision
-└── .github/workflows/  CI: runs on every pull request
+└── .github/workflows/  ci.yml runs on every pull request; seed-database.yml is run by hand
 ```
 
 More folders (`rules/`, `pipeline/`, `alerts/`, `llm/`) appear as those parts are built.
@@ -85,6 +86,17 @@ To change a table: edit the model in `app/db/models/`, run `alembic revision --a
 read the generated file in `alembic/versions/`, fix it if needed, and commit it with the model change.
 A test fails if the models and migrations disagree.
 
+## Load the seed data (local)
+
+With `DATABASE_URL` set and the tables created (`alembic upgrade head`):
+
+```bash
+cd backend && python -m app.db.seed
+```
+
+It checks every file in `data/` first, then loads documents and schemes, and prints what changed.
+Running it again changes nothing unless a file changed.
+
 ## Checks (the same ones CI runs)
 
 ```bash
@@ -140,6 +152,25 @@ Neon pauses an idle database, so the first query after a break can take a second
    it answers even while Neon is waking up.
 
 The free tier sleeps when idle, so the first request after a break can take about a minute.
+
+### Seed the database (after step 2, and again whenever `data/` changes)
+
+The free Render tier has no shell, so a GitHub Actions workflow loads the data instead. Do the
+setup once:
+
+1. In your GitHub repository open Settings > Secrets and variables > Actions > New repository secret.
+2. Name: `DATABASE_URL`. Value: the same direct Neon connection string you gave Render. Save.
+
+Then, each time:
+
+1. Open the Actions tab, choose **Seed database** on the left, click Run workflow, keep branch
+   `main`, and click the green button.
+2. Open the finished run. The "Summary" at the top lists what was created, updated or left alone.
+
+Notes: the workflow only runs from `main` (it refuses other branches, so unreviewed data cannot
+reach production), and it shows up in the Actions list only after the file is on `main`. If it
+fails with "DATABASE_URL secret is not set", redo the setup above. The tables must exist first:
+Render creates them when the backend starts, so deploy the backend before seeding.
 
 ### 3. Frontend: Vercel
 
