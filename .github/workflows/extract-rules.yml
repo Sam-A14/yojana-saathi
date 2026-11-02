@@ -5,6 +5,8 @@ name: Extract scheme rules
 # Nothing is published: a person must review the proposal. Needs two repository secrets:
 #   LLM_API_KEY   the Gemini API key
 #   DATABASE_URL  the production database (migration 0003 must already be applied: deploy first)
+# Optional repository variable LLM_MODEL picks the model. If it is unset or empty, the default in
+# backend/app/config.py is used (the config treats a blank value as "not set").
 on:
   workflow_dispatch:
     inputs:
@@ -43,6 +45,7 @@ jobs:
         env:
           SLUG: ${{ inputs.slug }}
           LLM_PROVIDER: gemini
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |

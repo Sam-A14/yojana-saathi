@@ -1,11 +1,14 @@
+import json
 from pathlib import Path
 
 import pytest
 
 from app.db.seed import DEFAULT_DATA_DIR
 from app.llm import FakeLLM
+from app.llm.prompts import EXCEPTION_EXAMPLE_QUOTE, EXCEPTION_EXAMPLE_RULE
 from app.pipeline.extractor import EXTRACTION_TEMPERATURE, extract
 from app.pipeline.source import MAX_SOURCE_CHARS, SourceDocument, SourceError, read_source
+from app.rules.engine import validate_rules
 from tests.pipeline_samples import SLUG, SOURCE_TEXT, SOURCE_URL, answer_text, good_answer
 
 SOURCE = SourceDocument(slug=SLUG, url=SOURCE_URL, text=SOURCE_TEXT.strip())
@@ -79,3 +82,28 @@ def test_read_source_rejects_slugs_that_could_escape_the_folder(slug: str) -> No
 def test_read_source_missing_file(tmp_path: Path) -> None:
     with pytest.raises(SourceError, match="Cannot read"):
         read_source("nothing-here", tmp_path)
+
+
+# --- the exception rule in the prompt -------------------------------------------------------
+
+
+def test_prompt_tells_the_model_to_keep_exceptions_on_the_same_member() -> None:
+    fake = FakeLLM(response=answer_text(good_answer()))
+    extract(SOURCE, fake)
+
+    (call,) = fake.calls
+    system, prompt = str(call["system"]), str(call["prompt"])
+    for word in ('"excluding"', '"except"', '"other than"'):
+        assert word in system
+    assert "all[...] inside any_member" in system
+    # The worked example: pension condition and Group D exception together under one any_member.
+    assert EXCEPTION_EXAMPLE_QUOTE in prompt
+    assert json.dumps(EXCEPTION_EXAMPLE_RULE) in prompt
+
+
+def test_the_prompt_example_is_a_valid_rule_with_the_exception_on_the_same_member() -> None:
+    validate_rules({"all": [EXCEPTION_EXAMPLE_RULE]})
+
+    member_rule = EXCEPTION_EXAMPLE_RULE["not"]["any_member"]
+    fields = {condition["field"] for condition in member_rule["all"]}
+    assert fields == {"pension_band", "govt_employee"}
