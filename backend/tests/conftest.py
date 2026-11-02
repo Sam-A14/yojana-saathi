@@ -31,6 +31,18 @@ def reset_schema(engine: Engine) -> None:
         connection.execute(text("CREATE SCHEMA public"))
 
 
+@pytest.fixture(autouse=True)
+def never_call_a_real_llm(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    """Every test uses the fake LLM and no API key: no test can spend money or need a key."""
+    from app.config import get_settings
+
+    monkeypatch.setenv("LLM_PROVIDER", "fake")
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
+
+
 @pytest.fixture(scope="session")
 def test_database_url() -> str:
     url = os.environ.get("TEST_DATABASE_URL")

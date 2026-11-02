@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     # Optional on purpose: /health and its tests must work with no database configured.
     database_url: str | None = None
+    # LLM wrapper (app/llm/). The provider is a setting so it can be switched without code changes.
+    llm_provider: str = "gemini"  # "gemini" or "fake" (tests only)
+    llm_model: str = "gemini-2.5-flash"
+    # Optional on purpose: only the extraction job needs it. Never log it.
+    llm_api_key: str | None = None
 
     @property
     def sqlalchemy_database_url(self) -> str:

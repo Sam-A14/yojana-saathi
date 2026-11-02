@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import CheckConstraint, ForeignKey, Index
+from sqlalchemy import CheckConstraint, ForeignKey, Index, false
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -52,9 +52,21 @@ class ReviewItem(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     # NULL when the proposal is for a scheme we do not have yet.
     scheme_id: Mapped[int | None] = mapped_column(ForeignKey("schemes.id", ondelete="RESTRICT"))
+    # The proposed scheme (same shape as a seed file), or {} if the model's text was not JSON.
     proposed_rules_json: Mapped[dict[str, Any]] = mapped_column(JSONB)
     source_quote: Mapped[str | None]
     status: Mapped[str] = mapped_column(server_default="pending")
+    # Added for the LLM pipeline. A proposal that fails validation is kept with is_valid = false
+    # and the reasons in validation_errors; it is never silently dropped.
+    scheme_slug: Mapped[str | None]
+    source_url: Mapped[str | None]
+    is_valid: Mapped[bool] = mapped_column(server_default=false())
+    validation_errors: Mapped[list[Any]] = mapped_column(JSONB, server_default="[]")
+    # One quote per top-level rule: [{"index": 0, "quote": "..."}]
+    source_quotes: Mapped[list[Any]] = mapped_column(JSONB, server_default="[]")
+    # The model's answer exactly as received, so even unparseable output can be inspected.
+    raw_output: Mapped[str | None]
+    model: Mapped[str | None]
     reviewed_by: Mapped[str | None]
     created_at: Mapped[datetime] = created_at_column()
     reviewed_at: Mapped[datetime | None]
