@@ -1,0 +1,52 @@
+{
+  "description": "Land is unanswered but a member clearly paid income tax: not eligible, no need to ask more.",
+  "household": {
+    "state": "UP",
+    "district": "Sitapur",
+    "area_type": "rural",
+    "income_band_max": 100000,
+    "category": "OBC"
+  },
+  "members": [
+    {
+      "nickname": "Ramesh",
+      "age": 50,
+      "gender": "male",
+      "marital_status": "married",
+      "paid_income_tax_last_year": false,
+      "govt_employee": "none",
+      "pension_band": "none",
+      "is_registered_professional": false,
+      "holds_constitutional_post": false,
+      "is_remarried": false
+    },
+    {
+      "nickname": "Suresh",
+      "age": 27,
+      "gender": "male",
+      "marital_status": "unmarried",
+      "owns_cultivable_land": false,
+      "paid_income_tax_last_year": true,
+      "govt_employee": "none",
+      "pension_band": "none",
+      "is_registered_professional": false,
+      "holds_constitutional_post": false,
+      "is_remarried": false
+    }
+  ],
+  "expected": {
+    "pm-kisan": {
+      "Ramesh": "not_eligible",
+      "Suresh": "not_eligible"
+    },
+    "ignwps": {
+      "Ramesh": "not_eligible",
+      "Suresh": "not_eligible"
+    }
+  },
+  "excluded_by": {
+    "pm-kisan": [
+      "Suresh"
+    ]
+  }
+}

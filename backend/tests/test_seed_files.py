@@ -32,6 +32,13 @@ ATTRIBUTE_FIELDS = {
     "area_type",
     "income_band_max",
     "category",
+    "owns_cultivable_land",
+    "paid_income_tax_last_year",
+    "govt_employee",
+    "pension_band",
+    "is_registered_professional",
+    "holds_constitutional_post",
+    "is_remarried",
 }
 
 
@@ -176,3 +183,37 @@ def test_loader_reports_every_problem_at_once(tmp_path: Any) -> None:
         read_seed_files(tmp_path)
 
     assert len(error.value.problems) == 3, error.value.problems
+
+
+def test_engine_field_list_matches_the_test_pin() -> None:
+    from app.rules.fields import ATTRIBUTE_FIELDS as ENGINE_FIELDS
+
+    assert ENGINE_FIELDS == ATTRIBUTE_FIELDS
+
+
+def test_any_member_is_accepted_by_the_schema() -> None:
+    rule = {"not": {"any_member": {"field": "paid_income_tax_last_year", "op": "is_true"}}}
+
+    assert rule_problems(rule) == []
+    assert rule_problems({"any_member": rule["not"]["any_member"], "among": "household"}) == []
+
+
+@pytest.mark.parametrize(
+    "node",
+    [
+        {"any_member": {"field": "age", "op": "gte", "value": 1}, "among": "everyone"},
+        {"any_member": {"field": "age", "op": "gte", "value": 1}, "extra": 1},
+        {"any_member": {"field": "agee", "op": "gte", "value": 1}},
+        {"any_member": []},
+    ],
+)
+def test_bad_any_member_is_rejected(node: dict[str, Any]) -> None:
+    assert rule_problems(node)
+
+
+def test_engine_accepts_every_committed_scheme() -> None:
+    """The schema cannot check value lists (grup_d) or the combination rules; the engine can."""
+    from app.rules.engine import validate_rules
+
+    for scheme in read_seed_files().schemes:
+        validate_rules(scheme["version"]["rules"])

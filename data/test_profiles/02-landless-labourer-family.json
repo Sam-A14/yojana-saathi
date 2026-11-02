@@ -1,0 +1,48 @@
+{
+  "description": "Nobody owns cultivable land, so the main rule fails.",
+  "household": {
+    "state": "UP",
+    "district": "Sitapur",
+    "area_type": "rural",
+    "income_band_max": 100000,
+    "category": "OBC"
+  },
+  "members": [
+    {
+      "nickname": "Mohan",
+      "age": 40,
+      "gender": "male",
+      "marital_status": "married",
+      "owns_cultivable_land": false,
+      "paid_income_tax_last_year": false,
+      "govt_employee": "none",
+      "pension_band": "none",
+      "is_registered_professional": false,
+      "holds_constitutional_post": false,
+      "is_remarried": false
+    },
+    {
+      "nickname": "Geeta",
+      "age": 36,
+      "gender": "female",
+      "marital_status": "married",
+      "owns_cultivable_land": false,
+      "paid_income_tax_last_year": false,
+      "govt_employee": "none",
+      "pension_band": "none",
+      "is_registered_professional": false,
+      "holds_constitutional_post": false,
+      "is_remarried": false
+    }
+  ],
+  "expected": {
+    "pm-kisan": {
+      "Mohan": "not_eligible",
+      "Geeta": "not_eligible"
+    },
+    "ignwps": {
+      "Mohan": "not_eligible",
+      "Geeta": "not_eligible"
+    }
+  }
+}
