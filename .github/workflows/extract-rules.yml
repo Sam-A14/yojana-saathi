@@ -1,0 +1,66 @@
+name: Extract scheme rules
+
+# Manual only. Reads data/scheme_sources/<slug>.txt, asks the LLM for a rule proposal, validates it,
+# saves it to review_items (status "pending") and prints it in the run summary.
+# Nothing is published: a person must review the proposal. Needs two repository secrets:
+#   LLM_API_KEY   the Gemini API key
+#   DATABASE_URL  the production database (migration 0003 must already be applied: deploy first)
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Scheme slug, for example pm-kisan (reads data/scheme_sources/<slug>.txt)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: extract-rules
+  cancel-in-progress: false
+
+jobs:
+  extract:
+    # Same reason as the seed workflow: an unreviewed branch must not write to production.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: pip install -r requirements.txt
+      - name: Extract rules
+        shell: bash
+        # The slug is typed by a person. It goes in through an environment variable and is checked
+        # before use, never pasted into the script text, so it cannot inject shell commands.
+        env:
+          SLUG: ${{ inputs.slug }}
+          LLM_PROVIDER: gemini
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$LLM_API_KEY" ] || [ -z "$DATABASE_URL" ]; then
+            echo "::error::The LLM_API_KEY and DATABASE_URL secrets must both be set."
+            exit 1
+          fi
+          if ! [[ "$SLUG" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+            echo "::error::The slug must be lowercase words joined by '-', for example pm-kisan."
+            exit 1
+          fi
+          # The report goes to a file, not the log: it contains model output, and the log would
+          # treat a line starting with "::" as a workflow command.
+          python -m app.pipeline.extract_cli "$SLUG" > extract-report.md
+      - name: Show the proposal in the run summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -s extract-report.md ]; then
+            cat extract-report.md >> "$GITHUB_STEP_SUMMARY"
+          fi

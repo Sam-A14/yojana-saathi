@@ -6,7 +6,7 @@ Free, in Hindi and English.
 
 > Guidance only, not an official decision. Not a government app.
 
-Status: skeleton, database layer (tables and migrations), and scheme data format with a seed loader. The full plan is in [`PROJECT_SPEC.md`](PROJECT_SPEC.md); working
+Status: skeleton, database layer (tables and migrations), scheme data format with a seed loader, rules engine, and an LLM rule-extraction pipeline (proposals only). The full plan is in [`PROJECT_SPEC.md`](PROJECT_SPEC.md); working
 rules are in [`CLAUDE.md`](CLAUDE.md).
 
 ## Folder structure
@@ -15,7 +15,9 @@ rules are in [`CLAUDE.md`](CLAUDE.md).
 yojana-saathi/
 ├── backend/            FastAPI app (Python 3.12)
 │   ├── app/            main.py (routes, CORS), config.py (settings from env)
-│   │   └── db/         SQLAlchemy models (db/models/), engine and session, seed.py (seed loader)
+│   │   ├── db/         SQLAlchemy models (db/models/), engine and session, seed.py (seed loader)
+│   │   ├── llm/        one LLM interface: Gemini implementation, fake for tests, prompts
+│   │   └── pipeline/   rule extraction: source text -> LLM -> validator -> review_items; accuracy
 │   ├── alembic/        database migrations (versions/0001_initial_schema.py)
 │   ├── tests/          pytest tests (database tests need PostgreSQL)
 │   ├── requirements.txt
@@ -23,10 +25,11 @@ yojana-saathi/
 ├── frontend/           Next.js (App Router, TypeScript, Tailwind)
 │   ├── app/            pages and layout
 │   └── .env.example
-├── data/               hand-labelled data: documents.json, scheme JSON Schema, schemes_seed/
+├── data/               hand-labelled data: documents.json, scheme JSON Schema, schemes_seed/,
+│                       scheme_sources/ (scheme text pasted for the LLM)
 │                       (see data/README.md for how to label a scheme)
 ├── docs/decisions/     one short note per design decision
-└── .github/workflows/  ci.yml runs on every pull request; seed-database.yml is run by hand
+└── .github/workflows/  ci.yml runs on every pull request; seed-database.yml and extract-rules.yml are run by hand
 ```
 
 More folders (`rules/`, `pipeline/`, `alerts/`, `llm/`) appear as those parts are built.
@@ -171,6 +174,16 @@ Notes: the workflow only runs from `main` (it refuses other branches, so unrevie
 reach production), and it shows up in the Actions list only after the file is on `main`. If it
 fails with "DATABASE_URL secret is not set", redo the setup above. The tables must exist first:
 Render creates them when the backend starts, so deploy the backend before seeding.
+
+### Extract scheme rules with the LLM (optional, after seeding)
+
+Paste a scheme's text into `data/scheme_sources/<slug>.txt` (source URL on line 1; see
+`data/scheme_sources/README.md`) and merge it to `main`. One-time setup: add a repository secret
+`LLM_API_KEY` (a Gemini API key from <https://aistudio.google.com/apikey>); `DATABASE_URL` is the
+same secret the seed workflow uses. Then Actions > **Extract scheme rules** > Run workflow > type the
+slug. The run summary shows the proposal, whether it passed validation, and the accuracy against
+`data/schemes_seed/<slug>.json` if that exists. The proposal is saved to `review_items` as
+`pending`; nothing is published. Deploy the backend first so the latest migration has run.
 
 ### 3. Frontend: Vercel
 

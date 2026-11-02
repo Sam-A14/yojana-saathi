@@ -8,6 +8,7 @@ Hand-made data files. The database is loaded from these files, so a mistake here
 | `scheme.schema.json` | The rules for one scheme file. Checked by tests and by the seed loader. |
 | `schemes_seed/*.json` | One file per scheme, labelled by hand. |
 | `schemes_seed/TEMPLATE.json` | Copy this to start a new scheme. Never loaded. |
+| `scheme_sources/<slug>.txt` | Scheme text pasted by hand (URL on line 1) for the LLM rule extraction. See `scheme_sources/README.md`. |
 | `test_profiles/*.json` | Sample families with the expected result for each member and scheme (PM-KISAN, IGNWPS). Run in CI by `backend/tests/test_rules_profiles.py`. |
 
 ## Label a new scheme
@@ -67,3 +68,15 @@ person has checked them against the official pages.
 ## Test profiles
 
 One file per sample family in `test_profiles/`: `household` (state, area_type, ...), `members` (each with a `nickname`, `age` and the facts the rules use), and `expected` (status for every member, for both `pm-kisan` and `ignwps`). Optional `excluded_by` names the members expected to trigger an exclusion. Write the expected answers by reading the scheme's conditions, **not** by copying what the engine prints. A missing fact means "not answered" (unknown), so leave it out on purpose to test that.
+
+## LLM rule extraction
+
+`scheme_sources/<slug>.txt` is the input; the output is a **proposal** in the `review_items` table,
+never a scheme version. Run the manual workflow **Extract scheme rules** from `main`. The run
+summary shows the proposal, what the validator found, and, if `schemes_seed/<slug>.json` exists,
+precision and recall against it, with the exact conditions that were missed or invented. The same
+comparison runs on saved proposals with `python -m app.pipeline.accuracy proposal.json`.
+
+The seed files are the answer key, so the score is only as good as the labels: a seed file with
+`verified_at: null` has not been checked by a person, and the score against it means "agrees with
+that unverified file", not "is correct".
