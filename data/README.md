@@ -8,7 +8,7 @@ Hand-made data files. The database is loaded from these files, so a mistake here
 | `scheme.schema.json` | The rules for one scheme file. Checked by tests and by the seed loader. |
 | `schemes_seed/*.json` | One file per scheme, labelled by hand. |
 | `schemes_seed/TEMPLATE.json` | Copy this to start a new scheme. Never loaded. |
-| `test_profiles/` | Planned: sample families with the expected result for each. |
+| `test_profiles/*.json` | Sample families with the expected result for each member and scheme (PM-KISAN, IGNWPS). Run in CI by `backend/tests/test_rules_profiles.py`. |
 
 ## Label a new scheme
 
@@ -36,6 +36,7 @@ Hand-made data files. The database is loaded from these files, so a mistake here
 
 - Operators: `eq`, `neq`, `in`, `not_in`, `gte`, `lte`, `between` (two numbers), `is_true` (no value).
 - Groups: `all`, `any`, `not`. The top level is always `{"all": [...]}`.
+- Household rule: `{"any_member": <rule>}` is true if the rule holds for at least one household member (checked one member at a time). Exclusions are written `{"not": {"any_member": ...}}`, meaning "no member ...".
 - `fixable`: fields whose failure the family can fix (usually a missing document). A person who
   fails only these is a "near miss".
 - `field` must come from a fixed list in `scheme.schema.json`: the member and household attributes
@@ -62,3 +63,7 @@ Hand-made data files. The database is loaded from these files, so a mistake here
 memory because the official sites could not be reached in the session that wrote them, and each
 says so in `labeller_notes`. They have `verified_at: null`. Do not treat them as correct until a
 person has checked them against the official pages.
+
+## Test profiles
+
+One file per sample family in `test_profiles/`: `household` (state, area_type, ...), `members` (each with a `nickname`, `age` and the facts the rules use), and `expected` (status for every member, for both `pm-kisan` and `ignwps`). Optional `excluded_by` names the members expected to trigger an exclusion. Write the expected answers by reading the scheme's conditions, **not** by copying what the engine prints. A missing fact means "not answered" (unknown), so leave it out on purpose to test that.

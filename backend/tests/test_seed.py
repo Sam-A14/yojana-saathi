@@ -58,7 +58,7 @@ def test_first_load_creates_everything(db: Session, data_dir: Path) -> None:
     assert kisan.current_version.version_no == 1
     assert kisan.current_version.verified_at is None  # examples must stay unverified
     assert kisan.current_version.approved_by == "seed-example-unverified"
-    assert kisan.current_version.rules_json["fixable"] == ["has_land_record"]
+    assert kisan.current_version.rules_json["fixable"] == []  # land ownership is not fixable
     assert kisan.name_hi and kisan.level == "central" and kisan.state is None
 
 

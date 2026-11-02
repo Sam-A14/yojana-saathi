@@ -12,6 +12,7 @@ from sqlalchemy import CheckConstraint, ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, created_at_column, in_list_check, updated_at_column
+from app.rules.fields import GOVT_EMPLOYEE_VALUES, PENSION_BAND_VALUES
 
 LANGUAGES = ("en", "hi")
 ALERT_CHANNELS = ("email",)
@@ -61,6 +62,12 @@ class Member(Base):
     __table_args__ = (
         CheckConstraint(in_list_check("gender", GENDERS), name="gender_valid"),
         CheckConstraint("birth_year BETWEEN 1900 AND 2100", name="birth_year_range"),
+        CheckConstraint(
+            in_list_check("govt_employee", GOVT_EMPLOYEE_VALUES), name="govt_employee_valid"
+        ),
+        CheckConstraint(
+            in_list_check("pension_band", PENSION_BAND_VALUES), name="pension_band_valid"
+        ),
         Index("ix_members_household_id", "household_id"),
     )
 
@@ -77,6 +84,16 @@ class Member(Base):
     education: Mapped[str | None]
     is_student: Mapped[bool | None]
     disability: Mapped[bool | None]
+    # Facts used by exclusion rules (for example PM-KISAN). All nullable for the same reason as
+    # above: "not answered" must stay different from "no". Yes/no answers only, never a number
+    # such as a PAN or a pension amount.
+    owns_cultivable_land: Mapped[bool | None]
+    paid_income_tax_last_year: Mapped[bool | None]
+    govt_employee: Mapped[str | None]  # none / group_d / other
+    pension_band: Mapped[str | None]  # none / below_10k / 10k_plus
+    is_registered_professional: Mapped[bool | None]
+    holds_constitutional_post: Mapped[bool | None]
+    is_remarried: Mapped[bool | None]
     created_at: Mapped[datetime] = created_at_column()
     updated_at: Mapped[datetime] = updated_at_column()
 

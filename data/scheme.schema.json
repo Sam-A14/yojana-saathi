@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/Sam-A14/yojana-saathi/data/scheme.schema.json",
   "title": "Yojana Saathi scheme seed file (data/schemes_seed/<slug>.json)",
-  "$comment": "One file = one scheme + one version. The allowed 'field' names below are a strict list: a typo while labelling must fail here, not silently become 'unknown'. Keep this list in sync with backend/app/rules/fields.py once that file exists (tests/test_seed_files.py checks the has_* names against data/documents.json).",
+  "$comment": "One file = one scheme + one version. The allowed 'field' names below are a strict list: a typo while labelling must fail here, not silently become 'unknown'. Keep this list in sync with backend/app/rules/fields.py (tests/test_seed_files.py checks they match) (tests/test_seed_files.py checks the has_* names against data/documents.json).",
   "type": "object",
   "required": [
     "slug",
@@ -261,6 +261,13 @@
         "education",
         "is_student",
         "disability",
+        "owns_cultivable_land",
+        "paid_income_tax_last_year",
+        "govt_employee",
+        "pension_band",
+        "is_registered_professional",
+        "holds_constitutional_post",
+        "is_remarried",
         "state",
         "district",
         "area_type",
@@ -285,7 +292,7 @@
     },
     "node": {
       "type": "object",
-      "description": "A condition (has 'field'), or a group: all, any, or not.",
+      "description": "A condition (has 'field'), or a group: all, any, not, or any_member (true if the rule inside holds for at least one household member).",
       "anyOf": [
         {
           "required": [
@@ -305,6 +312,11 @@
         {
           "required": [
             "not"
+          ]
+        },
+        {
+          "required": [
+            "any_member"
           ]
         }
       ],
@@ -368,6 +380,27 @@
             "properties": {
               "not": {
                 "$ref": "#/$defs/node"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "any_member"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "properties": {
+              "any_member": {
+                "$ref": "#/$defs/node"
+              },
+              "among": {
+                "enum": [
+                  "household"
+                ],
+                "description": "Reserved for later (for example applicant_family). Only household exists today."
               }
             }
           }

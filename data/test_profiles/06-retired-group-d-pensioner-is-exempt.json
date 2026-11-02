@@ -1,0 +1,48 @@
+{
+  "description": "A retired Group D employee with a Rs 10,000+ pension is NOT excluded.",
+  "household": {
+    "state": "UP",
+    "district": "Sitapur",
+    "area_type": "rural",
+    "income_band_max": 100000,
+    "category": "OBC"
+  },
+  "members": [
+    {
+      "nickname": "Ramesh",
+      "age": 64,
+      "gender": "male",
+      "marital_status": "married",
+      "owns_cultivable_land": true,
+      "paid_income_tax_last_year": false,
+      "govt_employee": "group_d",
+      "pension_band": "10k_plus",
+      "is_registered_professional": false,
+      "holds_constitutional_post": false,
+      "is_remarried": false
+    },
+    {
+      "nickname": "Sunita",
+      "age": 60,
+      "gender": "female",
+      "marital_status": "married",
+      "owns_cultivable_land": false,
+      "paid_income_tax_last_year": false,
+      "govt_employee": "none",
+      "pension_band": "none",
+      "is_registered_professional": false,
+      "holds_constitutional_post": false,
+      "is_remarried": false
+    }
+  ],
+  "expected": {
+    "pm-kisan": {
+      "Ramesh": "eligible",
+      "Sunita": "eligible"
+    },
+    "ignwps": {
+      "Ramesh": "not_eligible",
+      "Sunita": "not_eligible"
+    }
+  }
+}

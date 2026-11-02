@@ -1,0 +1,48 @@
+{
+  "description": "A pension under Rs 10,000 does not exclude by itself.",
+  "household": {
+    "state": "UP",
+    "district": "Sitapur",
+    "area_type": "rural",
+    "income_band_max": 100000,
+    "category": "OBC"
+  },
+  "members": [
+    {
+      "nickname": "Dada",
+      "age": 72,
+      "gender": "male",
+      "marital_status": "married",
+      "owns_cultivable_land": true,
+      "paid_income_tax_last_year": false,
+      "govt_employee": "none",
+      "pension_band": "below_10k",
+      "is_registered_professional": false,
+      "holds_constitutional_post": false,
+      "is_remarried": false
+    },
+    {
+      "nickname": "Dadi",
+      "age": 68,
+      "gender": "female",
+      "marital_status": "married",
+      "owns_cultivable_land": false,
+      "paid_income_tax_last_year": false,
+      "govt_employee": "none",
+      "pension_band": "none",
+      "is_registered_professional": false,
+      "holds_constitutional_post": false,
+      "is_remarried": false
+    }
+  ],
+  "expected": {
+    "pm-kisan": {
+      "Dada": "eligible",
+      "Dadi": "eligible"
+    },
+    "ignwps": {
+      "Dada": "not_eligible",
+      "Dadi": "not_eligible"
+    }
+  }
+}

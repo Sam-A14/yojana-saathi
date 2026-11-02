@@ -1,0 +1,50 @@
+{
+  "description": "Kamla has no BPL card (nothing is fixable in IGNWPS, so no near miss); Pooja is under 40.",
+  "household": {
+    "state": "UP",
+    "district": "Sitapur",
+    "area_type": "rural",
+    "income_band_max": 100000,
+    "category": "OBC"
+  },
+  "members": [
+    {
+      "nickname": "Kamla",
+      "age": 55,
+      "gender": "female",
+      "marital_status": "widow",
+      "owns_cultivable_land": false,
+      "paid_income_tax_last_year": false,
+      "govt_employee": "none",
+      "pension_band": "none",
+      "is_registered_professional": false,
+      "holds_constitutional_post": false,
+      "is_remarried": false,
+      "has_bpl_card": false
+    },
+    {
+      "nickname": "Pooja",
+      "age": 35,
+      "gender": "female",
+      "marital_status": "widow",
+      "owns_cultivable_land": false,
+      "paid_income_tax_last_year": false,
+      "govt_employee": "none",
+      "pension_band": "none",
+      "is_registered_professional": false,
+      "holds_constitutional_post": false,
+      "is_remarried": false,
+      "has_bpl_card": true
+    }
+  ],
+  "expected": {
+    "pm-kisan": {
+      "Kamla": "not_eligible",
+      "Pooja": "not_eligible"
+    },
+    "ignwps": {
+      "Kamla": "not_eligible",
+      "Pooja": "not_eligible"
+    }
+  }
+}
