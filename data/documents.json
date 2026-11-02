@@ -1,0 +1,80 @@
+{
+  "$schema": "./documents.schema.json",
+  "documents": [
+    {
+      "code": "aadhaar_card",
+      "name_en": "Aadhaar card",
+      "name_hi": "आधार कार्ड"
+    },
+    {
+      "code": "income_certificate",
+      "name_en": "Income certificate",
+      "name_hi": "आय प्रमाण पत्र"
+    },
+    {
+      "code": "caste_certificate",
+      "name_en": "Caste certificate",
+      "name_hi": "जाति प्रमाण पत्र"
+    },
+    {
+      "code": "domicile_certificate",
+      "name_en": "Domicile (residence) certificate",
+      "name_hi": "निवास प्रमाण पत्र"
+    },
+    {
+      "code": "ration_card",
+      "name_en": "Ration card",
+      "name_hi": "राशन कार्ड"
+    },
+    {
+      "code": "bpl_card",
+      "name_en": "BPL (below poverty line) card",
+      "name_hi": "बीपीएल (गरीबी रेखा से नीचे) कार्ड"
+    },
+    {
+      "code": "bank_account_aadhaar_linked",
+      "name_en": "Bank account linked to Aadhaar",
+      "name_hi": "आधार से जुड़ा बैंक खाता"
+    },
+    {
+      "code": "land_record",
+      "name_en": "Land record (Khatauni / Khasra)",
+      "name_hi": "भूमि का रिकॉर्ड (खतौनी / खसरा)"
+    },
+    {
+      "code": "birth_certificate",
+      "name_en": "Birth certificate",
+      "name_hi": "जन्म प्रमाण पत्र"
+    },
+    {
+      "code": "voter_id",
+      "name_en": "Voter ID card",
+      "name_hi": "मतदाता पहचान पत्र"
+    },
+    {
+      "code": "disability_certificate",
+      "name_en": "Disability certificate",
+      "name_hi": "दिव्यांगता प्रमाण पत्र"
+    },
+    {
+      "code": "spouse_death_certificate",
+      "name_en": "Death certificate of husband",
+      "name_hi": "पति का मृत्यु प्रमाण पत्र"
+    },
+    {
+      "code": "marriage_certificate",
+      "name_en": "Marriage certificate",
+      "name_hi": "विवाह प्रमाण पत्र"
+    },
+    {
+      "code": "marksheet",
+      "name_en": "Marksheet (school or college)",
+      "name_hi": "अंकपत्र (मार्कशीट)"
+    },
+    {
+      "code": "family_register",
+      "name_en": "Family register copy (Parivar Register)",
+      "name_hi": "परिवार रजिस्टर की नकल"
+    }
+  ]
+}
