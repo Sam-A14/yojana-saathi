@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     database_url: str | None = None
     # LLM wrapper (app/llm/). The provider is a setting so it can be switched without code changes.
     llm_provider: str = "gemini"  # "gemini" or "fake" (tests only)
-    llm_model: str = "gemini-3.8-flash"
+    llm_model: str = "gemini-3.6-flash"
     # Optional on purpose: only the extraction job needs it. Never log it.
     llm_api_key: str | None = None
 
