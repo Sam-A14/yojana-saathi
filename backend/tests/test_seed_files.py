@@ -217,3 +217,14 @@ def test_engine_accepts_every_committed_scheme() -> None:
 
     for scheme in read_seed_files().schemes:
         validate_rules(scheme["version"]["rules"])
+
+
+def test_seed_folder_holds_only_json_files() -> None:
+    """Source text belongs in data/scheme_sources/; a stray .txt here was once committed."""
+    stray = sorted(
+        path.name
+        for path in (DEFAULT_DATA_DIR / "schemes_seed").iterdir()
+        if path.suffix != ".json"
+    )
+
+    assert stray == [], f"move these to data/scheme_sources/ or delete them: {stray}"

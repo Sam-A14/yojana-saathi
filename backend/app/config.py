@@ -1,6 +1,10 @@
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# One place for the default so the validator below and the field cannot disagree.
+DEFAULT_LLM_MODEL = "gemini-3.6-flash"
 
 
 def to_driver_url(url: str) -> str:
@@ -25,9 +29,18 @@ class Settings(BaseSettings):
     database_url: str | None = None
     # LLM wrapper (app/llm/). The provider is a setting so it can be switched without code changes.
     llm_provider: str = "gemini"  # "gemini" or "fake" (tests only)
-    llm_model: str = "gemini-3.6-flash"
+    llm_model: str = DEFAULT_LLM_MODEL
     # Optional on purpose: only the extraction job needs it. Never log it.
     llm_api_key: str | None = None
+
+    @field_validator("llm_model", mode="before")
+    @classmethod
+    def blank_model_means_default(cls, value: object) -> object:
+        # An unset GitHub repository variable reaches the job as LLM_MODEL="" (not as "missing"),
+        # and an empty model name would build a broken URL. Treat blank as "use the default".
+        if value is None or (isinstance(value, str) and not value.strip()):
+            return DEFAULT_LLM_MODEL
+        return value.strip() if isinstance(value, str) else value
 
     @property
     def sqlalchemy_database_url(self) -> str:
