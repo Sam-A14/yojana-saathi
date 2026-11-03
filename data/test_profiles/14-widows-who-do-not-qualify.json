@@ -1,5 +1,5 @@
 {
-  "description": "Kamla has no BPL card (nothing is fixable in IGNWPS, so no near miss); Pooja is under 40.",
+  "description": "No one in the household has a BPL card; Pooja is also under 40.",
   "household": {
     "state": "UP",
     "district": "Sitapur",
@@ -34,7 +34,7 @@
       "is_registered_professional": false,
       "holds_constitutional_post": false,
       "is_remarried": false,
-      "has_bpl_card": true
+      "has_bpl_card": false
     }
   ],
   "expected": {

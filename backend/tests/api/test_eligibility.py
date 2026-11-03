@@ -111,17 +111,6 @@ def test_widow_in_a_landowning_family_end_to_end(
     assert ignwps["scheme"]["verified"] is False
 
 
-# The profile files give each person their OWN BPL-card answer and feed the engine directly. The API
-# shares family-level documents (one member's BPL card counts for the household, decision 009), so
-# for these two profiles its answers differ ON PURPOSE. Worked out by hand, not copied from output:
-#  14: Pooja (35) has the card, so widow Kamla (55) is covered by it -> eligible; Pooja is under 40.
-#  15: same for Kamla (60) through Rekha's card -> eligible; Rekha's marital status is still blank.
-SHARED_DOCUMENT_EXPECTATIONS = {
-    "14-widows-who-do-not-qualify": {"ignwps": {"Kamla": "eligible", "Pooja": "not_eligible"}},
-    "15-widow-questions-unanswered": {"ignwps": {"Kamla": "eligible", "Rekha": "unknown"}},
-}
-
-
 @pytest.mark.parametrize("path", PROFILES, ids=lambda p: p.stem)
 def test_every_test_profile_through_the_api(
     client: TestClient, seeded, today, make_family, path: Path
@@ -129,10 +118,7 @@ def test_every_test_profile_through_the_api(
     family, profile = load_profile(client, make_family, today, path)
     body = eligibility(client, family)
 
-    expectations = {**profile["expected"], **SHARED_DOCUMENT_EXPECTATIONS.get(path.stem, {})}
-    if path.stem in SHARED_DOCUMENT_EXPECTATIONS:  # an override that matches the file is stale
-        assert expectations != profile["expected"]
-    for slug, expected in expectations.items():
+    for slug, expected in profile["expected"].items():
         for nickname, want in expected.items():
             listed = schemes_of(body, nickname)
             got = listed[slug]["status"] if slug in listed else "not_eligible"

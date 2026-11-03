@@ -67,11 +67,10 @@ do not have. The engine must stay unchanged and remain the only decision maker (
 - The engine's household/member split is unchanged: `has_<document>` is still a per-member fact. The
   API layer fills it in with the shared answer, so the mother's IGNWPS result is not `unknown`
   because only the father was asked about the BPL card.
-- The hand-labelled profiles 14 and 15 give each person their own BPL answer and feed the engine
-  directly, so they still test the engine as written. Through the API the household shares the card,
-  so those two profiles have different, hand-worked expectations in `test_eligibility.py`. The
-  profile files were not edited (they are ground truth); update their descriptions if you want them
-  to match the API's behaviour.
-- A family where one member truly has no BPL card but another does is treated as having one. That is
-  the intended meaning of a family-level document, but the UI should ask about it once per family.
+- BPL status is per household: one member's card counts for everyone, so the UI should ask about
+  family-level documents once per family. The hand-labelled profiles 14 and 15 were changed to match
+  (nobody has a BPL card in 14; nobody answered in 15), so profiles agree at engine level and API level.
+- Household-scope documents assume one family unit per household. Separate ration cards for
+  different families living in one household are a known limitation, the same as
+  `among: applicant_family` (decision 005).
 - Cost is small: at most 4 engine runs per member and scheme for today's rules.
