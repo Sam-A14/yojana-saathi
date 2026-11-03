@@ -41,11 +41,17 @@ class Household(Base):
     __tablename__ = "households"
     __table_args__ = (
         CheckConstraint(in_list_check("area_type", AREA_TYPES), name="area_type_valid"),
+        # A household nobody can open (no login, no token) could never be reached or deleted.
+        CheckConstraint("user_id IS NOT NULL OR access_token_hash IS NOT NULL", name="has_owner"),
         Index("ix_households_user_id", "user_id"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    # NULL until the family logs in: before login, the access token below is the only key.
+    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    # SHA-256 of the access token. The token itself is never stored, so a database leak does not
+    # give anyone access to a household. Unique, so lookup by hash is also an index lookup.
+    access_token_hash: Mapped[str | None] = mapped_column(unique=True)
     # Attributes are nullable: "not answered yet" must stay different from any real answer,
     # because the rules engine turns a missing attribute into "unknown", not "not eligible".
     state: Mapped[str | None]
