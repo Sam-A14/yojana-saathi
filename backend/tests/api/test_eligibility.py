@@ -111,6 +111,17 @@ def test_widow_in_a_landowning_family_end_to_end(
     assert ignwps["scheme"]["verified"] is False
 
 
+# The profile files give each person their OWN BPL-card answer and feed the engine directly. The API
+# shares family-level documents (one member's BPL card counts for the household, decision 009), so
+# for these two profiles its answers differ ON PURPOSE. Worked out by hand, not copied from output:
+#  14: Pooja (35) has the card, so widow Kamla (55) is covered by it -> eligible; Pooja is under 40.
+#  15: same for Kamla (60) through Rekha's card -> eligible; Rekha's marital status is still blank.
+SHARED_DOCUMENT_EXPECTATIONS = {
+    "14-widows-who-do-not-qualify": {"ignwps": {"Kamla": "eligible", "Pooja": "not_eligible"}},
+    "15-widow-questions-unanswered": {"ignwps": {"Kamla": "eligible", "Rekha": "unknown"}},
+}
+
+
 @pytest.mark.parametrize("path", PROFILES, ids=lambda p: p.stem)
 def test_every_test_profile_through_the_api(
     client: TestClient, seeded, today, make_family, path: Path
@@ -118,7 +129,10 @@ def test_every_test_profile_through_the_api(
     family, profile = load_profile(client, make_family, today, path)
     body = eligibility(client, family)
 
-    for slug, expected in profile["expected"].items():
+    expectations = {**profile["expected"], **SHARED_DOCUMENT_EXPECTATIONS.get(path.stem, {})}
+    if path.stem in SHARED_DOCUMENT_EXPECTATIONS:  # an override that matches the file is stale
+        assert expectations != profile["expected"]
+    for slug, expected in expectations.items():
         for nickname, want in expected.items():
             listed = schemes_of(body, nickname)
             got = listed[slug]["status"] if slug in listed else "not_eligible"
@@ -211,18 +225,18 @@ def test_age_limit_uses_the_range_from_birth_year(
 
 
 @pytest.mark.parametrize(
-    ("band", "status", "reasons"),
+    ("band", "limit", "status", "reasons"),
     [
-        ("1_to_2_lakh", "eligible", []),
-        ("2_to_2_5_lakh", "unknown", ["depends_on_exact_income"]),
-        ("3_to_5_lakh", None, None),
+        ("1_to_2_lakh", 200_000, "eligible", []),  # the top edge belongs to the band
+        ("1_to_2_lakh", 100_000, None, None),  # the bottom edge belongs to the band below: no
+        ("1_to_2_lakh", 150_000, "unknown", ["depends_on_exact_income"]),  # limit inside the band
     ],
 )
 def test_income_limit_uses_the_range_of_the_band(
-    client: TestClient, db: Session, seeded, today, make_family, band, status, reasons
+    client: TestClient, db: Session, seeded, today, make_family, band, limit, status, reasons
 ) -> None:
     add_scheme(
-        db, "income-test", {"all": [{"field": "income_band_max", "op": "lte", "value": 200000}]}
+        db, "income-test", {"all": [{"field": "income_band_max", "op": "lte", "value": limit}]}
     )
     family = make_family(income_band=band)
     add_member(client, family, "Asha")
@@ -274,6 +288,68 @@ def test_missing_documents_say_no_or_not_asked_and_household_documents_are_share
     }  # bpl_card is not listed: someone in the household has it
     sample = ignwps["missing_documents"][0]
     assert {"name_en", "name_hi", "how_to_get_en", "official_link"} <= set(sample)
+
+
+# --- family-level documents ---------------------------------------------------------------------
+
+
+def widow_and_husbands_family(client: TestClient, make_family, father_docs, mother_docs):  # noqa: ANN201
+    family = make_family(state="UP")
+    mother = add_member(
+        client, family, "Kamla", birth_year=1964, gender="female", marital_status="widow"
+    )
+    father = add_member(client, family, "Raju", birth_year=1962, gender="male")
+    if mother_docs is not None:
+        put_documents(client, family, mother, mother_docs)
+    if father_docs is not None:
+        put_documents(client, family, father, father_docs)
+    return family
+
+
+def test_only_the_father_has_the_bpl_card_and_the_mothers_result_is_not_unknown_for_it(
+    client: TestClient, seeded, today, make_family
+) -> None:
+    family = widow_and_husbands_family(client, make_family, {"bpl_card": True}, None)
+
+    ignwps = schemes_of(eligibility(client, family), "Kamla")["ignwps"]
+
+    # The mother was never asked about the card, but the household has one: not unknown.
+    assert ignwps["status"] == "eligible"
+    assert "has_bpl_card" in {r["rule"]["field"] for r in ignwps["passed_rules"]}
+    assert ignwps["unknown_rules"] == []
+    # The same rule drives the missing list: the card is not missing for her.
+    assert "bpl_card" not in {d["code"] for d in ignwps["missing_documents"]}
+
+
+def test_one_members_yes_beats_anothers_no_for_a_household_document(
+    client: TestClient, seeded, today, make_family
+) -> None:
+    family = widow_and_husbands_family(client, make_family, {"bpl_card": True}, {"bpl_card": False})
+
+    assert schemes_of(eligibility(client, family), "Kamla")["ignwps"]["status"] == "eligible"
+
+
+def test_when_nobody_has_the_bpl_card_the_mother_is_still_asked(
+    client: TestClient, seeded, today, make_family
+) -> None:
+    family = widow_and_husbands_family(client, make_family, None, None)
+
+    ignwps = schemes_of(eligibility(client, family), "Kamla")["ignwps"]
+
+    assert ignwps["status"] == "unknown"
+    assert [r["rule"]["field"] for r in ignwps["unknown_rules"]] == ["has_bpl_card"]
+    missing = {d["code"]: d["state"] for d in ignwps["missing_documents"]}
+    assert missing["bpl_card"] == "not_answered"
+
+
+def test_personal_documents_are_not_shared_between_members(
+    client: TestClient, seeded, today, make_family
+) -> None:
+    family = widow_and_husbands_family(client, make_family, {"aadhaar_card": True}, None)
+
+    ignwps = schemes_of(eligibility(client, family), "Kamla")["ignwps"]
+
+    assert "aadhaar_card" in {d["code"] for d in ignwps["missing_documents"]}
 
 
 # --- safety ------------------------------------------------------------------------------------

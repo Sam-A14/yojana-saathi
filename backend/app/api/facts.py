@@ -6,7 +6,7 @@ here as a single number: a birth year only gives a range (see ranges.py).
 
 import math
 import uuid
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import date, timedelta, timezone
 from typing import Any
 
@@ -14,7 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.models import Household, Member, MemberDocument
-from app.rules.values import INCOME_BANDS
+from app.rules.values import HOUSEHOLD_DOCUMENT_CODES, INCOME_BANDS
 
 # India has no daylight saving, so a fixed offset is exact and needs no timezone database.
 INDIA = timezone(timedelta(hours=5, minutes=30))
@@ -49,13 +49,14 @@ def age_range(birth_year: int, today: date) -> tuple[int, int]:
 
 
 def income_range(income_band: str) -> tuple[float, float]:
-    """(lowest, highest) yearly income in the band. The top band has no upper edge: math.inf.
+    """(lowest, highest) yearly income in the band, both possible. The top band: highest = math.inf.
 
-    Both edges are treated as possible, so a rule that cuts exactly at an edge is "unknown"
-    rather than guessed.
+    Bands are "more than lower, up to and including upper" (values.py), so the lowest possible
+    income is one rupee above the lower edge. A rule cut exactly at an edge therefore has a
+    definite answer; only a rule cut inside the band is "unknown".
     """
     band = INCOME_BANDS[income_band]
-    return band.lower, math.inf if band.upper is None else band.upper
+    return band.lowest, math.inf if band.upper is None else band.upper
 
 
 def member_facts(member: Member, documents: Mapping[str, bool]) -> dict[str, Any]:
@@ -67,6 +68,18 @@ def member_facts(member: Member, documents: Mapping[str, bool]) -> dict[str, Any
     for code, has in documents.items():
         facts[f"has_{code}"] = has
     return facts
+
+
+def shared_documents(answers: Sequence[Mapping[str, bool]]) -> list[dict[str, bool]]:
+    """Each member's document answers after sharing family-level documents.
+
+    If ANY member has a household document (ration card, BPL card, ...), every member has it. One
+    rule used for both the engine's has_<code> facts and the missing-documents list, so the two
+    cannot disagree. Nobody holding it changes nothing: members who said "no" stay "no" and
+    members who were not asked stay unanswered (we never invent a "no" or a "yes").
+    """
+    held = {code for code in HOUSEHOLD_DOCUMENT_CODES if any(a.get(code) is True for a in answers)}
+    return [{**a, **dict.fromkeys(held, True)} for a in answers]
 
 
 def household_facts(household: Household) -> dict[str, Any]:

@@ -1,11 +1,11 @@
 """Range evaluation without a database: the engine is run at the corners of each range."""
 
 import json
-import math
 from typing import Any
 
 import pytest
 
+from app.api.facts import income_range
 from app.api.ranges import MAX_UNCERTAIN_AGES, Ranges, evaluate_with_ranges
 from app.db.seed import DEFAULT_DATA_DIR
 from app.rules.engine import RuleError
@@ -80,36 +80,52 @@ def test_rules_that_ignore_age_are_not_made_unknown_by_a_wide_age_range() -> Non
 
 
 # --- income ---------------------------------------------------------------------------------
+# Bands are "more than lower, up to and including upper", so a limit exactly at a band edge has a
+# definite answer. Only a limit inside the band is unknown.
+
+
+def at_most(limit: int) -> dict[str, Any]:
+    return rules({"field": "income_band_max", "op": "lte", "value": limit})
 
 
 @pytest.mark.parametrize(
-    ("income", "status", "reasons"),
+    ("band", "limit", "status", "reasons"),
     [
-        ((100_000, 200_000), "eligible", ()),  # whole band is within the limit
-        ((200_000, 250_000), "unknown", ("depends_on_exact_income",)),  # could be over by a rupee
-        ((300_000, 500_000), "not_eligible", ()),  # whole band is over the limit
+        ("1_to_2_lakh", 200_000, "eligible", ()),  # the top edge belongs to this band
+        ("1_to_2_lakh", 100_000, "not_eligible", ()),  # the bottom edge belongs to the band below
+        ("1_to_2_lakh", 150_000, "unknown", ("depends_on_exact_income",)),  # limit inside the band
+        ("up_to_1_lakh", 100_000, "eligible", ()),
+        ("2_to_2_5_lakh", 200_000, "not_eligible", ()),  # the whole band is above the limit
+        ("3_to_5_lakh", 200_000, "not_eligible", ()),
     ],
 )
-def test_income_band_against_a_two_lakh_limit(income, status, reasons) -> None:
-    result = run(rules(INCOME_UP_TO_2_LAKH), income=income)
+def test_income_band_against_a_limit(band, limit, status, reasons) -> None:
+    result = run(at_most(limit), income=income_range(band))
 
     assert (result.status, result.reasons) == (status, reasons)
 
 
-def test_a_limit_inside_the_band_is_unknown() -> None:
-    rule = rules({"field": "income_band_max", "op": "lte", "value": 150000})
+def test_first_band_includes_zero_so_a_limit_of_zero_is_unclear() -> None:
+    assert run(at_most(0), income=income_range("up_to_1_lakh")).reasons == (
+        "depends_on_exact_income",
+    )
 
-    assert run(rule, income=(100_000, 200_000)).reasons == ("depends_on_exact_income",)
+
+def test_a_minimum_exactly_at_the_lower_edge_is_met_by_every_income_in_the_band() -> None:
+    # More than 100000 means at least 100001, so "at least 100000" always holds in 1_to_2_lakh.
+    rule = rules({"field": "income_band_max", "op": "gte", "value": 100_000})
+
+    assert run(rule, income=income_range("1_to_2_lakh")).status == "eligible"
 
 
 def test_top_band_has_no_upper_edge() -> None:
-    top = (800_000, math.inf)
-    limit_10_lakh = rules({"field": "income_band_max", "op": "lte", "value": 1_000_000})
-    limit_5_lakh = rules({"field": "income_band_max", "op": "lte", "value": 500_000})
+    top = income_range("above_8_lakh")
+    limit_10_lakh = at_most(1_000_000)
     at_least_5_lakh = rules({"field": "income_band_max", "op": "gte", "value": 500_000})
 
     assert run(limit_10_lakh, income=top).reasons == ("depends_on_exact_income",)
-    assert run(limit_5_lakh, income=top).status == "not_eligible"
+    assert run(at_most(500_000), income=top).status == "not_eligible"
+    assert run(at_most(800_000), income=top).status == "not_eligible"  # "above 8 lakh" is over it
     assert run(at_least_5_lakh, income=top).status == "eligible"
 
 
@@ -123,15 +139,17 @@ def test_no_income_band_is_plain_unknown() -> None:
 
 
 @pytest.mark.parametrize(
-    ("age", "income", "reasons"),
+    ("age", "limit", "reasons"),
     [
-        ((39, 40), (100_000, 200_000), ("depends_on_exact_age",)),
-        ((65, 66), (200_000, 250_000), ("depends_on_exact_income",)),
-        ((39, 40), (200_000, 250_000), ("depends_on_exact_age", "depends_on_exact_income")),
+        ((39, 40), 200_000, ("depends_on_exact_age",)),  # income is clear (band is under 2 lakh)
+        ((65, 66), 150_000, ("depends_on_exact_income",)),  # age is clear (always over 40)
+        ((39, 40), 150_000, ("depends_on_exact_age", "depends_on_exact_income")),
     ],
 )
-def test_reason_names_only_the_detail_that_matters(age, income, reasons) -> None:
-    result = run(rules(AGE_40, INCOME_UP_TO_2_LAKH), age=age, income=income)
+def test_reason_names_only_the_detail_that_matters(age, limit, reasons) -> None:
+    result = run(
+        rules(AGE_40, at_most(limit)["all"][0]), age=age, income=income_range("1_to_2_lakh")
+    )
 
     assert result.status == "unknown"
     assert result.reasons == reasons

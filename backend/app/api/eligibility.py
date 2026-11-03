@@ -22,6 +22,7 @@ from app.api.facts import (
     household_facts,
     income_range,
     member_facts,
+    shared_documents,
 )
 from app.api.ranges import RangedEvaluation, RangedRule, Ranges, ReasonCode, evaluate_with_ranges
 from app.api.schemas import SchemeSummary
@@ -121,27 +122,18 @@ def _excluded_by(evaluation: RangedEvaluation) -> list[str]:
 
 
 def _missing_documents(
-    links: Sequence[tuple[SchemeDocument, Document]],
-    member_index: int,
-    answers: Sequence[Mapping[str, bool]],
+    links: Sequence[tuple[SchemeDocument, Document]], answers: Mapping[str, bool]
 ) -> list[MissingDocument]:
     """Required documents this member does not (or may not) have.
 
-    applicant: the member's own answer. household: held if ANY member has it. Documents that are
-    not required are never listed.
+    `answers` are the member's answers after family-level documents were shared (facts.py), the
+    same ones the engine saw. Documents that are not required are never listed.
     """
     missing: list[MissingDocument] = []
     for link, doc in links:
-        if not link.required:
+        has = answers.get(doc.code)
+        if not link.required or has is True:
             continue
-        if link.applies_to == "household":
-            given = [a.get(doc.code) for a in answers]
-        else:
-            given = [answers[member_index].get(doc.code)]
-        if True in given:
-            continue
-        # "no" only if everyone who counts was asked and said no.
-        state = "no" if given and all(g is False for g in given) else "not_answered"
         missing.append(
             MissingDocument(
                 code=doc.code,
@@ -150,7 +142,7 @@ def _missing_documents(
                 how_to_get_en=doc.how_to_get_en,
                 how_to_get_hi=doc.how_to_get_hi,
                 official_link=doc.official_link,
-                state=state,
+                state="no" if has is False else "not_answered",
             )
         )
     return missing
@@ -177,9 +169,9 @@ def compute_eligibility(db: Session, household: Household, today: date) -> Eligi
             select(Member).where(Member.household_id == household.id).order_by(Member.created_at)
         )
     )
-    answers = documents_of(db, [m.id for m in members])
-    answer_list = [answers[m.id] for m in members]
-    people = [member_facts(m, answers[m.id]) for m in members]
+    own_answers = documents_of(db, [m.id for m in members])
+    answers = shared_documents([own_answers[m.id] for m in members])
+    people = [member_facts(m, answers[i]) for i, m in enumerate(members)]
     ranges = Ranges(
         ages={i: age_range(m.birth_year, today) for i, m in enumerate(members) if m.birth_year},
         income=income_range(household.income_band) if household.income_band else None,
@@ -232,7 +224,7 @@ def compute_eligibility(db: Session, household: Household, today: date) -> Eligi
                     failed_rules=[_rule_out(r) for r in evaluation.with_outcome("failed")],
                     unknown_rules=[_rule_out(r) for r in evaluation.with_outcome("unknown")],
                     excluded_by=_excluded_by(evaluation),
-                    missing_documents=_missing_documents(documents[version.id], index, answer_list),
+                    missing_documents=_missing_documents(documents[version.id], answers[index]),
                 )
             )
         listed.sort(key=lambda r: (STATUS_ORDER[r.status], r.scheme.name_en))
