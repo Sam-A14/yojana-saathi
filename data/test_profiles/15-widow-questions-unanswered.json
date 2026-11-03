@@ -1,5 +1,5 @@
 {
-  "description": "Kamla's BPL card and Rekha's marital status are unanswered: unknown for both.",
+  "description": "Nobody in the household has answered the BPL card question, and Rekha's marital status is unanswered: unknown for both.",
   "household": {
     "state": "UP",
     "district": "Sitapur",
@@ -31,8 +31,7 @@
       "pension_band": "none",
       "is_registered_professional": false,
       "holds_constitutional_post": false,
-      "is_remarried": false,
-      "has_bpl_card": true
+      "is_remarried": false
     }
   ],
   "expected": {

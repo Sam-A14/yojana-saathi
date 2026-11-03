@@ -13,6 +13,7 @@ EXPECTED_ENDPOINTS = {
     ("patch", "/households/{household_id}/members/{member_id}"),
     ("delete", "/households/{household_id}/members/{member_id}"),
     ("put", "/households/{household_id}/members/{member_id}/documents"),
+    ("get", "/households/{household_id}/eligibility"),
     ("get", "/schemes"),
     ("get", "/schemes/{slug}"),
 }

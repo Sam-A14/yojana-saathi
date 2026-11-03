@@ -6,7 +6,7 @@ Free, in Hindi and English.
 
 > Guidance only, not an official decision. Not a government app.
 
-Status: skeleton, database layer (tables and migrations), scheme data format with a seed loader, rules engine, an LLM rule-extraction pipeline (proposals only), and the household and scheme API (no eligibility endpoint yet). The full plan is in [`PROJECT_SPEC.md`](PROJECT_SPEC.md); working
+Status: skeleton, database layer (tables and migrations), scheme data format with a seed loader, rules engine, an LLM rule-extraction pipeline (proposals only), and the household, scheme and eligibility API. The full plan is in [`PROJECT_SPEC.md`](PROJECT_SPEC.md); working
 rules are in [`CLAUDE.md`](CLAUDE.md).
 
 ## Folder structure
@@ -83,7 +83,17 @@ missing token, or an unknown household id, gives `403`.
 | `POST` / `GET /households/{id}/members` | yes | Add a member (max 20) / list members. |
 | `GET` / `PATCH` / `DELETE /households/{id}/members/{member_id}` | yes | Read, change, remove one member. |
 | `PUT /households/{id}/members/{member_id}/documents` | yes | Set which documents a member has (`true`) or does not have (`false`). Replaces the whole set. |
+| `GET /households/{id}/eligibility` | yes | Runs the rules engine for every member against every active scheme; see below. |
 | `GET /schemes`, `GET /schemes/{slug}` | no | The scheme catalogue. `verified: false` means no human has checked it yet. |
+
+**Eligibility answer.** For each member: `schemes` (status `eligible`, `near_miss` or `unknown`, with
+`passed_rules`, `failed_rules`, `unknown_rules`, `excluded_by` and `missing_documents`), `excluded`
+(schemes that fit except that another family member's facts exclude the household, with who),
+and `not_eligible_count`. Schemes no human has checked come back with `"verified": false`; they are
+labelled, not hidden. Only the rules engine decides. The family gives a birth *year* and an income
+*band*, so the engine is run for the youngest and oldest possible age and the lowest and highest
+income; if the answer changes, the status is `unknown` with `reasons` of `depends_on_exact_age`
+and/or `depends_on_exact_income` (see `docs/decisions/009-eligibility-endpoint.md`).
 
 Rules for what you send: unknown fields are rejected (`422`), so identity numbers cannot be sent;
 only birth *year* is stored; a question left as `null` means "not answered", which is different
