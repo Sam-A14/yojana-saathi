@@ -10,6 +10,7 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import DbSession, OwnHousehold
+from app.api.facts import documents_of
 from app.api.schemas import (
     MAX_MEMBERS_PER_HOUSEHOLD,
     TOKEN_NOTICE,
@@ -71,16 +72,6 @@ def delete_household(household: OwnHousehold, db: DbSession) -> Response:
 # --- members -------------------------------------------------------------------------------
 
 
-def _documents_of(db: Session, member_ids: list[uuid.UUID]) -> dict[uuid.UUID, dict[str, bool]]:
-    held: dict[uuid.UUID, dict[str, bool]] = {member_id: {} for member_id in member_ids}
-    rows = db.execute(
-        select(MemberDocument).where(MemberDocument.member_id.in_(member_ids))
-    ).scalars()
-    for row in rows:
-        held[row.member_id][row.document_code] = row.has
-    return held
-
-
 def _member_out(member: Member, documents: dict[str, bool]) -> MemberOut:
     out = MemberOut.model_validate(member)
     out.documents = documents
@@ -118,14 +109,14 @@ def list_members(household: OwnHousehold, db: DbSession) -> list[MemberOut]:
             select(Member).where(Member.household_id == household.id).order_by(Member.created_at)
         )
     )
-    held = _documents_of(db, [m.id for m in members])
+    held = documents_of(db, [m.id for m in members])
     return [_member_out(m, held[m.id]) for m in members]
 
 
 @router.get("/{household_id}/members/{member_id}", response_model=MemberOut)
 def read_member(member_id: uuid.UUID, household: OwnHousehold, db: DbSession) -> MemberOut:
     member = _own_member(db, household, member_id)
-    return _member_out(member, _documents_of(db, [member.id])[member.id])
+    return _member_out(member, documents_of(db, [member.id])[member.id])
 
 
 @router.patch("/{household_id}/members/{member_id}", response_model=MemberOut)
@@ -136,7 +127,7 @@ def update_member(
     for name, value in sent_fields(data).items():
         setattr(member, name, value)
     db.commit()
-    return _member_out(member, _documents_of(db, [member.id])[member.id])
+    return _member_out(member, documents_of(db, [member.id])[member.id])
 
 
 @router.delete("/{household_id}/members/{member_id}", status_code=204)

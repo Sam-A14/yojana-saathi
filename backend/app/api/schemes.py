@@ -1,7 +1,7 @@
 """The public scheme catalogue. No token: it holds nothing about any family."""
 
 from fastapi import APIRouter, HTTPException
-from sqlalchemy import select
+from sqlalchemy import Select, select
 
 from app.api.deps import DbSession
 from app.api.schemas import SchemeDetail, SchemeDocumentOut, SchemeSummary
@@ -10,7 +10,7 @@ from app.db.models import Document, Scheme, SchemeDocument, SchemeVersion
 router = APIRouter(prefix="/schemes", tags=["schemes"])
 
 
-def _summary(scheme: Scheme, version: SchemeVersion) -> SchemeSummary:
+def scheme_summary(scheme: Scheme, version: SchemeVersion) -> SchemeSummary:
     return SchemeSummary(
         slug=scheme.slug,
         name_en=scheme.name_en,
@@ -30,7 +30,7 @@ def _summary(scheme: Scheme, version: SchemeVersion) -> SchemeSummary:
 
 # Only active schemes with a published version: closed ones are hidden (kept in the database), and
 # a scheme with no version has no rules or benefit text to show yet.
-def _active_schemes():  # type: ignore[no-untyped-def]
+def active_schemes_query() -> Select[tuple[Scheme, SchemeVersion]]:
     return (
         select(Scheme, SchemeVersion)
         .join(SchemeVersion, Scheme.current_version_id == SchemeVersion.id)
@@ -40,13 +40,13 @@ def _active_schemes():  # type: ignore[no-untyped-def]
 
 @router.get("", response_model=list[SchemeSummary])
 def list_schemes(db: DbSession) -> list[SchemeSummary]:
-    rows = db.execute(_active_schemes().order_by(Scheme.name_en)).all()
-    return [_summary(scheme, version) for scheme, version in rows]
+    rows = db.execute(active_schemes_query().order_by(Scheme.name_en)).all()
+    return [scheme_summary(scheme, version) for scheme, version in rows]
 
 
 @router.get("/{slug}", response_model=SchemeDetail)
 def read_scheme(slug: str, db: DbSession) -> SchemeDetail:
-    row = db.execute(_active_schemes().where(Scheme.slug == slug)).first()
+    row = db.execute(active_schemes_query().where(Scheme.slug == slug)).first()
     if row is None:
         raise HTTPException(status_code=404, detail="No such scheme.")
     scheme, version = row
@@ -57,7 +57,7 @@ def read_scheme(slug: str, db: DbSession) -> SchemeDetail:
         .order_by(SchemeDocument.document_code)
     ).all()
     return SchemeDetail(
-        **_summary(scheme, version).model_dump(),
+        **scheme_summary(scheme, version).model_dump(),
         source_url=version.source_url,
         version_no=version.version_no,
         documents=[

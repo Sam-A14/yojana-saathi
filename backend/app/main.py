@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api import households, schemes
+from app.api import eligibility, households, schemes
 from app.config import get_settings
 
 settings = get_settings()
@@ -22,6 +22,7 @@ app.add_middleware(
 )
 
 app.include_router(households.router)
+app.include_router(eligibility.router)
 app.include_router(schemes.router)
 
 

@@ -2,11 +2,13 @@
 
 import uuid
 from collections.abc import Iterator
+from datetime import date, datetime
 from typing import Annotated
 
 from fastapi import Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
+from app.api.facts import INDIA
 from app.api.security import hash_token, hashes_match
 from app.db.models import Household
 from app.db.session import new_session
@@ -61,3 +63,11 @@ def current_household(
 
 
 OwnHousehold = Annotated[Household, Depends(current_household)]
+
+
+def get_today() -> date:
+    """Today's date in India. A dependency so tests can fix the date (ages depend on it)."""
+    return datetime.now(INDIA).date()
+
+
+Today = Annotated[date, Depends(get_today)]

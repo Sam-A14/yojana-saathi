@@ -1,11 +1,13 @@
 from collections.abc import Iterator
+from datetime import date
 from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db
+from app.api.deps import get_db, get_today
+from app.db.models import Scheme, SchemeVersion
 from app.db.seed import apply_seed, read_seed_files
 from app.main import app
 
@@ -43,3 +45,36 @@ def make_family(client: TestClient):  # noqa: ANN201
         return Family(client, **fields)
 
     return make
+
+
+TODAY = date(2026, 11, 3)
+
+
+@pytest.fixture
+def today() -> date:
+    """Ages depend on the date, so every eligibility test runs on this fixed day."""
+    app.dependency_overrides[get_today] = lambda: TODAY
+    return TODAY
+
+
+def add_scheme(db: Session, slug: str, rules: dict[str, Any]) -> None:
+    """A minimal active scheme with the given rules (for rules the seed files do not have)."""
+    scheme = Scheme(
+        slug=slug,
+        name_en=f"Test scheme {slug}",
+        level="central",
+        category="test",
+        official_url="https://example.gov.in",
+    )
+    db.add(scheme)
+    db.flush()
+    version = SchemeVersion(
+        scheme_id=scheme.id,
+        version_no=1,
+        rules_json=rules,
+        source_url="https://example.gov.in",
+    )
+    db.add(version)
+    db.flush()
+    scheme.current_version_id = version.id
+    db.flush()
