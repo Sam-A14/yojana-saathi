@@ -6,7 +6,7 @@ Free, in Hindi and English.
 
 > Guidance only, not an official decision. Not a government app.
 
-Status: skeleton, database layer (tables and migrations), scheme data format with a seed loader, rules engine, and an LLM rule-extraction pipeline (proposals only). The full plan is in [`PROJECT_SPEC.md`](PROJECT_SPEC.md); working
+Status: skeleton, database layer (tables and migrations), scheme data format with a seed loader, rules engine, an LLM rule-extraction pipeline (proposals only), and the household and scheme API (no eligibility endpoint yet). The full plan is in [`PROJECT_SPEC.md`](PROJECT_SPEC.md); working
 rules are in [`CLAUDE.md`](CLAUDE.md).
 
 ## Folder structure
@@ -15,6 +15,8 @@ rules are in [`CLAUDE.md`](CLAUDE.md).
 yojana-saathi/
 ├── backend/            FastAPI app (Python 3.12)
 │   ├── app/            main.py (routes, CORS), config.py (settings from env)
+│   │   ├── api/        HTTP endpoints: households, members, documents, schemes; token check
+│   │   ├── rules/      rules engine (engine.py), fact names, answer lists (values.py)
 │   │   ├── db/         SQLAlchemy models (db/models/), engine and session, seed.py (seed loader)
 │   │   ├── llm/        one LLM interface: Gemini implementation, fake for tests, prompts
 │   │   └── pipeline/   rule extraction: source text -> LLM -> validator -> review_items; accuracy
@@ -63,6 +65,34 @@ npm run dev
 ```
 
 Open <http://localhost:3000>. The page should say "Backend: ok".
+
+## API overview
+
+Start the backend and open <http://localhost:8000/docs> for the full list with a "Try it out" button.
+The database must be set up first (see "Database" below).
+
+**No login yet.** `POST /households` returns an `access_token`. Send it on every other household
+call as `Authorization: Bearer <token>`. It is shown **once and cannot be recovered**: we store only
+a scrambled copy, so if it is lost the household can no longer be opened or deleted. A wrong or
+missing token, or an unknown household id, gives `403`.
+
+| Method and path | Needs token | What it does |
+| --- | --- | --- |
+| `POST /households` | no | Start a household; returns the token. |
+| `GET` / `PATCH` / `DELETE /households/{id}` | yes | Read, change, or delete the household and all its members (cascade). |
+| `POST` / `GET /households/{id}/members` | yes | Add a member (max 20) / list members. |
+| `GET` / `PATCH` / `DELETE /households/{id}/members/{member_id}` | yes | Read, change, remove one member. |
+| `PUT /households/{id}/members/{member_id}/documents` | yes | Set which documents a member has (`true`) or does not have (`false`). Replaces the whole set. |
+| `GET /schemes`, `GET /schemes/{slug}` | no | The scheme catalogue. `verified: false` means no human has checked it yet. |
+
+Rules for what you send: unknown fields are rejected (`422`), so identity numbers cannot be sent;
+only birth *year* is stored; a question left as `null` means "not answered", which is different
+from "no". Quick try:
+
+```bash
+curl -s -X POST localhost:8000/households -H 'content-type: application/json' \
+  -d '{"state":"UP","area_type":"rural","income_band":"1_to_2_lakh"}'
+```
 
 ## Database (local)
 
