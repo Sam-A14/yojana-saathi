@@ -11,14 +11,43 @@ import { AREA_TYPES, CATEGORIES, INCOME_BANDS } from "@/lib/options";
 import { STATES } from "@/lib/states";
 import { STEP_PATHS, forgetFamily, saveFamily, useStoredFamily } from "@/lib/storage";
 
+// The form is a child that exists only while there is no saved family, so what was typed for one
+// family is gone when the next one starts. Without this the previous family's district, area and
+// income came back in the new form (tests/e2e/shared-phone.spec.ts fails without it).
 export default function BasicsPage() {
+  const t = useTranslations("basics");
+  const tc = useTranslations("common");
+  const router = useRouter();
+  const { ready, family: existing } = useStoredFamily();
+
+  if (!ready) return <p>{tc("loading")}</p>;
+
+  // Starting again would replace the saved code on this phone, so ask first.
+  if (existing) {
+    return (
+      <SetupFrame step={1}>
+        <h1 className="text-2xl font-bold">{t("existingTitle")}</h1>
+        <div className="flex flex-col gap-3">
+          <Button onClick={() => router.push(STEP_PATHS[existing.step])}>{t("existingContinue")}</Button>
+          <Button variant="secondary" onClick={forgetFamily}>
+            {t("existingNew")}
+          </Button>
+          <p className="text-base text-zinc-600 dark:text-zinc-400">{t("existingNewNote")}</p>
+        </div>
+      </SetupFrame>
+    );
+  }
+
+  return <BasicsForm />;
+}
+
+function BasicsForm() {
   const t = useTranslations("basics");
   const to = useTranslations("options");
   const tc = useTranslations("common");
   const te = useTranslations("errors");
   const locale = useLocale();
   const router = useRouter();
-  const { ready, family: existing } = useStoredFamily();
 
   // Most families live in Uttar Pradesh (the state this version covers), so start there.
   const [state, setState] = useState<string | null>("UP");
@@ -49,24 +78,6 @@ export default function BasicsPage() {
       setProblem(errorKind(error));
       setSaving(false);
     }
-  }
-
-  if (!ready) return <p>{tc("loading")}</p>;
-
-  // Starting again would replace the saved code on this phone, so ask first.
-  if (existing) {
-    return (
-      <SetupFrame step={1}>
-        <h1 className="text-2xl font-bold">{t("existingTitle")}</h1>
-        <div className="flex flex-col gap-3">
-          <Button onClick={() => router.push(STEP_PATHS[existing.step])}>{t("existingContinue")}</Button>
-          <Button variant="secondary" onClick={forgetFamily}>
-            {t("existingNew")}
-          </Button>
-          <p className="text-base text-zinc-600 dark:text-zinc-400">{t("existingNewNote")}</p>
-        </div>
-      </SetupFrame>
-    );
   }
 
   return (

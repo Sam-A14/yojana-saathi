@@ -20,10 +20,13 @@ test("a saved family code opens the family", async ({ page, api }) => {
   await page.getByLabel("Family code").fill(`  ${family.code}\n`);
   await page.getByRole("button", { name: "Open my family" }).click();
 
-  await expect(page.getByRole("heading", { name: "Your family is set up" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your family’s schemes" })).toBeVisible();
   const stored = JSON.parse((await page.evaluate((k) => localStorage.getItem(k), STORAGE_KEY))!);
   expect(stored.code).toBe(family.code);
-  expect(api.requests.at(-1)?.authorization).toBe(`Bearer ${family.token}`);
+  // Every call about the household carried the token as a Bearer header.
+  const calls = api.requests.filter((r) => r.path.startsWith("/households/"));
+  expect(calls.length).toBeGreaterThan(0);
+  for (const call of calls) expect(call.authorization).toBe(`Bearer ${family.token}`);
 });
 
 test("the whole downloaded file can be pasted", async ({ page, api }) => {
@@ -33,7 +36,7 @@ test("the whole downloaded file can be pasted", async ({ page, api }) => {
   await page.getByLabel("Family code").fill(`Yojana Saathi family code\n\n${family.code}\n\nKeep this file safe.\n`);
   await page.getByRole("button", { name: "Open my family" }).click();
 
-  await expect(page.getByRole("heading", { name: "Your family is set up" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your family’s schemes" })).toBeVisible();
 });
 
 test("a text that is not a code, and a code that does not open anything, say so plainly", async ({ page, api }) => {

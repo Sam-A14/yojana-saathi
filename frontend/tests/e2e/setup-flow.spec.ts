@@ -88,7 +88,11 @@ test("a family goes from the home page to a finished setup", async ({ page, cont
   await ramesh.getByRole("group", { name: /government pension/ }).getByLabel("Yes, less than ₹10,000 a month").check();
   await page.getByRole("button", { name: "Finish setup" }).click();
 
-  await expect(page.getByRole("heading", { name: "Your family is set up" })).toBeVisible();
+  // The dashboard: the setup answers lead straight to results, one card per person.
+  await expect(page.getByRole("heading", { name: "Your family’s schemes" })).toBeVisible();
+  for (const name of ["Asha", "Ramesh", "Gudiya"]) {
+    await expect(page.getByRole("region", { name, exact: true })).toBeVisible();
+  }
   expect(JSON.parse((await page.evaluate((k) => localStorage.getItem(k), STORAGE_KEY))!).step).toBe("done");
 
   // What the API was told.

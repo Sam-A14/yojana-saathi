@@ -1,5 +1,6 @@
 import type {
   DocumentInfo,
+  Eligibility,
   Family,
   Household,
   HouseholdCreated,
@@ -59,6 +60,12 @@ export const api = {
   createHousehold: (data: HouseholdFields) =>
     request<HouseholdCreated>("/households", { method: "POST", body: data }),
   getHousehold: (family: Family) => request<Household>(household(family), { token: family.token }),
+
+  getEligibility: (family: Family) =>
+    request<Eligibility>(`${household(family)}/eligibility`, { token: family.token }),
+  // Delete my data: the database removes the members, documents and results with it.
+  deleteHousehold: (family: Family) =>
+    request<void>(household(family), { method: "DELETE", token: family.token }),
 
   listMembers: (family: Family) =>
     request<Member[]>(`${household(family)}/members`, { token: family.token }),

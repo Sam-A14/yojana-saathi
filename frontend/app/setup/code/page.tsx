@@ -7,6 +7,7 @@ import { SetupFrame } from "@/components/SetupFrame";
 import { Button } from "@/components/ui";
 import { makeFamilyCode } from "@/lib/family-code";
 import { advanceTo } from "@/lib/storage";
+import type { Family } from "@/lib/types";
 import { useSetupFamily } from "@/lib/use-setup-family";
 
 function downloadTextFile(name: string, text: string) {
@@ -20,15 +21,22 @@ function downloadTextFile(name: string, text: string) {
   URL.revokeObjectURL(url);
 }
 
+// Keyed by the family: the "I have saved my code" tick belongs to one family's code, and a new family
+// must not inherit it (tests/e2e/shared-phone.spec.ts fails without this).
 export default function CodePage() {
+  const family = useSetupFamily();
+  const tc = useTranslations("common");
+  if (!family) return <p>{tc("loading")}</p>;
+  return <CodeScreen key={family.id} family={family} />;
+}
+
+function CodeScreen({ family }: { family: Family }) {
   const t = useTranslations("code");
   const tc = useTranslations("common");
   const router = useRouter();
-  const family = useSetupFamily();
   const [copy, setCopy] = useState<"idle" | "done" | "failed">("idle");
   const [saved, setSaved] = useState(false);
 
-  if (!family) return <p>{tc("loading")}</p>;
   const code = makeFamilyCode(family);
 
   async function copyCode() {

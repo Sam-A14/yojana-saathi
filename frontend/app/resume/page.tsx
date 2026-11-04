@@ -38,6 +38,10 @@ export default function ResumePage() {
     }
     // Opened from a code means setup was done before; the dashboard shows what is there.
     saveFamily(makeFamilyCode(family), "done");
+    // This page is kept (hidden) by Next.js. On a shared phone the next person must not find the
+    // code in the box.
+    setText("");
+    setChecking(false);
     router.push("/dashboard");
   }
 

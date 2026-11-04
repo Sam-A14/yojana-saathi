@@ -1,5 +1,6 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import type { Page, Route } from "@playwright/test";
+import eligibility from "../fixtures/eligibility.json";
 
 // A tiny stand-in for the real API, kept in the test's memory. It answers the same URLs with the
 // same shapes (backend/app/api/), including the 403 for a missing or wrong token, so the
@@ -10,6 +11,9 @@ export const API = "http://localhost:8000";
 export const DOCUMENTS = [
   { code: "aadhaar_card", name_en: "Aadhaar card", name_hi: "आधार कार्ड", household_level: false },
   { code: "land_record", name_en: "Land record (Khatauni / Khasra)", name_hi: "भूमि का रिकॉर्ड (खतौनी / खसरा)", household_level: false },
+  { code: "income_certificate", name_en: "Income certificate", name_hi: "आय प्रमाण पत्र", household_level: false },
+  { code: "spouse_death_certificate", name_en: "Death certificate of husband", name_hi: "पति का मृत्यु प्रमाण पत्र", household_level: false },
+  { code: "bank_account_aadhaar_linked", name_en: "Bank account linked to Aadhaar", name_hi: "आधार से जुड़ा बैंक खाता", household_level: false },
   { code: "ration_card", name_en: "Ration card", name_hi: "राशन कार्ड", household_level: true },
   { code: "bpl_card", name_en: "BPL (below poverty line) card", name_hi: "बीपीएल (गरीबी रेखा से नीचे) कार्ड", household_level: true },
 ];
@@ -27,8 +31,25 @@ const UNANSWERED_FACTS = Object.fromEntries(
 type StoredMember = Json & { id: string; documents: Record<string, boolean> };
 type StoredHousehold = { fields: Json; token: string; members: StoredMember[] };
 
+// The answer the real engine gave for a sample family (generated from the backend with the seeded
+// schemes plus two example ones). Each person in the household gets the results of the sample
+// person with the same nickname, or of one in the same position.
+function eligibilityFor(householdId: string, household: StoredHousehold) {
+  const members = household.members.map((member, index) => {
+    const sample =
+      eligibility.members.find((m) => m.nickname === member.nickname) ??
+      eligibility.members[index % eligibility.members.length];
+    return { ...sample, member_id: member.id, nickname: member.nickname };
+  });
+  return { ...eligibility, household_id: householdId, members };
+}
+
 export class FakeApi {
   households = new Map<string, StoredHousehold>();
+  /** While true, every request fails as if the phone had no internet. */
+  offline = false;
+  /** Milliseconds the eligibility answer is held back (a slow server waking up). */
+  eligibilityDelay = 0;
   /** Every request the page made, so a test can check what was sent. */
   requests: { method: string; path: string; authorization: string | null; body: unknown }[] = [];
 
@@ -44,15 +65,17 @@ export class FakeApi {
     return { id, token, code: `${id}.${token}` };
   }
 
-  /** Give an existing household `count` members, as if they were added earlier. */
-  seedMembers(householdId: string, count: number) {
+  /** Give an existing household members, as if they were added earlier: a number of anonymous
+   * people, or a list of names. */
+  seedMembers(householdId: string, who: number | string[]) {
     const household = this.households.get(householdId);
-    for (let i = 1; i <= count; i++) {
+    const names = typeof who === "number" ? Array.from({ length: who }, (_, i) => `Person ${i + 1}`) : who;
+    for (const name of names) {
       household?.members.push({
         id: randomUUID(),
         household_id: householdId,
         ...UNANSWERED_FACTS,
-        nickname: `Person ${i}`,
+        nickname: name,
         relation: "other",
         documents: {},
       });
@@ -69,6 +92,7 @@ export class FakeApi {
 
   private async handle(route: Route) {
     const request = route.request();
+    if (this.offline) return route.abort("internetdisconnected");
     const headers = this.cors(request.headers()["origin"]);
     if (request.method() === "OPTIONS") return route.fulfill({ status: 204, headers });
 
@@ -92,7 +116,7 @@ export class FakeApi {
       return reply(201, { id, ...body, access_token: token, token_notice: "Save this token." });
     }
 
-    const match = /^\/households\/([^/]+)(?:\/members(?:\/([^/]+))?(\/documents)?)?$/.exec(path);
+    const match = /^\/households\/([^/]+)(?:\/members(?:\/([^/]+))?(\/documents)?|\/eligibility)?$/.exec(path);
     const household = match ? this.households.get(match[1]) : undefined;
     // Same answer for "no such household" and "wrong token", like the real API.
     if (!match || !household || authorization !== `Bearer ${household.token}`) {
@@ -101,6 +125,14 @@ export class FakeApi {
     const [, id, memberId, documents] = match;
     const isMembers = path.includes("/members");
 
+    if (path.endsWith("/eligibility")) {
+      if (this.eligibilityDelay) await new Promise((done) => setTimeout(done, this.eligibilityDelay));
+      return reply(200, eligibilityFor(id, household));
+    }
+    if (!isMembers && request.method() === "DELETE") {
+      this.households.delete(id);
+      return reply(204);
+    }
     if (!isMembers) return reply(200, { id, ...household.fields });
     if (!memberId) {
       if (request.method() === "GET") return reply(200, household.members);

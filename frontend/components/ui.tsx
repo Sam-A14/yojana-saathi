@@ -15,6 +15,10 @@ const buttonLook = {
 };
 type Look = keyof typeof buttonLook;
 
+/** The look of a button, for places that need a real link (an official website opens in a new tab). */
+export const buttonClass = (variant: Look = "primary", extra = "") =>
+  `${buttonBase} ${buttonLook[variant]} ${extra}`;
+
 export function Button({
   variant = "primary",
   className = "",
