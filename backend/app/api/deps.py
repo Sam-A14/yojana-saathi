@@ -5,7 +5,8 @@ from collections.abc import Iterator
 from datetime import date, datetime
 from typing import Annotated
 
-from fastapi import Depends, Header, HTTPException
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.api.facts import INDIA
@@ -38,26 +39,28 @@ def _denied() -> HTTPException:
 _NO_HASH = hash_token("no such household")
 
 
-def _bearer_token(authorization: str | None) -> str | None:
-    if not authorization:
-        return None
-    scheme, _, token = authorization.partition(" ")
-    if scheme.lower() != "bearer" or not token.strip():
-        return None
-    return token.strip()
+# HTTPBearer (rather than a plain "Authorization" header parameter) is what makes /docs show an
+# Authorize button: Swagger UI ignores header parameters named Authorization, but it does understand
+# a declared security scheme. auto_error=False because the built-in error would be a different
+# status and message from ours (see _denied), and would tell a stranger which part was wrong.
+bearer_scheme = HTTPBearer(
+    auto_error=False,
+    description="The family's access token, as returned once by POST /households.",
+)
 
 
 def current_household(
     household_id: uuid.UUID,
     db: DbSession,
-    authorization: Annotated[str | None, Header(description="Bearer <access token>")] = None,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
 ) -> Household:
     """The household in the URL, but only if the caller's token belongs to it (else 403)."""
-    token = _bearer_token(authorization)
+    # HTTPBearer already returns None for a missing header, a non-Bearer scheme or an empty token.
+    token = credentials.credentials.strip() if credentials else ""
     household = db.get(Household, household_id)
     stored = (household.access_token_hash if household else None) or _NO_HASH
     given = hash_token(token) if token else ""
-    if household is None or token is None or not hashes_match(stored, given):
+    if household is None or not token or not hashes_match(stored, given):
         raise _denied()
     return household
 
