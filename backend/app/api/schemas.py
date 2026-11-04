@@ -178,6 +178,14 @@ class SchemeSummary(BaseModel):
     verified_at: datetime | None
 
 
+class DocumentSummary(BaseModel):
+    code: str
+    name_en: str
+    name_hi: str
+    # One answer for the whole family (ration card, BPL card, family register): ask only once.
+    household_level: bool
+
+
 class SchemeDocumentOut(BaseModel):
     code: str
     name_en: str

@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api import eligibility, households, schemes
+from app.api import documents, eligibility, households, schemes
 from app.config import Settings, get_settings
 
 settings = get_settings()
@@ -34,6 +34,7 @@ add_cors(app, settings)
 app.include_router(households.router)
 app.include_router(eligibility.router)
 app.include_router(schemes.router)
+app.include_router(documents.router)
 
 
 @app.exception_handler(Exception)
