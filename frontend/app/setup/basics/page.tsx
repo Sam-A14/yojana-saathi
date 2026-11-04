@@ -1,55 +1,24 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useState } from "react";
+import { useState } from "react";
 import { SetupFrame } from "@/components/SetupFrame";
-import { Button, ChoiceGroup, ErrorNote, SelectField, TextField } from "@/components/ui";
+import { HouseholdForm } from "@/components/HouseholdForm";
+import { Button } from "@/components/ui";
 import { api, errorKind } from "@/lib/api";
 import { makeFamilyCode } from "@/lib/family-code";
-import { AREA_TYPES, CATEGORIES, INCOME_BANDS } from "@/lib/options";
-import { STATES } from "@/lib/states";
 import { STEP_PATHS, forgetFamily, saveFamily, useStoredFamily } from "@/lib/storage";
+import type { HouseholdFields } from "@/lib/types";
 
+// The form is a child that exists only while there is no saved family, so what was typed for one
+// family is gone when the next one starts. Without this the previous family's district, area and
+// income came back in the new form (tests/e2e/shared-phone.spec.ts fails without it).
 export default function BasicsPage() {
   const t = useTranslations("basics");
-  const to = useTranslations("options");
   const tc = useTranslations("common");
-  const te = useTranslations("errors");
-  const locale = useLocale();
   const router = useRouter();
   const { ready, family: existing } = useStoredFamily();
-
-  // Most families live in Uttar Pradesh (the state this version covers), so start there.
-  const [state, setState] = useState<string | null>("UP");
-  const [district, setDistrict] = useState("");
-  const [area, setArea] = useState<string | null>(null);
-  const [income, setIncome] = useState<string | null>(null);
-  const [category, setCategory] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [problem, setProblem] = useState<"network" | "denied" | "limit" | "generic" | null>(null);
-
-  async function create(event: FormEvent) {
-    event.preventDefault();
-    setSaving(true);
-    setProblem(null);
-    try {
-      const created = await api.createHousehold({
-        state,
-        district: district.trim() || null,
-        area_type: area,
-        income_band: income,
-        category,
-      });
-      // The token is returned only now and never again, so it is saved before anything else.
-      const code = makeFamilyCode({ id: created.id, token: created.access_token });
-      saveFamily(code, "code");
-      router.push("/setup/code");
-    } catch (error) {
-      setProblem(errorKind(error));
-      setSaving(false);
-    }
-  }
 
   if (!ready) return <p>{tc("loading")}</p>;
 
@@ -69,47 +38,47 @@ export default function BasicsPage() {
     );
   }
 
+  return <BasicsForm />;
+}
+
+function BasicsForm() {
+  const t = useTranslations("basics");
+  const tc = useTranslations("common");
+  const te = useTranslations("errors");
+  const router = useRouter();
+  const [saving, setSaving] = useState(false);
+  const [problem, setProblem] = useState<"network" | "denied" | "limit" | "generic" | null>(null);
+
+  async function create(data: HouseholdFields) {
+    setSaving(true);
+    setProblem(null);
+    try {
+      const created = await api.createHousehold(data);
+      // The token is returned only now and never again, so it is saved before anything else.
+      const code = makeFamilyCode({ id: created.id, token: created.access_token });
+      saveFamily(code, "code");
+      router.push("/setup/code");
+    } catch (error) {
+      setProblem(errorKind(error));
+      setSaving(false);
+    }
+  }
+
   return (
     <SetupFrame step={1}>
-      <form onSubmit={create} className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
         <p>{t("intro")}</p>
-        <SelectField
-          label={t("state")}
-          value={state}
-          onChange={setState}
-          options={STATES.map((s) => ({ value: s.code, label: locale === "hi" ? s.hi : s.en }))}
-          emptyLabel={tc("choose")}
+        <HouseholdForm
+          // Most families live in Uttar Pradesh (the state this version covers), so start there.
+          initial={{ state: "UP", district: "", area: null, income: null, category: null }}
+          submitLabel={tc("next")}
+          savingLabel={t("saving")}
+          saving={saving}
+          problem={problem && te(problem)}
+          onSubmit={create}
         />
-        <TextField label={t("district")} value={district} onChange={setDistrict} maxLength={60} />
-        <ChoiceGroup
-          legend={t("area")}
-          options={AREA_TYPES.map((v) => ({ value: v, label: to(`area.${v}`) }))}
-          value={area}
-          onChange={setArea}
-          notSureLabel={tc("notSure")}
-        />
-        <SelectField
-          label={t("income")}
-          hint={t("incomeHint")}
-          value={income}
-          onChange={setIncome}
-          options={INCOME_BANDS.map((v) => ({ value: v, label: to(`income.${v}`) }))}
-          emptyLabel={tc("notSure")}
-        />
-        <SelectField
-          label={t("category")}
-          hint={t("categoryHint")}
-          value={category}
-          onChange={setCategory}
-          options={CATEGORIES.map((v) => ({ value: v, label: to(`category.${v}`) }))}
-          emptyLabel={t("categoryNone")}
-        />
-        {problem && <ErrorNote>{te(problem)}</ErrorNote>}
-        <Button type="submit" disabled={saving}>
-          {saving ? t("saving") : tc("next")}
-        </Button>
-      </form>
+      </div>
     </SetupFrame>
   );
 }

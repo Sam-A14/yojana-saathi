@@ -1,0 +1,356 @@
+{
+  "household_id": "ea05e6cf-1c04-492a-9001-fa7c33cdac89",
+  "computed_on": "2026-11-03",
+  "members": [
+    {
+      "member_id": "c34c1375-f192-4420-8902-31b1e71224f9",
+      "nickname": "Asha",
+      "schemes": [
+        {
+          "scheme": {
+            "slug": "example-local-scheme",
+            "name_en": "Example Local Scheme",
+            "name_hi": "उदाहरण स्थानीय योजना",
+            "level": "state",
+            "state": "UP",
+            "category": "test",
+            "official_url": "https://example.gov.in/local",
+            "benefit_text_en": "Example benefit text.",
+            "benefit_text_hi": "उदाहरण लाभ।",
+            "deadline_start": null,
+            "deadline_end": null,
+            "verified": true,
+            "verified_at": "2026-09-15T10:00:00Z"
+          },
+          "status": "unknown",
+          "reasons": [],
+          "passed_rules": [],
+          "failed_rules": [],
+          "unknown_rules": [
+            {
+              "rule": {
+                "op": "eq",
+                "field": "state",
+                "value": "UP"
+              },
+              "fields": [
+                "state"
+              ],
+              "matched_members": [],
+              "fixable": false,
+              "reasons": []
+            },
+            {
+              "rule": {
+                "op": "eq",
+                "field": "area_type",
+                "value": "rural"
+              },
+              "fields": [
+                "area_type"
+              ],
+              "matched_members": [],
+              "fixable": false,
+              "reasons": []
+            },
+            {
+              "rule": {
+                "op": "lte",
+                "field": "income_band_max",
+                "value": 150000
+              },
+              "fields": [
+                "income_band_max"
+              ],
+              "matched_members": [],
+              "fixable": false,
+              "reasons": []
+            }
+          ],
+          "excluded_by": [],
+          "missing_documents": []
+        },
+        {
+          "scheme": {
+            "slug": "ignwps",
+            "name_en": "Indira Gandhi National Widow Pension Scheme (IGNWPS)",
+            "name_hi": "इंदिरा गांधी राष्ट्रीय विधवा पेंशन योजना",
+            "level": "central",
+            "state": null,
+            "category": "widow_pension",
+            "official_url": "https://nsap.nic.in/",
+            "benefit_text_en": "Example, verify before use: a monthly pension from the Centre for widows from age 40 in below-poverty-line families, about Rs 300 a month, higher from age 80. States may add to it.",
+            "benefit_text_hi": "उदाहरण, उपयोग से पहले जाँचें: 40 साल या उससे अधिक उम्र की गरीबी रेखा से नीचे की विधवाओं को केंद्र से मासिक पेंशन, लगभग 300 रुपये प्रति माह, 80 साल के बाद अधिक। राज्य इसमें और जोड़ सकते हैं।",
+            "deadline_start": null,
+            "deadline_end": null,
+            "verified": false,
+            "verified_at": null
+          },
+          "status": "unknown",
+          "reasons": [
+            "depends_on_exact_age"
+          ],
+          "passed_rules": [
+            {
+              "rule": {
+                "op": "eq",
+                "field": "gender",
+                "value": "female"
+              },
+              "fields": [
+                "gender"
+              ],
+              "matched_members": [],
+              "fixable": false,
+              "reasons": []
+            }
+          ],
+          "failed_rules": [],
+          "unknown_rules": [
+            {
+              "rule": {
+                "op": "eq",
+                "field": "marital_status",
+                "value": "widow"
+              },
+              "fields": [
+                "marital_status"
+              ],
+              "matched_members": [],
+              "fixable": false,
+              "reasons": []
+            },
+            {
+              "rule": {
+                "op": "gte",
+                "field": "age",
+                "value": 40
+              },
+              "fields": [
+                "age"
+              ],
+              "matched_members": [],
+              "fixable": false,
+              "reasons": [
+                "depends_on_exact_age"
+              ]
+            },
+            {
+              "rule": {
+                "op": "is_true",
+                "field": "has_bpl_card"
+              },
+              "fields": [
+                "has_bpl_card"
+              ],
+              "matched_members": [],
+              "fixable": false,
+              "reasons": []
+            }
+          ],
+          "excluded_by": [],
+          "missing_documents": [
+            {
+              "code": "aadhaar_card",
+              "name_en": "Aadhaar card",
+              "name_hi": "आधार कार्ड",
+              "how_to_get_en": null,
+              "how_to_get_hi": null,
+              "official_link": null,
+              "state": "not_answered"
+            },
+            {
+              "code": "bank_account_aadhaar_linked",
+              "name_en": "Bank account linked to Aadhaar",
+              "name_hi": "आधार से जुड़ा बैंक खाता",
+              "how_to_get_en": null,
+              "how_to_get_hi": null,
+              "official_link": null,
+              "state": "not_answered"
+            },
+            {
+              "code": "bpl_card",
+              "name_en": "BPL (below poverty line) card",
+              "name_hi": "बीपीएल (गरीबी रेखा से नीचे) कार्ड",
+              "how_to_get_en": null,
+              "how_to_get_hi": null,
+              "official_link": null,
+              "state": "not_answered"
+            },
+            {
+              "code": "spouse_death_certificate",
+              "name_en": "Death certificate of husband",
+              "name_hi": "पति का मृत्यु प्रमाण पत्र",
+              "how_to_get_en": null,
+              "how_to_get_hi": null,
+              "official_link": null,
+              "state": "not_answered"
+            }
+          ]
+        },
+        {
+          "scheme": {
+            "slug": "pm-kisan",
+            "name_en": "PM-KISAN (Pradhan Mantri Kisan Samman Nidhi)",
+            "name_hi": "प्रधानमंत्री किसान सम्मान निधि (पीएम-किसान)",
+            "level": "central",
+            "state": null,
+            "category": "farmer",
+            "official_url": "https://pmkisan.gov.in/",
+            "benefit_text_en": "Example, verify before use: income support of Rs 6,000 a year for farmer families that own cultivable land, paid in three instalments of Rs 2,000 straight into the bank account. Families with an excluded member (for example an income tax payer or a government employee other than Group D) do not qualify.",
+            "benefit_text_hi": "उदाहरण, उपयोग से पहले जाँचें: खेती योग्य भूमि वाले किसान परिवारों को साल में 6,000 रुपये की सहायता, 2,000 रुपये की तीन किस्तों में सीधे बैंक खाते में। जिस परिवार में कोई बाहर रखा गया सदस्य है (जैसे आयकर देने वाला या ग्रुप डी के अलावा सरकारी कर्मचारी) उसे लाभ नहीं मिलता।",
+            "deadline_start": null,
+            "deadline_end": null,
+            "verified": false,
+            "verified_at": null
+          },
+          "status": "unknown",
+          "reasons": [],
+          "passed_rules": [],
+          "failed_rules": [],
+          "unknown_rules": [
+            {
+              "rule": {
+                "any_member": {
+                  "op": "is_true",
+                  "field": "owns_cultivable_land"
+                }
+              },
+              "fields": [
+                "owns_cultivable_land"
+              ],
+              "matched_members": [],
+              "fixable": false,
+              "reasons": []
+            },
+            {
+              "rule": {
+                "not": {
+                  "any_member": {
+                    "op": "is_true",
+                    "field": "holds_constitutional_post"
+                  }
+                }
+              },
+              "fields": [
+                "holds_constitutional_post"
+              ],
+              "matched_members": [],
+              "fixable": false,
+              "reasons": []
+            },
+            {
+              "rule": {
+                "not": {
+                  "any_member": {
+                    "op": "eq",
+                    "field": "govt_employee",
+                    "value": "other"
+                  }
+                }
+              },
+              "fields": [
+                "govt_employee"
+              ],
+              "matched_members": [],
+              "fixable": false,
+              "reasons": []
+            },
+            {
+              "rule": {
+                "not": {
+                  "any_member": {
+                    "all": [
+                      {
+                        "op": "eq",
+                        "field": "pension_band",
+                        "value": "10k_plus"
+                      },
+                      {
+                        "op": "neq",
+                        "field": "govt_employee",
+                        "value": "group_d"
+                      }
+                    ]
+                  }
+                }
+              },
+              "fields": [
+                "pension_band",
+                "govt_employee"
+              ],
+              "matched_members": [],
+              "fixable": false,
+              "reasons": []
+            },
+            {
+              "rule": {
+                "not": {
+                  "any_member": {
+                    "op": "is_true",
+                    "field": "paid_income_tax_last_year"
+                  }
+                }
+              },
+              "fields": [
+                "paid_income_tax_last_year"
+              ],
+              "matched_members": [],
+              "fixable": false,
+              "reasons": []
+            },
+            {
+              "rule": {
+                "not": {
+                  "any_member": {
+                    "op": "is_true",
+                    "field": "is_registered_professional"
+                  }
+                }
+              },
+              "fields": [
+                "is_registered_professional"
+              ],
+              "matched_members": [],
+              "fixable": false,
+              "reasons": []
+            }
+          ],
+          "excluded_by": [],
+          "missing_documents": [
+            {
+              "code": "aadhaar_card",
+              "name_en": "Aadhaar card",
+              "name_hi": "आधार कार्ड",
+              "how_to_get_en": null,
+              "how_to_get_hi": null,
+              "official_link": null,
+              "state": "not_answered"
+            },
+            {
+              "code": "bank_account_aadhaar_linked",
+              "name_en": "Bank account linked to Aadhaar",
+              "name_hi": "आधार से जुड़ा बैंक खाता",
+              "how_to_get_en": null,
+              "how_to_get_hi": null,
+              "official_link": null,
+              "state": "not_answered"
+            },
+            {
+              "code": "land_record",
+              "name_en": "Land record (Khatauni / Khasra)",
+              "name_hi": "भूमि का रिकॉर्ड (खतौनी / खसरा)",
+              "how_to_get_en": null,
+              "how_to_get_hi": null,
+              "official_link": null,
+              "state": "not_answered"
+            }
+          ]
+        }
+      ],
+      "excluded": [],
+      "not_eligible_count": 0
+    }
+  ],
+  "skipped_schemes": []
+}
