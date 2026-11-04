@@ -5,21 +5,31 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api import eligibility, households, schemes
-from app.config import get_settings
+from app.config import Settings, get_settings
 
 settings = get_settings()
 logger = logging.getLogger("yojana")
 
 app = FastAPI(title="Yojana Saathi API", version=settings.app_version)
 
-# Only our own frontend may call the API from a browser. The token travels in the Authorization
-# header, which is listed by name because a "*" wildcard does not cover it in browsers.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[settings.frontend_url],
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allow_headers=["Authorization", "Content-Type"],
-)
+
+def add_cors(application: FastAPI, config: Settings) -> None:
+    """Only our own frontend may call the API from a browser: production, plus (when configured)
+    this project's Vercel previews, so a pull request's preview site can reach the API.
+
+    The token travels in the Authorization header, which is listed by name because a "*" wildcard
+    does not cover it in browsers.
+    """
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=[config.frontend_url],
+        allow_origin_regex=config.frontend_preview_regex,
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+        allow_headers=["Authorization", "Content-Type"],
+    )
+
+
+add_cors(app, settings)
 
 app.include_router(households.router)
 app.include_router(eligibility.router)
