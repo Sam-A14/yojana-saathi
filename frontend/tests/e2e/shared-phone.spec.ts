@@ -49,6 +49,9 @@ test("a pasted family code is not left in the box for the next person", async ({
 
   await page.getByRole("button", { name: "Forget this device" }).click();
   await page.getByRole("button", { name: "Yes, forget this phone" }).click();
+  // The dashboard shows a similar "Resume" link for a moment before the home page replaces it.
+  // On a slow machine, clicking it too early finds it hidden and waits until the test times out.
+  await expect(page).toHaveURL(/\/$/);
   await page.getByRole("link", { name: "Resume with family code" }).click();
 
   await expect(page.getByLabel("Family code")).toHaveValue("");
