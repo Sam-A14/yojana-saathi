@@ -8,6 +8,7 @@ import { describeRule, toTranslate } from "../../lib/rule-text";
 import { neededAnswers, parseRule } from "../../lib/rules";
 import type { Eligibility } from "../../lib/types";
 import eligibility from "../fixtures/eligibility.json";
+import eligibility_missing_home from "../fixtures/eligibility-missing-home.json";
 
 const DOCUMENTS: Record<string, string> = {
   bpl_card: "BPL (below poverty line) card",
@@ -151,10 +152,22 @@ test.describe("what a family can answer to settle an unknown result", () => {
     ]);
   });
 
-  test("the same fact is never asked twice, and home facts have no screen yet", () => {
+  test("the same fact is never asked twice, and facts about the home are changed on the household screen", () => {
     const rule = { field: "income_band_max", op: "lte", value: 1 };
     const unknown = { rule, fields: ["income_band_max"], matched_members: [], fixable: false, reasons: [] };
     const needs = neededAnswers({ reasons: [], unknown_rules: [unknown, unknown] });
-    expect(needs.needs).toEqual([{ field: "income_band_max", familyWide: false, link: null }]);
+    expect(needs.needs).toEqual([{ field: "income_band_max", familyWide: false, link: "/household/edit" }]);
+  });
+
+  test("state, area and income are each asked, and each leads to the household screen", () => {
+    const answers = neededAnswers(
+      (eligibility_missing_home as unknown as Eligibility).members[0].schemes.find((s) => s.scheme.slug === "example-local-scheme")!,
+    );
+    expect(answers.needs.map((n) => [n.field, n.link])).toEqual([
+      ["state", "/household/edit"],
+      ["area_type", "/household/edit"],
+      ["income_band_max", "/household/edit"],
+    ]);
+    expect(answers.reasons).toEqual([]);
   });
 });

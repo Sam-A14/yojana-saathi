@@ -58,7 +58,8 @@ export function isFamilyWide(condition: Condition): boolean {
 
 // --- what a family could answer to settle an "unknown" ------------------------------------------
 
-// Where in the setup wizard an answer can be changed. Facts about the home have no screen yet.
+// Where an answer can be changed: the setup screens for people and papers, and the household
+// details screen for facts about the home.
 const EXCLUSION_FIELDS = [
   "paid_income_tax_last_year",
   "govt_employee",
@@ -71,13 +72,13 @@ const HOME_FIELDS = ["state", "district", "area_type", "income_band_max", "categ
 export type Need = {
   field: string; // "age", "gender", "has_bpl_card", ...
   familyWide: boolean; // ask about every person, not just this one
-  link: string | null; // the setup screen where it can be answered
+  link: string | null; // the screen where it can be answered
 };
 
 function setupScreenFor(field: string): string | null {
   if (field.startsWith("has_")) return "/setup/documents";
   if (EXCLUSION_FIELDS.includes(field)) return "/setup/exclusions";
-  if (HOME_FIELDS.includes(field)) return null;
+  if (HOME_FIELDS.includes(field)) return "/household/edit";
   return "/setup/members";
 }
 

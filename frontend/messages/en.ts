@@ -161,6 +161,7 @@ export const en = {
     none: "We could not find a saved family on this phone.",
     toStart: "Back to start",
     toResume: "Resume with family code",
+    editHousehold: "Edit household details",
     retry: "Try again",
     skipped:
       "{count, plural, one {# scheme} other {# schemes}} could not be checked and left out. We are fixing this.",
@@ -184,10 +185,18 @@ export const en = {
     unverified: "Not yet verified",
     verifiedOn: "Last checked on {date}",
   },
+  household: {
+    title: "Household details",
+    intro:
+      "Change any answer about your home. This can change which schemes may fit, so we check again when you save.",
+    save: "Save changes",
+    saving: "Saving…",
+    loading: "Loading your household details…",
+    cancel: "Back without saving",
+  },
   needs: {
     title: "To be sure, we need to know:",
     answer: "Answer this",
-    aboutHome: "(about your home)",
     reasonAge:
       "This depends on the exact age. We only know the year of birth, so we cannot be sure yet.",
     reasonIncome:

@@ -48,12 +48,10 @@ export function NeededAnswers({
             {needed.needs.map((need) => (
               <li key={need.field} className="flex flex-col gap-1">
                 <span>{question(need.field, need.familyWide)}</span>
-                {need.link ? (
+                {need.link && (
                   <Link href={need.link} className="min-h-12 self-start py-3 font-semibold underline">
                     {t("answer")}
                   </Link>
-                ) : (
-                  <span className="text-sm text-zinc-600 dark:text-zinc-400">{t("aboutHome")}</span>
                 )}
               </li>
             ))}

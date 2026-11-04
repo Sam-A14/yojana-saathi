@@ -93,3 +93,35 @@ test("results are asked for again after the family answers a question", async ({
   await expect(page).toHaveURL(/\/dashboard$/);
   await expect.poll(asked).toBeGreaterThanOrEqual(2);
 });
+
+test("the edit screen never shows another family's answers", async ({ page, api }) => {
+  const first = api.seedHousehold({ state: "UP", district: "Secret-District-A" });
+  api.seedMembers(first.id, ["Asha"]);
+  const second = api.seedHousehold({ state: "UP", district: "District-B" });
+  api.seedMembers(second.id, ["Meena"]);
+  await page.addInitScript(
+    ([key, code]) => {
+      if (!sessionStorage.getItem("seeded")) {
+        sessionStorage.setItem("seeded", "1");
+        localStorage.setItem(key, JSON.stringify({ code, step: "done" }));
+      }
+    },
+    [STORAGE_KEY, first.code],
+  );
+  await page.goto("/dashboard");
+  await page.getByRole("link", { name: "Edit household details" }).click();
+  await expect(page.getByLabel("District (optional)")).toHaveValue("Secret-District-A");
+  await page.getByLabel("District (optional)").fill("typed-but-never-saved");
+  await page.getByRole("link", { name: "Back without saving" }).click();
+
+  await page.getByRole("button", { name: "Forget this device" }).click();
+  await page.getByRole("button", { name: "Yes, forget this phone" }).click();
+  await expect(page).toHaveURL(/\/$/); // the dashboard shows a similar link for a moment
+  await page.getByRole("link", { name: "Resume with family code" }).click();
+  await page.getByLabel("Family code").fill(second.code);
+  await page.getByRole("button", { name: "Open my family" }).click();
+  await page.getByRole("link", { name: "Edit household details" }).click();
+
+  await expect(page.getByLabel("District (optional)")).toHaveValue("District-B");
+  await expect(page.getByText("Secret-District-A")).toHaveCount(0);
+});

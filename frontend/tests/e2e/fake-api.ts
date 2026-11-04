@@ -1,6 +1,10 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import type { Page, Route } from "@playwright/test";
 import eligibility from "../fixtures/eligibility.json";
+import missingHome from "../fixtures/eligibility-missing-home.json";
+
+// A sample family that has not told us its state, area or income (real engine output).
+export const MISSING_HOME = missingHome;
 
 // A tiny stand-in for the real API, kept in the test's memory. It answers the same URLs with the
 // same shapes (backend/app/api/), including the 403 for a missing or wrong token, so the
@@ -20,6 +24,11 @@ export const DOCUMENTS = [
 
 type Json = Record<string, unknown>;
 
+// The real API always sends all five answers about a home, null when never answered.
+const HOME_DEFAULTS = { state: null, district: null, area_type: null, income_band: null, category: null };
+
+type Fixture = { members: ({ nickname: string } & Record<string, unknown>)[] } & Record<string, unknown>;
+
 // The real API always sends every fact about a person, as null when it was never answered.
 const UNANSWERED_FACTS = Object.fromEntries(
   [
@@ -34,18 +43,20 @@ type StoredHousehold = { fields: Json; token: string; members: StoredMember[] };
 // The answer the real engine gave for a sample family (generated from the backend with the seeded
 // schemes plus two example ones). Each person in the household gets the results of the sample
 // person with the same nickname, or of one in the same position.
-function eligibilityFor(householdId: string, household: StoredHousehold) {
+function eligibilityFor(fixture: Fixture, householdId: string, household: StoredHousehold) {
   const members = household.members.map((member, index) => {
     const sample =
-      eligibility.members.find((m) => m.nickname === member.nickname) ??
-      eligibility.members[index % eligibility.members.length];
+      fixture.members.find((m) => m.nickname === member.nickname) ??
+      fixture.members[index % fixture.members.length];
     return { ...sample, member_id: member.id, nickname: member.nickname };
   });
-  return { ...eligibility, household_id: householdId, members };
+  return { ...fixture, household_id: householdId, members };
 }
 
 export class FakeApi {
   households = new Map<string, StoredHousehold>();
+  /** Which sample family's results the eligibility route returns. */
+  fixture: Fixture = eligibility;
   /** While true, every request fails as if the phone had no internet. */
   offline = false;
   /** Milliseconds the eligibility answer is held back (a slow server waking up). */
@@ -58,10 +69,10 @@ export class FakeApi {
   }
 
   /** A household that already exists, as if set up earlier. Returns its family code. */
-  seedHousehold(): { id: string; token: string; code: string } {
+  seedHousehold(fields: Json = { state: "UP" }): { id: string; token: string; code: string } {
     const id = randomUUID();
     const token = randomBytes(32).toString("base64url");
-    this.households.set(id, { fields: { state: "UP" }, token, members: [] });
+    this.households.set(id, { fields: { ...HOME_DEFAULTS, ...fields }, token, members: [] });
     return { id, token, code: `${id}.${token}` };
   }
 
@@ -112,8 +123,8 @@ export class FakeApi {
     if (path === "/households" && request.method() === "POST") {
       const id = randomUUID();
       const token = randomBytes(32).toString("base64url");
-      this.households.set(id, { fields: { ...body }, token, members: [] });
-      return reply(201, { id, ...body, access_token: token, token_notice: "Save this token." });
+      this.households.set(id, { fields: { ...HOME_DEFAULTS, ...body }, token, members: [] });
+      return reply(201, { id, ...HOME_DEFAULTS, ...body, access_token: token, token_notice: "Save this token." });
     }
 
     const match = /^\/households\/([^/]+)(?:\/members(?:\/([^/]+))?(\/documents)?|\/eligibility)?$/.exec(path);
@@ -127,13 +138,16 @@ export class FakeApi {
 
     if (path.endsWith("/eligibility")) {
       if (this.eligibilityDelay) await new Promise((done) => setTimeout(done, this.eligibilityDelay));
-      return reply(200, eligibilityFor(id, household));
+      return reply(200, eligibilityFor(this.fixture, id, household));
     }
     if (!isMembers && request.method() === "DELETE") {
       this.households.delete(id);
       return reply(204);
     }
-    if (!isMembers) return reply(200, { id, ...household.fields });
+    if (!isMembers) {
+      if (request.method() === "PATCH") Object.assign(household.fields, body); // only what was sent changes
+      return reply(200, { id, ...household.fields });
+    }
     if (!memberId) {
       if (request.method() === "GET") return reply(200, household.members);
       const member: StoredMember = { ...UNANSWERED_FACTS, ...(body as Json), id: randomUUID(), household_id: id, documents: {} };

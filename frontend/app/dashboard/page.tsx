@@ -70,6 +70,9 @@ function DashboardScreen({ family }: { family: Family }) {
               {t("checkedOn", { date: formatDate(results.eligibility.computed_on, locale) })}
             </p>
           </div>
+          <ButtonLink href="/household/edit" variant="secondary">
+            {t("editHousehold")}
+          </ButtonLink>
           {results.eligibility.skipped_schemes.length > 0 && (
             <ErrorNote>{t("skipped", { count: results.eligibility.skipped_schemes.length })}</ErrorNote>
           )}
