@@ -14,6 +14,7 @@ EXPECTED_ENDPOINTS = {
     ("delete", "/households/{household_id}/members/{member_id}"),
     ("put", "/households/{household_id}/members/{member_id}/documents"),
     ("get", "/households/{household_id}/eligibility"),
+    ("get", "/documents"),
     ("get", "/schemes"),
     ("get", "/schemes/{slug}"),
 }

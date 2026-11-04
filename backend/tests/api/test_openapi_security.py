@@ -54,7 +54,13 @@ def test_every_household_endpoint_except_create_requires_it(schema: dict[str, An
 
 @pytest.mark.parametrize(
     ("method", "path"),
-    [("post", "/households"), ("get", "/schemes"), ("get", "/schemes/{slug}"), ("get", "/health")],
+    [
+        ("post", "/households"),
+        ("get", "/documents"),
+        ("get", "/schemes"),
+        ("get", "/schemes/{slug}"),
+        ("get", "/health"),
+    ],
 )
 def test_public_endpoints_do_not_ask_for_a_token(
     schema: dict[str, Any], method: str, path: str
