@@ -412,7 +412,8 @@ export const en = {
     step3Body: "We show which papers are missing and how to get them. We also show schemes you are close to.",
     whoTitle: "Who it helps",
     studentsTitle: "Students",
-    studentsExample: "Rohan is in college. He can see which scholarships may fit his marks and his family’s income.",
+    // "Coming soon" stays until a verified student scheme is seeded. Never promise coverage we do not have.
+    studentsExample: "Coming soon: students will be able to see which scholarships may fit their marks and their family’s income.",
     farmersTitle: "Farmers",
     farmersExample: "Sunita’s family owns farmland. She can see if PM-KISAN income support may be for them.",
     eldersTitle: "Elders and widows",
