@@ -4,9 +4,13 @@ from app.main import app
 
 EXPECTED_ENDPOINTS = {
     ("post", "/households"),
+    ("post", "/auth/request-code"),
+    ("post", "/auth/verify"),
+    ("post", "/auth/sign-out"),
+    ("get", "/me"),
+    ("delete", "/me"),
     ("get", "/households/{household_id}"),
     ("patch", "/households/{household_id}"),
-    ("delete", "/households/{household_id}"),
     ("post", "/households/{household_id}/members"),
     ("get", "/households/{household_id}/members"),
     ("get", "/households/{household_id}/members/{member_id}"),

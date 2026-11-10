@@ -51,6 +51,22 @@ class Settings(BaseSettings):
     # Optional on purpose: only the extraction job needs it. Never log it.
     llm_api_key: str | None = None
 
+    # Email sign-in (app/email/, app/api/auth.py).
+    # "resend" sends real email; "fake" keeps messages in memory (tests only).
+    email_provider: str = "resend"
+    # Optional on purpose: only sending needs it. Never log it.
+    resend_api_key: str | None = None
+    # Resend's onboarding sender only reaches the Resend account owner's own address. To email
+    # anyone else, verify a domain with Resend and set this to an address on it (README, "Going
+    # live with a custom domain"). Nothing else in the code changes.
+    email_from: str = "Yojana Saathi <onboarding@resend.dev>"
+    # Signs the stored hash of every sign-in code. Long and random; changing it invalidates
+    # every code that is waiting to be used. Never log it.
+    auth_secret: str | None = None
+    # Resend's free plan allows about 100 emails a day. Past this many codes in one UTC day,
+    # request-code says "busy" instead of silently using up the quota.
+    email_daily_limit: int = 80
+
     @field_validator("llm_model", mode="before")
     @classmethod
     def blank_model_means_default(cls, value: object) -> object:
@@ -74,6 +90,14 @@ class Settings(BaseSettings):
         if (self.vercel_project is None) != (self.vercel_team is None):
             raise ValueError("Set both VERCEL_PROJECT and VERCEL_TEAM, or neither.")
         return self
+
+    @property
+    def auth_secret_checked(self) -> str:
+        if not self.auth_secret or len(self.auth_secret) < 32:
+            raise RuntimeError(
+                "AUTH_SECRET must be set to at least 32 characters. See .env.example."
+            )
+        return self.auth_secret
 
     @property
     def frontend_preview_regex(self) -> str | None:

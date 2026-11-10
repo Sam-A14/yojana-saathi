@@ -1,4 +1,4 @@
-from sqlalchemy import Engine, inspect
+from sqlalchemy import Engine, inspect, text
 
 from alembic import command
 from alembic.autogenerate import compare_metadata
@@ -18,6 +18,8 @@ EXPECTED_TABLES = {
     "eligibility_results",
     "review_items",
     "alerts",
+    "login_codes",
+    "sessions",
 }
 
 
@@ -43,3 +45,36 @@ def test_downgrade_and_upgrade_again(engine: Engine) -> None:
 
     migrate_to_head(engine)  # leave the database at head for the other tests
     assert EXPECTED_TABLES <= set(inspect(engine).get_table_names())
+
+
+def test_email_login_migration_deletes_households_nobody_can_claim(engine: Engine) -> None:
+    """0005 removes token-only households (test data) with their members, and keeps owned ones."""
+    user, orphan, owned, member = (f"00000000-0000-4000-8000-00000000000{n}" for n in (1, 2, 3, 4))
+    reset_schema(engine)
+    with engine.begin() as connection:
+        config = alembic_config()
+        config.attributes["connection"] = connection
+        command.upgrade(config, "0004")
+        connection.execute(
+            text(f"INSERT INTO users (id, email) VALUES ('{user}', 'a@example.com')")
+        )
+        connection.execute(
+            text(
+                "INSERT INTO households (id, user_id, access_token_hash) VALUES "
+                f"('{orphan}', NULL, 'token-only'), ('{owned}', '{user}', NULL)"
+            )
+        )
+        connection.execute(
+            text(
+                "INSERT INTO members (id, household_id, nickname, relation) "
+                f"VALUES ('{member}', '{orphan}', 'X', 'self')"
+            )
+        )
+        command.upgrade(config, "head")
+        households = connection.execute(text("SELECT id FROM households")).scalars().all()
+        members = connection.execute(text("SELECT count(*) FROM members")).scalar()
+
+    assert [str(h) for h in households] == [owned]
+    assert members == 0
+    reset_schema(engine)  # drop the sample rows, then leave the database at head for other tests
+    migrate_to_head(engine)

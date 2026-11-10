@@ -1,23 +1,22 @@
 """Households, their members, and the documents each member holds.
 
-Every endpoint except POST /households needs the household's access token (see deps.py).
+Every endpoint needs a signed-in user, and the household must be theirs (see deps.py).
 """
 
 import uuid
 
 from fastapi import APIRouter, HTTPException, Response
 from sqlalchemy import delete, func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.api.deps import DbSession, OwnHousehold
+from app.api.deps import CurrentUser, DbSession, OwnHousehold
 from app.api.facts import documents_of
 from app.api.schemas import (
     MAX_MEMBERS_PER_HOUSEHOLD,
-    TOKEN_NOTICE,
     DocumentsIn,
     DocumentsOut,
     HouseholdCreate,
-    HouseholdCreated,
     HouseholdOut,
     HouseholdUpdate,
     MemberCreate,
@@ -25,7 +24,6 @@ from app.api.schemas import (
     MemberUpdate,
     sent_fields,
 )
-from app.api.security import hash_token, new_token
 from app.db.models import Document, Household, Member, MemberDocument
 
 router = APIRouter(prefix="/households", tags=["households"])
@@ -34,18 +32,19 @@ router = APIRouter(prefix="/households", tags=["households"])
 # --- households ----------------------------------------------------------------------------
 
 
-@router.post("", status_code=201, response_model=HouseholdCreated)
-def create_household(data: HouseholdCreate, db: DbSession) -> HouseholdCreated:
-    """Start a household. The reply contains the access token: the only time it is ever shown."""
-    token = new_token()
-    household = Household(**data.model_dump(), access_token_hash=hash_token(token))
+@router.post("", status_code=201, response_model=HouseholdOut)
+def create_household(data: HouseholdCreate, user: CurrentUser, db: DbSession) -> Household:
+    """Start the signed-in person's household. Each person has one."""
+    if db.scalar(select(Household.id).where(Household.user_id == user.id)) is not None:
+        raise HTTPException(status_code=409, detail="You already have a household.")
+    household = Household(**data.model_dump(), user_id=user.id)
     db.add(household)
-    db.commit()
-    return HouseholdCreated(
-        **HouseholdOut.model_validate(household).model_dump(),
-        access_token=token,
-        token_notice=TOKEN_NOTICE,
-    )
+    try:
+        db.commit()
+    except IntegrityError:  # two requests at once: the unique constraint on user_id decides
+        db.rollback()
+        raise HTTPException(status_code=409, detail="You already have a household.") from None
+    return household
 
 
 @router.get("/{household_id}", response_model=HouseholdOut)
@@ -59,14 +58,6 @@ def update_household(data: HouseholdUpdate, household: OwnHousehold, db: DbSessi
         setattr(household, name, value)
     db.commit()
     return household
-
-
-@router.delete("/{household_id}", status_code=204)
-def delete_household(household: OwnHousehold, db: DbSession) -> Response:
-    """Delete my data. The database removes members, documents and results with it (CASCADE)."""
-    db.execute(delete(Household).where(Household.id == household.id))
-    db.commit()
-    return Response(status_code=204)
 
 
 # --- members -------------------------------------------------------------------------------

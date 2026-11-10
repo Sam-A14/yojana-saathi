@@ -325,3 +325,22 @@ def test_alert_defaults_and_checks(db: Session) -> None:
     assert_rejected(
         db, "ck_alerts_type_valid", Alert(user_id=user.id, type="spam", scheduled_for=when)
     )
+
+
+def test_a_household_must_belong_to_a_user_and_a_user_has_one(db: Session) -> None:
+    from sqlalchemy.exc import IntegrityError
+
+    user = User(email="one@example.com")
+    db.add(user)
+    db.flush()
+    db.add(Household(user_id=user.id))
+    db.flush()
+
+    with pytest.raises(IntegrityError):
+        with db.begin_nested():
+            db.add(Household(user_id=user.id))  # a second one for the same person
+            db.flush()
+    with pytest.raises(IntegrityError):
+        with db.begin_nested():
+            db.add(Household())  # nobody's
+            db.flush()

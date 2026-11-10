@@ -1,4 +1,4 @@
-"""/docs can only send the access token if the OpenAPI schema declares a bearer security scheme.
+"""/docs can only send the session token if the OpenAPI schema declares a bearer security scheme.
 
 A plain header parameter named "Authorization" is ignored by Swagger UI, which is why the token was
 never sent from /docs. These tests pin the declaration so it cannot quietly regress.
@@ -36,7 +36,7 @@ def test_a_bearer_security_scheme_is_declared(schema: dict[str, Any]) -> None:
     ]
 
 
-def test_every_household_endpoint_except_create_requires_it(schema: dict[str, Any]) -> None:
+def test_every_endpoint_that_needs_a_signed_in_user_requires_it(schema: dict[str, Any]) -> None:
     protected = {
         (method, path)
         for method, path, op in operations(schema)
@@ -45,8 +45,8 @@ def test_every_household_endpoint_except_create_requires_it(schema: dict[str, An
     expected = {
         (method, path)
         for method, path, _ in operations(schema)
-        if path.startswith("/households/")  # the id is in the URL; POST /households has none
-    }
+        if path.startswith("/households")
+    } | {("get", "/me"), ("delete", "/me"), ("post", "/auth/sign-out")}
 
     assert expected, "no household endpoints found: the test is looking in the wrong place"
     assert protected == expected
@@ -55,7 +55,8 @@ def test_every_household_endpoint_except_create_requires_it(schema: dict[str, An
 @pytest.mark.parametrize(
     ("method", "path"),
     [
-        ("post", "/households"),
+        ("post", "/auth/request-code"),
+        ("post", "/auth/verify"),
         ("get", "/documents"),
         ("get", "/schemes"),
         ("get", "/schemes/{slug}"),
