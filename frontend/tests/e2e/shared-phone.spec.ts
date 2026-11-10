@@ -1,4 +1,22 @@
+import { type Page } from "@playwright/test";
+import { type FakeApi } from "./fake-api";
 import { expect, test, STORAGE_KEY } from "./fixtures";
+
+// Clicks through the email sign-in, like the next person who picks up the shared phone.
+async function signInByClicking(page: Page, api: FakeApi, email: string) {
+  await page.getByRole("link", { name: "Sign in with email" }).click();
+  await page.getByLabel("Your email address").fill(email);
+  await page.getByRole("button", { name: "Send me a code" }).click();
+  await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
+  await page.getByLabel("6-digit code").fill(api.lastCode(email));
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+}
+
+async function signOutByClicking(page: Page) {
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.getByRole("button", { name: "Yes, sign out" }).click();
+  await expect(page).toHaveURL(/\/$/); // the dashboard shows a similar link for a moment
+}
 
 // Next.js keeps pages the person has left (hidden, with their state) so Back is instant. On a
 // phone that several people share, that must never show one family what another typed or loaded.
@@ -10,26 +28,22 @@ test("the next family never sees the previous family's results, even while their
   const second = api.seedHousehold();
   api.seedMembers(second.id, ["Meena"]);
   await page.addInitScript(
-    ([key, code]) => {
+    ([key, value]) => {
       if (!sessionStorage.getItem("seeded")) {
         sessionStorage.setItem("seeded", "1");
-        localStorage.setItem(key, JSON.stringify({ code, step: "done" }));
+        localStorage.setItem(key, value);
       }
     },
-    [STORAGE_KEY, first.code],
+    [STORAGE_KEY, api.storedSession(first)],
   );
   await page.goto("/dashboard");
   await expect(page.getByRole("region", { name: "Kamla", exact: true })).toBeVisible();
 
-  await page.getByRole("button", { name: "Forget this device" }).click();
-  await page.getByRole("button", { name: "Yes, forget this phone" }).click();
-  await expect(page).toHaveURL(/\/$/);
+  await signOutByClicking(page);
 
   // The second family signs in with a slow server: for a while only "loading" may show.
   api.eligibilityDelay = 1500;
-  await page.getByRole("link", { name: "Resume with family code" }).click();
-  await page.getByLabel("Family code").fill(second.code);
-  await page.getByRole("button", { name: "Open my family" }).click();
+  await signInByClicking(page, api, second.email);
   await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByText("Checking schemes for your family…")).toBeVisible();
   await expect(page.getByText("Kamla")).toHaveCount(0);
@@ -39,49 +53,52 @@ test("the next family never sees the previous family's results, even while their
   await expect(page.getByText("Kamla")).toHaveCount(0);
 });
 
-test("a pasted family code is not left in the box for the next person", async ({ page, api }) => {
+test("the email and code typed for one person are not left in the boxes for the next", async ({ page, api }) => {
   const family = api.seedHousehold();
   api.seedMembers(family.id, ["Asha"]);
-  await page.goto("/resume");
-  await page.getByLabel("Family code").fill(family.code);
-  await page.getByRole("button", { name: "Open my family" }).click();
+  await page.goto("/");
+  await signInByClicking(page, api, family.email);
   await expect(page.getByRole("heading", { name: "Your family’s schemes" })).toBeVisible();
 
-  await page.getByRole("button", { name: "Forget this device" }).click();
-  await page.getByRole("button", { name: "Yes, forget this phone" }).click();
-  // The dashboard shows a similar "Resume" link for a moment before the home page replaces it.
-  // On a slow machine, clicking it too early finds it hidden and waits until the test times out.
-  await expect(page).toHaveURL(/\/$/);
-  await page.getByRole("link", { name: "Resume with family code" }).click();
+  await signOutByClicking(page);
+  await page.getByRole("link", { name: "Sign in with email" }).click();
 
-  await expect(page.getByLabel("Family code")).toHaveValue("");
+  await expect(page.getByLabel("Your email address")).toHaveValue("");
+  await page.getByLabel("Your email address").fill(family.email);
+  await page.getByRole("button", { name: "Send me a code" }).click();
+  await expect(page.getByLabel("6-digit code")).toHaveValue("");
 });
 
-test("a new family's forms start empty and unticked", async ({ page, api }) => {
-  void api;
-  // Family one: the basics typed in, and "I have saved my code" ticked.
+test("a new person's setup form starts empty", async ({ page, api }) => {
+  // Person one: the basics typed in, then the phone is handed on.
+  await page.addInitScript(
+    ([key, value]) => {
+      if (!sessionStorage.getItem("seeded")) {
+        sessionStorage.setItem("seeded", "1");
+        localStorage.setItem(key, value);
+      }
+    },
+    [STORAGE_KEY, api.storedSession(api.seedSession("one@example.com"))],
+  );
   await page.goto("/setup/basics");
   await page.getByLabel("District (optional)").fill("Lucknow");
-  await page.getByRole("button", { name: "Continue" }).click();
-  await page.getByLabel("I have saved my family code in a safe place").check();
 
-  // Back to the start by clicking, then begin again as a different family.
+  // Back to the start by clicking, then someone else signs in on the same phone.
+  await page.evaluate((k) => localStorage.removeItem(k), STORAGE_KEY);
   await page.getByRole("link", { name: "Yojana Saathi" }).click();
-  await page.getByRole("link", { name: "Start" }).click();
-  await page.getByRole("button", { name: "Start a new family" }).click();
-  await expect(page.getByLabel("District (optional)")).toHaveValue("");
-  await page.getByRole("button", { name: "Continue" }).click();
+  api.seedSession("two@example.com");
+  await signInByClicking(page, api, "two@example.com");
 
-  await expect(page.getByLabel("I have saved my family code in a safe place")).not.toBeChecked();
-  await expect(page.getByRole("button", { name: "Continue" })).toBeDisabled();
+  await expect(page.getByLabel("District (optional)")).toBeVisible();
+  await expect(page.getByLabel("District (optional)")).toHaveValue("");
 });
 
 test("results are asked for again after the family answers a question", async ({ page, api }) => {
   const family = api.seedHousehold();
   api.seedMembers(family.id, ["Kamla", "Asha"]);
   await page.addInitScript(
-    ([key, code]) => localStorage.setItem(key, JSON.stringify({ code, step: "done" })),
-    [STORAGE_KEY, family.code],
+    ([key, value]) => localStorage.setItem(key, value),
+    [STORAGE_KEY, api.storedSession(family)],
   );
   await page.goto("/dashboard");
   await expect(page.getByRole("region", { name: "Kamla", exact: true })).toBeVisible();
@@ -103,13 +120,13 @@ test("the edit screen never shows another family's answers", async ({ page, api 
   const second = api.seedHousehold({ state: "UP", district: "District-B" });
   api.seedMembers(second.id, ["Meena"]);
   await page.addInitScript(
-    ([key, code]) => {
+    ([key, value]) => {
       if (!sessionStorage.getItem("seeded")) {
         sessionStorage.setItem("seeded", "1");
-        localStorage.setItem(key, JSON.stringify({ code, step: "done" }));
+        localStorage.setItem(key, value);
       }
     },
-    [STORAGE_KEY, first.code],
+    [STORAGE_KEY, api.storedSession(first)],
   );
   await page.goto("/dashboard");
   await page.getByRole("link", { name: "Edit household details" }).click();
@@ -117,12 +134,8 @@ test("the edit screen never shows another family's answers", async ({ page, api 
   await page.getByLabel("District (optional)").fill("typed-but-never-saved");
   await page.getByRole("link", { name: "Back without saving" }).click();
 
-  await page.getByRole("button", { name: "Forget this device" }).click();
-  await page.getByRole("button", { name: "Yes, forget this phone" }).click();
-  await expect(page).toHaveURL(/\/$/); // the dashboard shows a similar link for a moment
-  await page.getByRole("link", { name: "Resume with family code" }).click();
-  await page.getByLabel("Family code").fill(second.code);
-  await page.getByRole("button", { name: "Open my family" }).click();
+  await signOutByClicking(page);
+  await signInByClicking(page, api, second.email);
   await page.getByRole("link", { name: "Edit household details" }).click();
 
   await expect(page.getByLabel("District (optional)")).toHaveValue("District-B");

@@ -8,8 +8,8 @@ async function openDashboard(page: Page, api: FakeApi, members = ["Asha"]) {
   const family = api.seedHousehold(HOME);
   api.seedMembers(family.id, members);
   await page.addInitScript(
-    ([key, code]) => localStorage.setItem(key, JSON.stringify({ code, step: "done" })),
-    [STORAGE_KEY, family.code],
+    ([key, value]) => localStorage.setItem(key, value),
+    [STORAGE_KEY, api.storedSession(family)],
   );
   await page.goto("/dashboard");
   await expect(page.getByRole("region", { name: members[0], exact: true })).toBeVisible();
@@ -119,8 +119,8 @@ test("the edit screen speaks Hindi", async ({ page, api }) => {
   await expect(page.getByRole("button", { name: "बदलाव सहेजें" })).toBeVisible();
 });
 
-test("without a saved family there is nothing to edit", async ({ page }) => {
+test("when nobody is signed in there is nothing to edit", async ({ page }) => {
   await page.goto("/household/edit");
 
-  await expect(page.getByText("We could not find a saved family on this phone.")).toBeVisible();
+  await expect(page.getByText("You are not signed in on this phone.")).toBeVisible();
 });

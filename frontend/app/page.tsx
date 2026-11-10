@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 import { HeroPhone } from "@/components/landing/HeroPhone";
 import { SchemesWeCheck } from "@/components/landing/SchemesWeCheck";
+import { WarmUp } from "@/components/landing/WarmUp";
 import { buttonClass } from "@/components/button-styles";
 import { ButtonLink, Card } from "@/components/ui";
 
@@ -56,6 +57,7 @@ export default async function Home() {
 
   return (
     <>
+      <WarmUp />
       {/* The dramatic first screen: deep green, a marigold glow, a floating phone. Only this block is dark. */}
       <section className="on-dark relative overflow-hidden bg-hero text-on-hero">
         <div
@@ -67,13 +69,18 @@ export default async function Home() {
           <div className="rise flex flex-col gap-6">
             <h1 className="display text-4xl sm:text-5xl md:text-6xl">{t("title")}</h1>
             <p className="text-xl text-on-hero-muted">{t("intro")}</p>
-            <div className="flex flex-col gap-4 sm:flex-row md:flex-col lg:flex-row">
-              <ButtonLink href="/setup/basics" variant="accent" className="w-full sm:w-auto">
+            <div className="flex flex-col gap-4">
+              <ButtonLink href="/setup/basics" variant="accent" className="w-full sm:w-auto sm:self-start">
                 {t("start")}
               </ButtonLink>
-              <ButtonLink href="/resume" variant="light" className="w-full sm:w-auto">
-                {t("resume")}
-              </ButtonLink>
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <ButtonLink href="/example" variant="light" className="w-full sm:w-auto">
+                  {t("example")}
+                </ButtonLink>
+                <ButtonLink href="/signin" variant="light" className="w-full sm:w-auto">
+                  {t("signIn")}
+                </ButtonLink>
+              </div>
             </div>
             <p className="text-lg font-semibold text-accent">{t("free")}</p>
           </div>
@@ -135,6 +142,7 @@ export default async function Home() {
             </li>
           ))}
         </ul>
+        <p className="text-lg font-semibold">{l("emailPromise")}</p>
       </Section>
 
       <Section title={l("faqTitle")}>

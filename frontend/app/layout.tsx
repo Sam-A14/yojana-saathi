@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { AppHeader } from "@/components/AppHeader";
 import { Footer } from "@/components/Footer";
+import { WakingBanner } from "@/components/WakingBanner";
 import { TEXT_SIZE_KEY } from "@/lib/text-size";
 import "./globals.css";
 
@@ -52,6 +53,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
           <AppHeader />
+          <WakingBanner />
           <main className="flex-1">{children}</main>
           <Footer />
         </NextIntlClientProvider>

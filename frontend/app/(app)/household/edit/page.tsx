@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { HouseholdForm } from "@/components/HouseholdForm";
 import { Button, ButtonLink, ErrorNote } from "@/components/ui";
-import { api, errorKind } from "@/lib/api";
+import { api, errorKind, type ErrorKind } from "@/lib/api";
 import type { Family, Household, HouseholdFields } from "@/lib/types";
 import { useFamily } from "@/lib/use-family";
 
-type Problem = "network" | "denied" | "limit" | "generic";
+type Problem = ErrorKind;
 
 // Keyed by the family so this form can never carry one family's answers into another's.
 // (A precaution: no test fails without it. See docs/decisions/016.)
@@ -23,7 +23,7 @@ export default function EditHouseholdPage() {
     return (
       <div className="flex flex-col gap-5">
         <h1 className="text-2xl font-bold">{t("none")}</h1>
-        <ButtonLink href="/resume">{t("toResume")}</ButtonLink>
+        <ButtonLink href="/signin">{t("toSignIn")}</ButtonLink>
       </div>
     );
   }
@@ -66,8 +66,10 @@ function HouseholdEditor({ family }: { family: Family }) {
       setSaving(false);
       return;
     }
-    // The dashboard asks for its results again when it opens, so the new answers show up there.
-    router.push("/dashboard");
+    // Halfway through setup (nobody added yet) the next step is the family; otherwise the dashboard,
+    // which asks for its results again when it opens, so the new answers show up there.
+    const members = await api.listMembers(family).catch(() => null);
+    router.push(members && members.length === 0 ? "/setup/members" : "/dashboard");
   }
 
   if (loadProblem) {

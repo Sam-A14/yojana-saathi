@@ -1,16 +1,16 @@
 "use client";
 
 import { useMemo } from "react";
-import { useStoredFamily } from "./storage";
+import { type Session, useSession } from "./session";
 import type { Family } from "./types";
 
-/** The saved family (id and token), if any. `ready` is false until the browser's storage has been
- * read. Only id and token are returned, so moving to another wizard step (which changes the
- * stored step) does not make a screen reload its data. */
-export function useFamily(): { ready: boolean; family: Family | null } {
-  const { ready, family } = useStoredFamily();
-  const id = family?.id;
-  const token = family?.token;
-  const stable = useMemo(() => (id && token ? { id, token } : null), [id, token]);
-  return { ready, family: stable };
+/** The signed-in person's household as an API handle: its id, and the session token that proves
+ * who is asking. `family` is null when nobody is signed in or no household exists yet (`session`
+ * tells which). Only id and token are returned, so unrelated changes do not make a screen reload. */
+export function useFamily(): { ready: boolean; family: Family | null; session: Session | null } {
+  const { ready, session } = useSession();
+  const id = session?.householdId;
+  const token = session?.token;
+  const family = useMemo(() => (id && token ? { id, token } : null), [id, token]);
+  return { ready, family, session };
 }

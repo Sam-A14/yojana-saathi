@@ -3,10 +3,10 @@
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 
-const STEP_NAMES = ["basics", "code", "members", "documents", "exclusions"] as const;
+const STEP_NAMES = ["basics", "members", "documents", "exclusions"] as const;
 
-/** The progress line and bar shared by the five setup screens. */
-export function SetupFrame({ step, children }: { step: 1 | 2 | 3 | 4 | 5; children: ReactNode }) {
+/** The progress line and bar shared by the four setup screens. */
+export function SetupFrame({ step, children }: { step: 1 | 2 | 3 | 4; children: ReactNode }) {
   const t = useTranslations("steps");
   return (
     <section className="flex flex-col gap-6">

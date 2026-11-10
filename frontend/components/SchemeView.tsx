@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useParams, useSearchParams } from "next/navigation";
 import { benefitText, documentName, formatDate, schemeName } from "@/lib/format";
 import { neededAnswers } from "@/lib/rules";
-import type { ExcludedScheme, Family, MemberEligibility, SchemeResult } from "@/lib/types";
+import type { DocumentInfo, Eligibility, ExcludedScheme, Family, MemberEligibility, SchemeResult } from "@/lib/types";
 import { useFamilyResults } from "@/lib/use-family-results";
 import { useFamily } from "@/lib/use-family";
 import { useRuleText } from "@/lib/use-text";
@@ -36,7 +36,7 @@ export function SchemeView() {
     return (
       <div className="flex flex-col gap-5">
         <h1 className="text-2xl font-bold">{td("none")}</h1>
-        <ButtonLink href="/resume">{td("toResume")}</ButtonLink>
+        <ButtonLink href="/signin">{td("toSignIn")}</ButtonLink>
       </div>
     );
   }
@@ -47,30 +47,56 @@ function SchemeScreen({ family }: { family: Family }) {
   const t = useTranslations("scheme");
   const td = useTranslations("dashboard");
   const te = useTranslations("errors");
-  const locale = useLocale() === "hi" ? "hi" : "en";
   const { slug } = useParams<{ slug: string }>();
   const memberId = useSearchParams().get("member");
   const { results, reload } = useFamilyResults(family);
-  const documents = results.state === "ready" ? results.documents : [];
-  const describe = useRuleText(documents);
-
-  const back = (
-    <ButtonLink href="/dashboard" variant="secondary">
-      {t("back")}
-    </ButtonLink>
-  );
 
   if (results.state === "loading") return <p role="status">{t("loading")}</p>;
   if (results.state === "error") {
     return (
       <div className="flex flex-col gap-4">
         <ErrorNote>{te(results.kind)}</ErrorNote>
-        {results.kind === "denied" ? <ButtonLink href="/resume">{td("toResume")}</ButtonLink> : <Button onClick={reload}>{td("retry")}</Button>}
+        {results.kind === "denied" || results.kind === "signedOut" ? <ButtonLink href="/signin">{td("toSignIn")}</ButtonLink> : <Button onClick={reload}>{td("retry")}</Button>}
       </div>
     );
   }
+  return (
+    <SchemeDetail
+      eligibility={results.eligibility}
+      documents={results.documents}
+      slug={slug}
+      memberId={memberId}
+      backHref="/dashboard"
+    />
+  );
+}
 
-  const member: MemberEligibility | undefined = results.eligibility.members.find((m) => m.member_id === memberId);
+/** The scheme for one person, from results already in hand. Used for the real family and for the
+ * example family (which needs no sign-in), so both look exactly the same. */
+export function SchemeDetail({
+  eligibility,
+  documents,
+  slug,
+  memberId,
+  backHref,
+}: {
+  eligibility: Eligibility;
+  documents: DocumentInfo[];
+  slug: string;
+  memberId: string | null;
+  backHref: string;
+}) {
+  const t = useTranslations("scheme");
+  const locale = useLocale() === "hi" ? "hi" : "en";
+  const describe = useRuleText(documents);
+
+  const back = (
+    <ButtonLink href={backHref} variant="secondary">
+      {t("back")}
+    </ButtonLink>
+  );
+
+  const member: MemberEligibility | undefined = eligibility.members.find((m) => m.member_id === memberId);
   const found: SchemeResult | undefined = member?.schemes.find((s) => s.scheme.slug === slug);
   const excluded: ExcludedScheme | undefined = member?.excluded.find((e) => e.scheme.slug === slug);
   if (!member || (!found && !excluded)) {

@@ -6,8 +6,8 @@ async function openFor(page: Page, api: FakeApi, person: string, scheme: string)
   const family = api.seedHousehold();
   api.seedMembers(family.id, ["Kamla", "Asha", "Ramesh", "Gudiya"]);
   await page.addInitScript(
-    ([key, code]) => localStorage.setItem(key, JSON.stringify({ code, step: "done" })),
-    [STORAGE_KEY, family.code],
+    ([key, value]) => localStorage.setItem(key, value),
+    [STORAGE_KEY, api.storedSession(family)],
   );
   await page.goto("/dashboard");
   await page.getByRole("region", { name: person, exact: true }).getByRole("link", { name: scheme }).first().click();
@@ -102,8 +102,8 @@ test("opening a scheme without saying for whom asks to start from the family pag
   const family = api.seedHousehold();
   api.seedMembers(family.id, ["Kamla"]);
   await page.addInitScript(
-    ([key, code]) => localStorage.setItem(key, JSON.stringify({ code, step: "done" })),
-    [STORAGE_KEY, family.code],
+    ([key, value]) => localStorage.setItem(key, value),
+    [STORAGE_KEY, api.storedSession(family)],
   );
 
   await page.goto("/scheme/ignwps");

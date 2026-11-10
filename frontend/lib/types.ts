@@ -1,7 +1,12 @@
 // What the API sends and accepts (backend/app/api/schemas.py). Written by hand because the API is
 // small; if it grows, generate these from /openapi.json instead.
 
+// The household's id and the session token of the person who is signed in (decision 019).
 export type Family = { id: string; token: string };
+
+// POST /auth/verify, GET /me
+export type SessionToken = { access_token: string; expires_at: string };
+export type Me = { email: string; language: "en" | "hi"; household_id: string | null };
 
 export type HouseholdFields = {
   state: string | null;
@@ -11,7 +16,6 @@ export type HouseholdFields = {
   category: string | null;
 };
 export type Household = HouseholdFields & { id: string };
-export type HouseholdCreated = Household & { access_token: string };
 
 export type MemberFields = {
   birth_year: number | null;

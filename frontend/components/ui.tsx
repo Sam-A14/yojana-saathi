@@ -92,6 +92,7 @@ export function TextField({
   error,
   value,
   onChange,
+  className = "",
   ...props
 }: {
   label: string;
@@ -105,7 +106,7 @@ export function TextField({
     <FieldShell id={id} label={label} hint={hint} error={error}>
       <input
         id={id}
-        className={inputLook}
+        className={`${inputLook} ${className}`}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         aria-invalid={error ? true : undefined}

@@ -47,7 +47,8 @@ const UNANSWERED_FACTS = Object.fromEntries(
   ].map((name) => [name, null]),
 );
 type StoredMember = Json & { id: string; documents: Record<string, boolean> };
-type StoredHousehold = { fields: Json; token: string; members: StoredMember[] };
+type StoredHousehold = { fields: Json; owner: string; members: StoredMember[] };
+type StoredUser = { householdId: string | null };
 
 // The answer the real engine gave for a sample family (generated from the backend with the seeded
 // schemes plus two example ones). Each person in the household gets the results of the sample
@@ -64,6 +65,17 @@ function eligibilityFor(fixture: Fixture, householdId: string, household: Stored
 
 export class FakeApi {
   households = new Map<string, StoredHousehold>();
+  /** Signed-up people, by email. */
+  users = new Map<string, StoredUser>();
+  /** Session token -> email, like the real API's sessions. */
+  sessions = new Map<string, string>();
+  /** The code last "emailed" to each address, and how many wrong guesses it has had. */
+  codes = new Map<string, { code: string; wrong: number }>();
+  /** Make request-code fail like the real API (429 too_many_codes, 503 busy...). */
+  requestCodeFailure: { status: number; code: string } | null = null;
+  private counter = 0;
+  /** Milliseconds every answer is held back (a sleeping server waking up). */
+  latency = 0;
   /** Which sample family's results the eligibility route returns. */
   fixture: Fixture = eligibility;
   /** While true, every request fails as if the phone had no internet. */
@@ -77,12 +89,32 @@ export class FakeApi {
     await page.route(`${API}/**`, (route) => this.handle(route));
   }
 
-  /** A household that already exists, as if set up earlier. Returns its family code. */
-  seedHousehold(fields: Json = { state: "UP" }): { id: string; token: string; code: string } {
-    const id = randomUUID();
+  /** Someone who is signed in but has not set up a household yet. Returns their session token. */
+  seedSession(email = `person${++this.counter}@example.com`): { email: string; token: string } {
+    this.users.set(email, this.users.get(email) ?? { householdId: null });
     const token = randomBytes(32).toString("base64url");
-    this.households.set(id, { fields: { ...HOME_DEFAULTS, ...fields }, token, members: [] });
-    return { id, token, code: `${id}.${token}` };
+    this.sessions.set(token, email);
+    return { email, token };
+  }
+
+  /** A signed-in person with a household that already exists, as if set up earlier. `token` is
+   * their session token; `id` the household's id. */
+  seedHousehold(fields: Json = { state: "UP" }, email = `family${++this.counter}@example.com`) {
+    const { token } = this.seedSession(email);
+    const id = randomUUID();
+    this.households.set(id, { fields: { ...HOME_DEFAULTS, ...fields }, owner: email, members: [] });
+    this.users.get(email)!.householdId = id;
+    return { id, token, email };
+  }
+
+  /** The text a phone keeps in localStorage when this person is signed in. */
+  storedSession(family: { token: string; email: string; id?: string | null }) {
+    return JSON.stringify({ token: family.token, email: family.email, householdId: family.id ?? null });
+  }
+
+  /** The code in the last email sent to this address. */
+  lastCode(email: string): string {
+    return this.codes.get(email)!.code;
   }
 
   /** Give an existing household members, as if they were added earlier: a number of anonymous
@@ -128,20 +160,67 @@ export class FakeApi {
         ...(data === undefined ? {} : { contentType: "application/json", body: JSON.stringify(data) }),
       });
 
+    if (this.latency) await new Promise((done) => setTimeout(done, this.latency));
+    if (path === "/health") return reply(200, { status: "ok" });
     if (path === "/documents") return reply(200, DOCUMENTS);
     if (path === "/schemes") return reply(200, SCHEMES);
+
+    // --- sign-in (backend/app/api/auth.py) ---
+    if (path === "/auth/request-code") {
+      if (this.requestCodeFailure) {
+        const { status, code } = this.requestCodeFailure;
+        return reply(status, { detail: { code, message: code } });
+      }
+      const email = String((body as Json).email).trim().toLowerCase();
+      this.codes.set(email, { code: "482913", wrong: 0 });
+      return reply(202, { status: "sent", expires_in_minutes: 10 });
+    }
+    if (path === "/auth/verify") {
+      const { email, code } = body as { email: string; code: string };
+      const entry = this.codes.get(email);
+      if (!entry || entry.wrong >= 5) {
+        return reply(401, { detail: { code: entry ? "too_many_attempts" : "invalid_code", message: "no" } });
+      }
+      if (entry.code !== code) {
+        entry.wrong += 1;
+        return reply(401, { detail: { code: "invalid_code", message: "no", attempts_left: 5 - entry.wrong } });
+      }
+      this.codes.delete(email);
+      const { token } = this.seedSession(email);
+      return reply(200, { access_token: token, expires_at: "2026-12-10T00:00:00Z" });
+    }
+
+    // Everything below needs a signed-in person: 401 otherwise, like the real API.
+    const email = this.sessions.get((authorization ?? "").replace(/^Bearer /, ""));
+    if (!email) return reply(401, { detail: "Please sign in." });
+    const user = this.users.get(email)!;
+
+    if (path === "/me" && request.method() === "GET") {
+      return reply(200, { email, language: "en", household_id: user.householdId });
+    }
+    if (path === "/me" && request.method() === "DELETE") {
+      if (user.householdId) this.households.delete(user.householdId);
+      this.users.delete(email);
+      for (const [token, owner] of this.sessions) if (owner === email) this.sessions.delete(token);
+      return reply(204);
+    }
+    if (path === "/auth/sign-out") {
+      this.sessions.delete(authorization!.replace(/^Bearer /, ""));
+      return reply(204);
+    }
     if (path === "/households" && request.method() === "POST") {
+      if (user.householdId) return reply(409, { detail: "You already have a household." });
       const id = randomUUID();
-      const token = randomBytes(32).toString("base64url");
-      this.households.set(id, { fields: { ...HOME_DEFAULTS, ...body }, token, members: [] });
-      return reply(201, { id, ...HOME_DEFAULTS, ...body, access_token: token, token_notice: "Save this token." });
+      this.households.set(id, { fields: { ...HOME_DEFAULTS, ...body }, owner: email, members: [] });
+      user.householdId = id;
+      return reply(201, { id, ...HOME_DEFAULTS, ...body });
     }
 
     const match = /^\/households\/([^/]+)(?:\/members(?:\/([^/]+))?(\/documents)?|\/eligibility)?$/.exec(path);
     const household = match ? this.households.get(match[1]) : undefined;
-    // Same answer for "no such household" and "wrong token", like the real API.
-    if (!match || !household || authorization !== `Bearer ${household.token}`) {
-      return reply(403, { detail: "Missing or invalid access token for this household." });
+    // Same answer for "no such household" and "someone else's", like the real API.
+    if (!match || !household || household.owner !== email) {
+      return reply(403, { detail: "No such household for your account." });
     }
     const [, id, memberId, documents] = match;
     const isMembers = path.includes("/members");
@@ -149,10 +228,6 @@ export class FakeApi {
     if (path.endsWith("/eligibility")) {
       if (this.eligibilityDelay) await new Promise((done) => setTimeout(done, this.eligibilityDelay));
       return reply(200, eligibilityFor(this.fixture, id, household));
-    }
-    if (!isMembers && request.method() === "DELETE") {
-      this.households.delete(id);
-      return reply(204);
     }
     if (!isMembers) {
       if (request.method() === "PATCH") Object.assign(household.fields, body); // only what was sent changes

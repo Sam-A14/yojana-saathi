@@ -1,7 +1,14 @@
 import { type Page } from "@playwright/test";
+import { type FakeApi } from "./fake-api";
 import { expect, test, STORAGE_KEY } from "./fixtures";
 
-const CODE_PATTERN = /[0-9a-f-]{36}\.[A-Za-z0-9_-]{43}/;
+// Someone who is already signed in on this phone (as if they signed in earlier).
+async function signedIn(page: Page, api: FakeApi, person: { token: string; email: string; id?: string | null }) {
+  await page.addInitScript(
+    ([key, value]) => localStorage.setItem(key, value),
+    [STORAGE_KEY, api.storedSession(person)],
+  );
+}
 
 async function addPerson(page: Page, name: string, birthYear: number, relation?: string) {
   await page.getByLabel("Name or nickname").fill(name);
@@ -10,8 +17,7 @@ async function addPerson(page: Page, name: string, birthYear: number, relation?:
   await page.getByRole("button", { name: "Save this person" }).click();
 }
 
-test("a family goes from the home page to a finished setup", async ({ page, context, api }) => {
-  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+test("a family goes from the home page, through sign-in, to a finished setup", async ({ page, api }) => {
   const thisYear = new Date().getFullYear();
 
   // Home -> basics
@@ -21,47 +27,22 @@ test("a family goes from the home page to a finished setup", async ({ page, cont
   ).toBeVisible();
   await page.getByRole("link", { name: "Start" }).click();
 
-  await expect(page.getByText("Step 1 of 5")).toBeVisible();
+  // Not signed in yet: Start leads to the email sign-in.
+  await expect(page).toHaveURL(/\/signin$/);
+  await page.getByLabel("Your email address").fill("asha@example.com");
+  await page.getByRole("button", { name: "Send me a code" }).click();
+  await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
+  await page.getByLabel("6-digit code").fill(api.lastCode("asha@example.com"));
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+
+  await expect(page.getByText("Step 1 of 4")).toBeVisible();
   await page.getByLabel("District (optional)").fill("Lucknow");
   await page.getByLabel("Village (rural)").check();
   await page.getByLabel("Yearly income of the whole family").selectOption("1_to_2_lakh");
   await page.getByRole("button", { name: "Continue" }).click();
 
-  // Family code: shown, copyable, downloadable, printable, and must be acknowledged.
-  await expect(page.getByRole("heading", { name: "Your family code" })).toBeVisible();
-  await expect(page.getByText("We cannot get this code back")).toBeVisible();
-  const code = (await page.getByText(CODE_PATTERN).textContent())!.trim();
-  expect(code).toMatch(CODE_PATTERN);
-
-  await page.getByRole("button", { name: "Copy" }).click();
-  await expect(page.getByRole("button", { name: "Copied" })).toBeVisible();
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(code);
-
-  const downloading = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Download as text" }).click();
-  const download = await downloading;
-  expect(download.suggestedFilename()).toBe("yojana-saathi-family-code.txt");
-  const file = await (await import("node:fs/promises")).readFile((await download.path())!, "utf8");
-  expect(file).toContain(code);
-
-  await page.evaluate(() => {
-    (window as unknown as { printed: number }).printed = 0;
-    window.print = () => ((window as unknown as { printed: number }).printed += 1);
-  });
-  await page.getByRole("button", { name: "Print" }).click();
-  expect(await page.evaluate(() => (window as unknown as { printed: number }).printed)).toBe(1);
-
-  // Saved on this device too.
-  const stored = JSON.parse((await page.evaluate((k) => localStorage.getItem(k), STORAGE_KEY))!);
-  expect(stored).toEqual({ code, step: "code" });
-
-  const next = page.getByRole("button", { name: "Continue" });
-  await expect(next).toBeDisabled();
-  await page.getByLabel("I have saved my family code in a safe place").check();
-  await next.click();
-
   // Members: the first form opens by itself, with "Myself" chosen.
-  await expect(page.getByText("Step 3 of 5")).toBeVisible();
+  await expect(page.getByText("Step 2 of 4")).toBeVisible();
   await expect(page.getByLabel("Who is this to you?")).toHaveValue("self");
   await addPerson(page, "Asha", 1985);
   await page.getByRole("button", { name: "Add a person" }).click();
@@ -72,14 +53,14 @@ test("a family goes from the home page to a finished setup", async ({ page, cont
   await page.getByRole("button", { name: "Continue" }).click();
 
   // Documents: family papers once, then each person.
-  await expect(page.getByText("Step 4 of 5")).toBeVisible();
+  await expect(page.getByText("Step 3 of 4")).toBeVisible();
   await page.getByRole("group", { name: "Ration card" }).getByLabel("Yes", { exact: true }).check();
   await page.getByRole("group", { name: "BPL (below poverty line) card" }).getByLabel("No", { exact: true }).check();
   await page.getByRole("group", { name: "Aadhaar card" }).first().getByLabel("Yes", { exact: true }).check();
   await page.getByRole("button", { name: "Save and continue" }).click();
 
   // Exclusion questions: adults only (Gudiya is 10).
-  await expect(page.getByText("Step 5 of 5")).toBeVisible();
+  await expect(page.getByText("Step 4 of 4")).toBeVisible();
   await expect(page.getByRole("heading", { name: "For Asha" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "For Ramesh" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "For Gudiya" })).toHaveCount(0);
@@ -93,7 +74,9 @@ test("a family goes from the home page to a finished setup", async ({ page, cont
   for (const name of ["Asha", "Ramesh", "Gudiya"]) {
     await expect(page.getByRole("region", { name, exact: true })).toBeVisible();
   }
-  expect(JSON.parse((await page.evaluate((k) => localStorage.getItem(k), STORAGE_KEY))!).step).toBe("done");
+  const session = JSON.parse((await page.evaluate((k) => localStorage.getItem(k), STORAGE_KEY))!);
+  expect(session.email).toBe("asha@example.com");
+  expect(session.householdId).toBe([...api.households.keys()][0]);
 
   // What the API was told.
   const household = [...api.households.values()][0];
@@ -109,8 +92,8 @@ test("a family goes from the home page to a finished setup", async ({ page, cont
   expect(gudiya.paid_income_tax_last_year).toBeNull();
   expect(api.requests.filter((r) => r.method === "PATCH")).toHaveLength(2);
 
-  // Every call about the household carried the token, as a Bearer header.
-  const token = code.split(".")[1];
+  // Every call about the household carried the session token, as a Bearer header.
+  const token = session.token;
   const protectedCalls = api.requests.filter((r) => r.path.startsWith("/households/"));
   expect(protectedCalls.length).toBeGreaterThan(5);
   for (const call of protectedCalls) expect(call.authorization).toBe(`Bearer ${token}`);
@@ -119,11 +102,10 @@ test("a family goes from the home page to a finished setup", async ({ page, cont
 });
 
 test("a person can be edited and removed, and needs a name", async ({ page, api }) => {
-  void api;
+  await signedIn(page, api, api.seedSession("asha@example.com"));
   await page.goto("/setup/basics");
   await page.getByRole("button", { name: "Continue" }).click();
-  await page.getByLabel("I have saved my family code in a safe place").check();
-  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page).toHaveURL(/\/setup\/members$/);
 
   await page.getByRole("button", { name: "Save this person" }).click();
   await expect(page.getByText("Please enter a name or nickname.")).toBeVisible();
@@ -156,10 +138,7 @@ test("a person can be edited and removed, and needs a name", async ({ page, api 
 test("the family stops at 20 people", async ({ page, api }) => {
   const family = api.seedHousehold();
   api.seedMembers(family.id, 20);
-  await page.addInitScript(
-    ([key, code]) => localStorage.setItem(key, JSON.stringify({ code, step: "members" })),
-    [STORAGE_KEY, family.code],
-  );
+  await signedIn(page, api, family);
 
   await page.goto("/setup/members");
 
@@ -168,25 +147,55 @@ test("the family stops at 20 people", async ({ page, api }) => {
   await expect(page.getByRole("button", { name: "Add a person" })).toHaveCount(0);
 });
 
-test("starting again never silently replaces a saved family code", async ({ page, api }) => {
-  const family = api.seedHousehold();
-  await page.addInitScript(
-    ([key, code]) => localStorage.setItem(key, JSON.stringify({ code, step: "documents" })),
-    [STORAGE_KEY, family.code],
-  );
-
+test("signing in again carries on from where the server says the family is", async ({ page, api }) => {
+  const done = api.seedHousehold({ state: "UP" }, "done@example.com");
+  api.seedMembers(done.id, ["Asha"]);
+  await signedIn(page, api, done);
   await page.goto("/setup/basics");
-  await expect(page.getByText("You already started setting up a family on this phone.")).toBeVisible();
-  await page.getByRole("button", { name: "Continue where I stopped" }).click();
-  await expect(page).toHaveURL(/\/setup\/documents$/);
-
-  await page.goto("/setup/basics");
-  await page.getByRole("button", { name: "Start a new family" }).click();
-  await expect(page.getByLabel("District (optional)")).toBeVisible();
+  await expect(page).toHaveURL(/\/dashboard$/);
 });
 
-test("a setup screen without a saved family goes back to the first step", async ({ page }) => {
+test("a household with nobody added yet continues at the family screen", async ({ page, api }) => {
+  await signedIn(page, api, api.seedHousehold({ state: "UP" }, "half@example.com"));
+
+  await page.goto("/setup/basics");
+
+  await expect(page).toHaveURL(/\/setup\/members$/);
+});
+
+test("a second household cannot be made: a person has one", async ({ page, api }) => {
+  const person = api.seedHousehold({ state: "UP" }, "one@example.com");
+  api.seedMembers(person.id, ["Asha"]);
+  // The phone thinks there is no household yet (it was made on another phone a moment ago).
+  await signedIn(page, api, { ...person, id: null });
+
+  await page.goto("/setup/basics");
+  await page.getByRole("button", { name: "Continue" }).click();
+
+  // The server says 409; the app finds the household that already exists and goes on to it.
+  await expect(page).toHaveURL(/\/dashboard$/);
+  expect(api.households.size).toBe(1);
+});
+
+test("a setup screen with no household yet goes back to the first step", async ({ page, api }) => {
+  await signedIn(page, api, api.seedSession("new@example.com"));
+
   await page.goto("/setup/members");
 
   await expect(page).toHaveURL(/\/setup\/basics$/);
+});
+
+test("Back from the family screen opens the home answers, and saving returns to the family screen", async ({ page, api }) => {
+  await signedIn(page, api, api.seedHousehold({ state: "UP", district: "Lucknow" }, "half@example.com"));
+  await page.goto("/setup/members");
+
+  await page.getByRole("button", { name: "Cancel" }).click(); // the empty family opens the add form itself
+  await page.getByRole("link", { name: "Back" }).click();
+  await expect(page).toHaveURL(/\/household\/edit$/);
+  await expect(page.getByLabel("District (optional)")).toHaveValue("Lucknow");
+  await page.getByLabel("District (optional)").fill("Kanpur");
+  await page.getByRole("button", { name: "Save changes" }).click();
+
+  await expect(page).toHaveURL(/\/setup\/members$/);
+  expect([...api.households.values()][0].fields).toMatchObject({ district: "Kanpur" });
 });

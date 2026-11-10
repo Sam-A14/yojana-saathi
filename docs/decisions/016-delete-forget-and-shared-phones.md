@@ -1,5 +1,7 @@
 # 016 — Delete my data, Forget this device, and shared phones
 
+> **Updated by [019](019-email-otp-login.md) and [020](020-frontend-session-and-example.md).** The family code is gone: "Forget this device" is now "Sign out" (it ends the session), and "Delete my data" calls `DELETE /me`, which also removes the email. The shared-phone reasoning below still holds.
+
 ## Context
 Many families share one phone. Two different things can be meant by "remove me": erase the family
 from our server, or just stop this phone from opening it. Mixing them would either lose a family's

@@ -13,11 +13,11 @@ import { VerificationLabel } from "./VerificationLabel";
 const GROUPS: SchemeResult["status"][] = ["eligible", "near_miss", "unknown"];
 
 function SchemeRow({
-  memberId,
+  href,
   scheme,
   children,
 }: {
-  memberId: string;
+  href: string;
   scheme: SchemeSummary;
   children?: React.ReactNode;
 }) {
@@ -25,7 +25,7 @@ function SchemeRow({
   return (
     <li className="flex flex-col gap-2 rounded-lg border border-zinc-300 p-4 dark:border-zinc-700">
       <Link
-        href={`/scheme/${scheme.slug}?member=${memberId}`}
+        href={href}
         className="min-h-12 text-lg font-semibold underline"
       >
         {schemeName(scheme, locale)}
@@ -42,9 +42,12 @@ function SchemeRow({
 export function MemberResults({
   member,
   documents,
+  schemeHref = (memberId, slug) => `/scheme/${slug}?member=${memberId}`,
 }: {
   member: MemberEligibility;
   documents: DocumentInfo[];
+  /** Where a scheme's own page is. The example family has its own pages (no sign-in needed). */
+  schemeHref?: (memberId: string, slug: string) => string;
 }) {
   const t = useTranslations("dashboard");
   const describe = useRuleText(documents);
@@ -69,7 +72,11 @@ export function MemberResults({
             <h3 className="text-lg font-bold">{t(`sections.${kind}`)}</h3>
             <ul className="flex flex-col gap-3">
               {results.map((result) => (
-                <SchemeRow key={result.scheme.slug} memberId={member.member_id} scheme={result.scheme}>
+                <SchemeRow
+                  key={result.scheme.slug}
+                  href={schemeHref(member.member_id, result.scheme.slug)}
+                  scheme={result.scheme}
+                >
                   {kind === "near_miss" && (
                     <div>
                       <p className="font-semibold">{t("closeHint")}</p>
@@ -99,7 +106,7 @@ export function MemberResults({
           <h3 className="text-lg font-bold">{t("sections.excluded")}</h3>
           <ul className="flex flex-col gap-3">
             {member.excluded.map((item) => (
-              <SchemeRow key={item.scheme.slug} memberId={member.member_id} scheme={item.scheme}>
+              <SchemeRow key={item.scheme.slug} href={schemeHref(member.member_id, item.scheme.slug)} scheme={item.scheme}>
                 <p>{t("excludedBecause", { names: item.excluded_by.join(", ") })}</p>
               </SchemeRow>
             ))}

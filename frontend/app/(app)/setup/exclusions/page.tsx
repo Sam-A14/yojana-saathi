@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SetupFrame } from "@/components/SetupFrame";
 import { Button, ButtonLink, ChoiceGroup, ErrorNote, YesNoGroup } from "@/components/ui";
-import { api, errorKind } from "@/lib/api";
+import { api, errorKind, type ErrorKind } from "@/lib/api";
 import { GOVT_EMPLOYEE, PENSION_BANDS } from "@/lib/options";
-import { advanceTo } from "@/lib/storage";
 import type { Member } from "@/lib/types";
 import { useSetupFamily } from "@/lib/use-setup-family";
 
@@ -49,7 +48,7 @@ export default function ExclusionsPage() {
 
   const [data, setData] = useState<Loaded | null>(null);
   const [saving, setSaving] = useState(false);
-  const [problem, setProblem] = useState<"network" | "denied" | "limit" | "generic" | null>(null);
+  const [problem, setProblem] = useState<ErrorKind | null>(null);
 
   useEffect(() => {
     if (!family) return;
@@ -83,7 +82,6 @@ export default function ExclusionsPage() {
       setSaving(false);
       return;
     }
-    advanceTo("done");
     router.push("/dashboard");
   }
 
@@ -97,7 +95,7 @@ export default function ExclusionsPage() {
   }
 
   return (
-    <SetupFrame step={5}>
+    <SetupFrame step={4}>
       <h1 className="text-2xl font-bold">{t("title")}</h1>
       <p>{t("intro")}</p>
       {data.adults.length === 0 && <p>{t("noAdults")}</p>}

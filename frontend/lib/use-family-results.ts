@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { api, errorKind } from "./api";
+import { api, errorKind, type ErrorKind } from "./api";
 import type { DocumentInfo, Eligibility, Family } from "./types";
 
 export type Results =
   | { state: "loading" }
-  | { state: "error"; kind: "network" | "denied" | "limit" | "generic" }
+  | { state: "error"; kind: ErrorKind }
   | { state: "ready"; eligibility: Eligibility; documents: DocumentInfo[] };
 
 /** The family's results, plus the paper names the rule texts need. `reload` tries again. */

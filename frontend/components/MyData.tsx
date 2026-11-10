@@ -3,25 +3,24 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { api, errorKind } from "@/lib/api";
-import { forgetFamily } from "@/lib/storage";
-import type { Family } from "@/lib/types";
+import { api, errorKind, type ErrorKind } from "@/lib/api";
+import { clearSession, type Session } from "@/lib/session";
 import { Button, ErrorNote } from "./ui";
 
 /**
  * Two different things, kept apart on purpose:
- *  - Delete my data: removes the family from our server for good (the API cascades to members,
- *    papers and results), then clears this phone too.
- *  - Forget this device: only clears the family code from this phone (a shared phone is the normal
- *    case). The family stays on the server and opens again with the code.
+ *  - Delete my data: removes the person, their email and their family from our server for good
+ *    (DELETE /me; the database cascades to members, papers and results), then clears this phone too.
+ *  - Sign out: only ends the session on this phone (a shared phone is the normal case). Everything
+ *    stays on the server and opens again by signing in with the same email.
  */
-export function MyData({ family }: { family: Family }) {
+export function MyData({ session }: { session: Session }) {
   const t = useTranslations("privacy");
   const te = useTranslations("errors");
   const router = useRouter();
-  const [panel, setPanel] = useState<"delete" | "forget" | null>(null);
+  const [panel, setPanel] = useState<"delete" | "signout" | null>(null);
   const [busy, setBusy] = useState(false);
-  const [problem, setProblem] = useState<"network" | "denied" | "limit" | "generic" | null>(null);
+  const [problem, setProblem] = useState<ErrorKind | null>(null);
 
   function close() {
     setPanel(null);
@@ -32,18 +31,20 @@ export function MyData({ family }: { family: Family }) {
     setBusy(true);
     setProblem(null);
     try {
-      await api.deleteHousehold(family);
+      await api.deleteMe(session.token);
     } catch (error) {
       setProblem(errorKind(error));
       setBusy(false);
       return;
     }
-    forgetFamily();
+    clearSession();
     router.push("/deleted");
   }
 
-  function forgetDevice() {
-    forgetFamily();
+  async function signOut() {
+    // Best effort: if the server cannot be reached, this phone still forgets the session.
+    await api.signOut(session.token).catch(() => undefined);
+    clearSession();
     router.push("/");
   }
 
@@ -53,11 +54,12 @@ export function MyData({ family }: { family: Family }) {
         {t("title")}
       </h2>
       <p>{t("intro")}</p>
+      <p className="font-semibold">{t("signedInAs", { email: session.email })}</p>
 
       {panel === null && (
         <div className="flex flex-col gap-3">
-          <Button variant="secondary" onClick={() => setPanel("forget")}>
-            {t("forgetButton")}
+          <Button variant="secondary" onClick={() => setPanel("signout")}>
+            {t("signOutButton")}
           </Button>
           <Button variant="danger" onClick={() => setPanel("delete")}>
             {t("deleteButton")}
@@ -79,14 +81,13 @@ export function MyData({ family }: { family: Family }) {
         </div>
       )}
 
-      {panel === "forget" && (
-        <div role="alertdialog" aria-labelledby="forget-title" aria-describedby="forget-warning" className="flex flex-col gap-3 rounded-lg border-2 border-amber-600 p-4">
-          <h3 id="forget-title" className="text-lg font-bold">{t("forgetTitle")}</h3>
-          <p id="forget-warning">{t("forgetWarning")}</p>
-          <p className="font-semibold">{t("forgetReminder")}</p>
-          <Button onClick={forgetDevice}>{t("forgetYes")}</Button>
+      {panel === "signout" && (
+        <div role="alertdialog" aria-labelledby="signout-title" aria-describedby="signout-warning" className="flex flex-col gap-3 rounded-lg border-2 border-amber-600 p-4">
+          <h3 id="signout-title" className="text-lg font-bold">{t("signOutTitle")}</h3>
+          <p id="signout-warning">{t("signOutWarning")}</p>
+          <Button onClick={signOut}>{t("signOutYes")}</Button>
           <Button variant="secondary" onClick={close}>
-            {t("forgetNo")}
+            {t("signOutNo")}
           </Button>
         </div>
       )}
