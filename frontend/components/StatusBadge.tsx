@@ -1,35 +1,25 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { StatusIcon } from "./icons";
 
 export type ResultKind = "eligible" | "near_miss" | "unknown" | "excluded";
 
-// A mark and a word as well as a colour, so the meaning never depends on seeing colours.
-const LOOK: Record<ResultKind, { mark: string; classes: string }> = {
-  eligible: {
-    mark: "✓",
-    classes: "border-emerald-700 bg-emerald-50 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-100",
-  },
-  near_miss: {
-    mark: "≈",
-    classes: "border-amber-600 bg-amber-50 text-amber-950 dark:bg-amber-950 dark:text-amber-100",
-  },
-  unknown: {
-    mark: "?",
-    classes: "border-sky-700 bg-sky-50 text-sky-950 dark:bg-sky-950 dark:text-sky-100",
-  },
-  excluded: {
-    mark: "✕",
-    classes: "border-red-700 bg-red-50 text-red-950 dark:bg-red-950 dark:text-red-100",
-  },
+// An icon and a word as well as a colour, so the meaning never depends on seeing colours.
+const COLOURS: Record<ResultKind, string> = {
+  eligible: "bg-ok-bg text-ok-fg",
+  near_miss: "bg-close-bg text-close-fg",
+  unknown: "bg-ask-bg text-ask-fg",
+  excluded: "bg-block-bg text-block-fg",
 };
 
 export function StatusBadge({ kind }: { kind: ResultKind }) {
   const t = useTranslations("status");
-  const { mark, classes } = LOOK[kind];
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm font-semibold ${classes}`}>
-      <span aria-hidden>{mark}</span>
+    <span
+      className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-base font-bold ${COLOURS[kind]}`}
+    >
+      <StatusIcon kind={kind} size={20} />
       {t(kind)}
     </span>
   );

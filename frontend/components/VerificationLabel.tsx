@@ -11,13 +11,13 @@ export function VerificationLabel({ scheme }: { scheme: SchemeSummary }) {
   const locale = useLocale() === "hi" ? "hi" : "en";
   if (!scheme.verified || !scheme.verified_at) {
     return (
-      <span className="inline-flex rounded-full border border-amber-600 bg-amber-50 px-3 py-1 text-sm font-semibold text-amber-950 dark:bg-amber-950 dark:text-amber-100">
+      <span className="inline-flex rounded-full bg-close-bg px-4 py-1.5 text-base font-bold text-close-fg">
         {t("unverified")}
       </span>
     );
   }
   return (
-    <span className="text-sm text-zinc-600 dark:text-zinc-400">
+    <span className="text-base text-muted">
       {t("verifiedOn", { date: formatDate(scheme.verified_at, locale) })}
     </span>
   );
