@@ -71,15 +71,23 @@ Open <http://localhost:3000>. The page should say "Backend: ok".
 Start the backend and open <http://localhost:8000/docs> for the full list with a "Try it out" button.
 The database must be set up first (see "Database" below).
 
-**No login yet.** `POST /households` returns an `access_token`. Send it on every other household
-call as `Authorization: Bearer <token>`. It is shown **once and cannot be recovered**: we store only
-a scrambled copy, so if it is lost the household can no longer be opened or deleted. A wrong or
-missing token, or an unknown household id, gives `403`.
+**Sign in with email (no passwords).** `POST /auth/request-code` emails a 6-digit code;
+`POST /auth/verify` swaps it for a session token. Send the token on every other call as
+`Authorization: Bearer <token>`; it lasts 30 days. A code works for 10 minutes and allows 5 wrong
+guesses; one email can ask for 3 codes an hour; and the whole service stops at 80 codes a UTC day
+(`EMAIL_DAILY_LIMIT`) to protect the email provider's free quota. Codes are stored only as a keyed
+hash and are never logged. Not signed in (or the session expired) gives `401`. Signed in but the
+household is not yours, or does not exist, gives `403`. Each person has one household.
 
-| Method and path | Needs token | What it does |
+| Method and path | Needs sign-in | What it does |
 | --- | --- | --- |
-| `POST /households` | no | Start a household; returns the token. |
-| `GET` / `PATCH` / `DELETE /households/{id}` | yes | Read, change, or delete the household and all its members (cascade). |
+| `POST /auth/request-code` | no | Email a sign-in code. Same answer for any address. `429` after 3 an hour, `503` when the day's cap is used. |
+| `POST /auth/verify` | no | Swap the emailed code for a session token. |
+| `POST /auth/sign-out` | yes | End this browser's session. |
+| `GET /me` | yes | Your email and your household id (null until you set one up). |
+| `DELETE /me` | yes | **Delete my data:** the user, their email, and the household, members, documents and results. |
+| `POST /households` | yes | Start your household (`409` if you already have one). |
+| `GET` / `PATCH /households/{id}` | yes | Read or change the household. |
 | `POST` / `GET /households/{id}/members` | yes | Add a member (max 20) / list members. |
 | `GET` / `PATCH` / `DELETE /households/{id}/members/{member_id}` | yes | Read, change, remove one member. |
 | `PUT /households/{id}/members/{member_id}/documents` | yes | Set which documents a member has (`true`) or does not have (`false`). Replaces the whole set. |
@@ -100,9 +108,12 @@ only birth *year* is stored; a question left as `null` means "not answered", whi
 from "no". Quick try:
 
 ```bash
-curl -s -X POST localhost:8000/households -H 'content-type: application/json' \
-  -d '{"state":"UP","area_type":"rural","income_band":"1_to_2_lakh"}'
+curl -s -X POST localhost:8000/auth/request-code -H 'content-type: application/json' \
+  -d '{"email":"you@example.com"}'
 ```
+
+Locally, set `RESEND_API_KEY` and `AUTH_SECRET` in `backend/.env` (see `.env.example`). Until you
+verify a domain with Resend, the code only reaches the email address of your own Resend account.
 
 ## Database (local)
 
@@ -156,6 +167,11 @@ Without `TEST_DATABASE_URL`, the database tests are skipped (CI refuses to skip 
 | backend | `FRONTEND_URL` | The one website address allowed to call the API (CORS). |
 | backend | `DATABASE_URL` | PostgreSQL connection string. A plain `postgresql://...` URL is fine. Needed for migrations and any database use; not for `/health`. |
 | backend | `TEST_DATABASE_URL` | Only for pytest. The database name must end in `_test` because the tests wipe it. |
+| backend | `AUTH_SECRET` | Long random text (32+ characters) that signs the stored hash of sign-in codes. Never change it once users exist (waiting codes stop working). Never share or log it. |
+| backend | `RESEND_API_KEY` | Resend API key, for sending sign-in codes. Never share or log it. |
+| backend | `EMAIL_FROM` | Sender shown on the email. Default `Yojana Saathi <onboarding@resend.dev>`, which only reaches your own address. See "Going live with a custom domain". |
+| backend | `EMAIL_PROVIDER` | `resend` (default) or `fake` (tests only, sends nothing). |
+| backend | `EMAIL_DAILY_LIMIT` | Optional. Most sign-in codes sent per UTC day. Default 80 (Resend's free plan is about 100 a day). |
 | backend | `APP_VERSION` | Optional. Version shown by `/health`. |
 | frontend | `NEXT_PUBLIC_API_URL` | Where the backend lives. Visible to anyone using the site, so never put secrets in it. |
 
@@ -191,6 +207,10 @@ Neon pauses an idle database, so the first query after a break can take a second
    - `DATABASE_URL` = the Neon string from step 1.
    - `FRONTEND_URL` = your Vercel address (step 3; set it after you have it, no trailing slash,
      then redeploy).
+   - `AUTH_SECRET` = a long random string, for example the output of
+     `python -c "import secrets; print(secrets.token_urlsafe(48))"`.
+   - `RESEND_API_KEY` = your key from <https://resend.com> (API Keys). `EMAIL_FROM` is optional
+     until you have your own domain.
 6. Open `https://<your-service>.onrender.com/health` to check. It does not touch the database, so
    it answers even while Neon is waking up.
 
@@ -233,3 +253,29 @@ slug. The run summary shows the proposal, whether it passed validation, and the 
 4. Deploy, then copy the Vercel address into `FRONTEND_URL` on Render (step 2.5).
 
 `NEXT_PUBLIC_` values are baked in at build time, so redeploy the frontend after changing it.
+
+## Going live with a custom domain
+
+Until you do this, sign-in emails come from Resend's shared test sender
+(`onboarding@resend.dev`), which **only delivers to the email address of your own Resend
+account**. That is enough to build and test, but no other family can sign in. Moving to your own
+domain is a settings change, not a code change.
+
+1. **Buy a domain** from any registrar (a `.in` or `.com` is about ₹500 to 1,000 a year).
+2. **Verify it with Resend.** In the Resend dashboard choose Domains > Add Domain and enter it
+   (a subdomain such as `mail.yourdomain.in` keeps it away from your website's own mail). Resend
+   then shows the exact DNS records to create: normally an SPF `TXT`, a DKIM `TXT`, and an `MX`
+   record for bounces. Add them at your registrar's DNS page, exactly as shown, then press Verify.
+   It can take from a few minutes to a day. Add the DMARC record Resend suggests too; it helps
+   Gmail and Outlook trust the mail.
+3. **Change the sender.** On Render set `EMAIL_FROM` to an address on the verified domain, for
+   example `Yojana Saathi <login@mail.yourdomain.in>`, and redeploy. Nothing else changes.
+4. **Check it** by asking for a code to an address that is not yours, and look in the spam folder
+   once.
+5. **Point the website at the domain (optional, but people trust it more).** In Vercel open the
+   project > Settings > Domains > Add, and enter the domain. Vercel shows the records to create
+   at your registrar (an `A` record for the bare domain, a `CNAME` for `www`). Wait until Vercel
+   shows the domain as valid.
+6. **Tell the backend about the new website address.** On Render set `FRONTEND_URL` to the new
+   address (with `https://`, no trailing slash) and redeploy, or the browser will block the
+   website's calls to the API (CORS). `NEXT_PUBLIC_API_URL` on Vercel does not change.

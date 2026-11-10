@@ -1,9 +1,5 @@
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
-
-from app.db.models import Household, Member, MemberDocument
 
 
 def test_update_changes_only_the_fields_sent(client: TestClient, make_family) -> None:
@@ -35,41 +31,29 @@ def test_update_with_null_clears_an_answer(client: TestClient, make_family) -> N
         {"aadhaar_number": "123412341234"},  # unknown field: identity numbers are never accepted
     ],
 )
-def test_bad_household_input_is_422(client: TestClient, body) -> None:
-    assert client.post("/households", json=body).status_code == 422
+def test_bad_household_input_is_422(client: TestClient, body, signed_in) -> None:
+    assert client.post("/households", json=body, headers=signed_in).status_code == 422
 
 
-def test_422_names_the_field_and_has_no_stack_trace(client: TestClient) -> None:
-    response = client.post("/households", json={"area_type": "suburb"})
+def test_422_names_the_field_and_has_no_stack_trace(client: TestClient, signed_in) -> None:
+    response = client.post("/households", json={"area_type": "suburb"}, headers=signed_in)
 
     text = response.text
     assert "area_type" in text
     assert "Traceback" not in text
 
 
-def test_delete_removes_everything_of_this_household_only(
-    client: TestClient, db: Session, seeded, make_family
-) -> None:
-    mine, other = make_family(), make_family()
-    for family in (mine, other):
-        member = client.post(
-            f"{family.url}/members",
-            json={"nickname": "Asha", "relation": "self"},
-            headers=family.headers,
-        ).json()
-        client.put(
-            f"{family.url}/members/{member['id']}/documents",
-            json={"documents": {"bpl_card": True}},
-            headers=family.headers,
-        )
+def test_a_person_has_one_household(client: TestClient, make_family) -> None:
+    family = make_family(state="UP")
 
-    response = client.delete(mine.url, headers=mine.headers)
+    again = client.post("/households", json={"state": "BR"}, headers=family.headers)
 
-    assert response.status_code == 204
-    assert db.scalar(select(func.count()).select_from(Household)) == 1
-    # The database cascade removed the members and their document answers too.
-    assert db.scalar(select(func.count()).select_from(Member)) == 1
-    assert db.scalar(select(func.count()).select_from(MemberDocument)) == 1
-    # The old token no longer opens anything, and the other household is untouched.
-    assert client.get(mine.url, headers=mine.headers).status_code == 403
-    assert client.get(other.url, headers=other.headers).status_code == 200
+    assert again.status_code == 409
+    assert client.get(family.url, headers=family.headers).json()["state"] == "UP"
+
+
+def test_there_is_no_way_to_delete_just_the_household(client: TestClient, make_family) -> None:
+    # "Delete my data" is DELETE /me, which removes the user and their email as well.
+    family = make_family()
+
+    assert client.delete(family.url, headers=family.headers).status_code == 405

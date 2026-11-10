@@ -1,5 +1,7 @@
 # 012 — The "family code" is the household id and the token, joined by a dot
 
+> **Superseded by [019](019-email-otp-login.md).** The family code was removed when email login arrived.
+
 ## Context
 Decision 008 gives a household one secret access token, shown once. But every household route is
 `/households/{household_id}/...` and nothing can look a household up by its token (only a hash is

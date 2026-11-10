@@ -1,8 +1,11 @@
-"""Household access tokens.
+"""Session tokens and sign-in codes.
 
-No login yet, so a long random token is the only key to a household. Only its SHA-256 hash is
-stored. A slow password hash (bcrypt) would add nothing here: those exist because people choose
-guessable passwords, and this token is 256 random bits that nobody can guess or brute-force.
+Session token: 256 random bits that nobody can guess, so a fast hash (SHA-256) is enough and
+lookups stay an indexed equality. Only the hash is stored.
+
+Sign-in code: only 6 digits (a million values). An unkeyed hash of it could be reversed in under a
+second if the database leaked, so it is hashed with HMAC and a server-side secret (AUTH_SECRET)
+that is not in the database, and the email is part of what is hashed.
 """
 
 import hashlib
@@ -21,3 +24,11 @@ def hash_token(token: str) -> str:
 def hashes_match(a: str, b: str) -> bool:
     # Constant-time comparison: how long it takes must not reveal how many characters matched.
     return hmac.compare_digest(a, b)
+
+
+def new_code() -> str:
+    return f"{secrets.randbelow(1_000_000):06d}"  # leading zeros kept: "004217"
+
+
+def hash_code(secret: str, email: str, code: str) -> str:
+    return hmac.new(secret.encode(), f"{email}:{code}".encode(), hashlib.sha256).hexdigest()

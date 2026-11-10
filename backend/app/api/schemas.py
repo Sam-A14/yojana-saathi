@@ -74,15 +74,52 @@ class HouseholdOut(HouseholdFields):
     updated_at: datetime
 
 
-class HouseholdCreated(HouseholdOut):
-    access_token: str = Field(description="Shown once. Send as 'Authorization: Bearer <token>'.")
-    token_notice: str
+# --- sign-in -------------------------------------------------------------------------------
+
+# A simple shape check, not full email validation: the only real test is that the code arrives.
+EMAIL_SHAPE = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 
 
-TOKEN_NOTICE = (
-    "Save this access token now. It is shown only once and cannot be recovered or reset: we store "
-    "only a scrambled copy. If it is lost, this household can no longer be opened or deleted."
-)
+class RequestCodeIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    # Lower-cased and trimmed first, so "Asha@Mail.com " and "asha@mail.com" are one person.
+    email: Annotated[
+        str,
+        StringConstraints(
+            strip_whitespace=True, to_lower=True, max_length=254, pattern=EMAIL_SHAPE
+        ),
+    ]
+    language: Literal["en", "hi"] = "en"
+
+
+class RequestCodeOut(BaseModel):
+    # The same for every address, known or not: the answer must not reveal who has an account.
+    status: Literal["sent"] = "sent"
+    expires_in_minutes: int
+
+
+class VerifyIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    email: Annotated[
+        str,
+        StringConstraints(
+            strip_whitespace=True, to_lower=True, max_length=254, pattern=EMAIL_SHAPE
+        ),
+    ]
+    code: Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^\d{6}$")]
+
+
+class SessionOut(BaseModel):
+    access_token: str = Field(description="Send as 'Authorization: Bearer <token>'.")
+    expires_at: datetime
+
+
+class MeOut(BaseModel):
+    email: str
+    language: Literal["en", "hi"]
+    household_id: uuid.UUID | None
 
 
 # --- members -------------------------------------------------------------------------------

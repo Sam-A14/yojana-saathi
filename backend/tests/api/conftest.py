@@ -1,14 +1,17 @@
+import itertools
 from collections.abc import Iterator
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db, get_today
-from app.db.models import Scheme, SchemeVersion
+from app.api.deps import get_db, get_email_client, get_today
+from app.api.security import hash_token, new_token
+from app.db.models import Scheme, SchemeVersion, User, UserSession
 from app.db.seed import apply_seed, read_seed_files
+from app.email import FakeEmailClient
 from app.main import app
 
 
@@ -26,25 +29,64 @@ def seeded(db: Session) -> None:
     apply_seed(db, read_seed_files())
 
 
-class Family:
-    """A household created through the API, with the headers that open it."""
+def sign_in_user(db: Session, email: str) -> tuple[User, str]:
+    """A user with a live session, made directly in the database (the sign-in flow itself is
+    tested in test_auth.py). Returns the user and the session token."""
+    user = User(email=email)
+    db.add(user)
+    db.flush()
+    token = new_token()
+    now = datetime.now(UTC)
+    db.add(
+        UserSession(
+            user_id=user.id,
+            token_hash=hash_token(token),
+            created_at=now,
+            expires_at=now + timedelta(days=30),
+        )
+    )
+    db.flush()
+    return user, token
 
-    def __init__(self, client: TestClient, **fields: Any) -> None:
-        response = client.post("/households", json=fields)
+
+class Family:
+    """A signed-in user and the household they created through the API."""
+
+    def __init__(self, client: TestClient, db: Session, email: str, **fields: Any) -> None:
+        self.user, self.token = sign_in_user(db, email)
+        self.email = email
+        self.headers = {"Authorization": f"Bearer {self.token}"}
+        response = client.post("/households", json=fields, headers=self.headers)
         assert response.status_code == 201, response.text
         self.body = response.json()
         self.id: str = self.body["id"]
-        self.token: str = self.body["access_token"]
-        self.headers = {"Authorization": f"Bearer {self.token}"}
         self.url = f"/households/{self.id}"
 
 
 @pytest.fixture
-def make_family(client: TestClient):  # noqa: ANN201
+def make_family(client: TestClient, db: Session):  # noqa: ANN201
+    counter = itertools.count(1)
+
     def make(**fields: Any) -> Family:
-        return Family(client, **fields)
+        return Family(client, db, f"family{next(counter)}@example.com", **fields)
 
     return make
+
+
+@pytest.fixture
+def signed_in(db: Session) -> dict[str, str]:
+    """Headers of a signed-in user who has no household yet."""
+    _, token = sign_in_user(db, "newcomer@example.com")
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def mailbox() -> Iterator[FakeEmailClient]:
+    """Replaces the email client with one that keeps messages, so tests can read the code."""
+    fake = FakeEmailClient()
+    app.dependency_overrides[get_email_client] = lambda: fake
+    yield fake
+    app.dependency_overrides.pop(get_email_client, None)
 
 
 TODAY = date(2026, 11, 3)

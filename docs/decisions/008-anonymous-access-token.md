@@ -1,5 +1,7 @@
 # 008 — Opening a household without a login
 
+> **Superseded by [019](019-email-otp-login.md).** The anonymous token was removed when email login arrived.
+
 ## Context
 Login (Google or email OTP) comes later, together with alerts. The family dashboard needs a backend
 now, but we do not want to ask for an email, a password or any identity number to use it

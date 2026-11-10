@@ -361,15 +361,15 @@ def test_household_with_no_members_has_no_results(
     assert eligibility(client, make_family())["members"] == []
 
 
-def test_eligibility_needs_the_households_own_token(
+def test_eligibility_needs_a_session_for_the_households_own_user(
     client: TestClient, seeded, today, make_family
 ) -> None:
     mine, other = make_family(), make_family()
     url = f"{mine.url}/eligibility"
 
-    assert client.get(url).status_code == 403
-    assert client.get(url, headers={"Authorization": "Bearer nope"}).status_code == 403
-    assert client.get(url, headers=other.headers).status_code == 403
+    assert client.get(url).status_code == 401  # not signed in
+    assert client.get(url, headers={"Authorization": "Bearer nope"}).status_code == 401
+    assert client.get(url, headers=other.headers).status_code == 403  # signed in, not theirs
     assert client.get(url, headers=mine.headers).status_code == 200
 
 

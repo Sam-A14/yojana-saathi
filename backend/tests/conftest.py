@@ -43,6 +43,23 @@ def never_call_a_real_llm(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     get_settings.cache_clear()
 
 
+@pytest.fixture(autouse=True)
+def never_send_real_email(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    """Every test uses the fake email client and a fixed secret: nothing can send a real email."""
+    from app.api import deps
+    from app.config import get_settings
+
+    monkeypatch.setenv("EMAIL_PROVIDER", "fake")
+    monkeypatch.delenv("RESEND_API_KEY", raising=False)
+    monkeypatch.setenv("AUTH_SECRET", "test-secret-test-secret-test-secret-123")
+    monkeypatch.delenv("EMAIL_DAILY_LIMIT", raising=False)
+    get_settings.cache_clear()
+    deps._email_client.cache_clear()
+    yield
+    get_settings.cache_clear()
+    deps._email_client.cache_clear()
+
+
 @pytest.fixture(scope="session")
 def test_database_url() -> str:
     url = os.environ.get("TEST_DATABASE_URL")
