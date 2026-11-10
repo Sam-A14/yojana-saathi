@@ -7,6 +7,7 @@ import type {
   HouseholdFields,
   Member,
   MemberInput,
+  SchemeSummary,
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
@@ -56,6 +57,8 @@ const household = (family: Family) => `/households/${family.id}`;
 
 export const api = {
   listDocuments: () => request<DocumentInfo[]>("/documents"),
+  // Public: the schemes we check, with no family involved. Used by the home page.
+  listSchemes: () => request<SchemeSummary[]>("/schemes"),
 
   createHousehold: (data: HouseholdFields) =>
     request<HouseholdCreated>("/households", { method: "POST", body: data }),

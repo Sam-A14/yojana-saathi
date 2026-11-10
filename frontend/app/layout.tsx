@@ -1,20 +1,27 @@
 import type { Metadata } from "next";
-import { Geist, Noto_Sans_Devanagari } from "next/font/google";
+import { Noto_Sans_Devanagari, Plus_Jakarta_Sans } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { AppHeader } from "@/components/AppHeader";
 import { Footer } from "@/components/Footer";
+import { TEXT_SIZE_KEY } from "@/lib/text-size";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// One variable file each (all weights in a single download). Headings use 700 and 800.
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
+  display: "swap",
 });
 
-// Geist has no Devanagari letters, so Hindi text needs its own font to look the same everywhere.
+// Plus Jakarta Sans has no Devanagari letters, so Hindi text needs its own font to look the same
+// everywhere. Not preloaded: the browser downloads it only when a page actually shows Hindi
+// letters, so English readers never pay for it.
 const devanagari = Noto_Sans_Devanagari({
   variable: "--font-devanagari",
   subsets: ["devanagari"],
+  display: "swap",
+  preload: false,
 });
 
 // Allowed to block: the language comes from a cookie, which only exists at request time, so the
@@ -26,14 +33,26 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title"), description: t("description") };
 }
 
+// Runs before the first paint, so a person who chose "A+" never sees the page jump in size.
+// localStorage can be blocked (private mode), hence the try/catch.
+const applyTextSize = `try{if(localStorage.getItem("${TEXT_SIZE_KEY}")==="large")document.documentElement.dataset.textSize="large"}catch(e){}`;
+
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();
   return (
-    <html lang={locale} className={`${geistSans.variable} ${devanagari.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
+    // suppressHydrationWarning: the script above sets data-text-size on <html> before React runs.
+    <html
+      lang={locale}
+      className={`${jakarta.variable} ${devanagari.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: applyTextSize }} />
+      </head>
+      <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
           <AppHeader />
-          <main className="mx-auto w-full max-w-xl flex-1 px-4 py-6">{children}</main>
+          <main className="flex-1">{children}</main>
           <Footer />
         </NextIntlClientProvider>
       </body>

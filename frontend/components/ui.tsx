@@ -2,22 +2,24 @@
 
 import Link from "next/link";
 import { type ComponentProps, type ReactNode, useId } from "react";
+import { buttonBase, buttonClass, buttonLook, type Look } from "./button-styles";
 
-// Small building blocks. Every tap target is at least 48px tall (min-h-12) and text is 16px or
-// bigger, so the screens work with a thumb on a cheap phone.
+// Re-exported so client code keeps one import path.
+export { buttonClass };
 
-const buttonBase =
-  "inline-flex min-h-12 items-center justify-center rounded-lg px-5 text-base font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 disabled:cursor-not-allowed disabled:opacity-50";
-const buttonLook = {
-  primary: "bg-emerald-700 text-white hover:bg-emerald-800",
-  secondary: "border border-zinc-400 hover:bg-zinc-100 dark:border-zinc-600 dark:hover:bg-zinc-800",
-  danger: "border border-red-700 text-red-800 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950",
-};
-type Look = keyof typeof buttonLook;
+// Small building blocks. Every tap target is at least 48px tall (buttons are 56px) and text is
+// 16px or bigger, so the screens work with a thumb on a cheap phone. Colours come from the tokens
+// in globals.css, so dark mode needs no extra classes here.
 
-/** The look of a button, for places that need a real link (an official website opens in a new tab). */
-export const buttonClass = (variant: Look = "primary", extra = "") =>
-  `${buttonBase} ${buttonLook[variant]} ${extra}`;
+/** A white card with a soft shadow. The one container every screen uses for a "thing". */
+export function Card({ className = "", ...props }: ComponentProps<"div">) {
+  return (
+    <div
+      className={`rounded-2xl border border-line-soft bg-surface p-5 shadow-card ${className}`}
+      {...props}
+    />
+  );
+}
 
 export function Button({
   variant = "primary",
@@ -41,7 +43,7 @@ export function ErrorNote({ children }: { children: ReactNode }) {
   return (
     <p
       role="alert"
-      className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-base text-red-900 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
+      className="rounded-xl border-2 border-danger bg-danger-bg px-4 py-3 text-base font-semibold text-danger"
     >
       {children}
     </p>
@@ -49,7 +51,7 @@ export function ErrorNote({ children }: { children: ReactNode }) {
 }
 
 const inputLook =
-  "min-h-12 w-full rounded-lg border border-zinc-400 bg-transparent px-3 text-base dark:border-zinc-600";
+  "min-h-14 w-full rounded-xl border-2 border-line bg-surface px-4 text-lg";
 
 function FieldShell({
   id,
@@ -66,17 +68,17 @@ function FieldShell({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-base font-semibold">
+      <label htmlFor={id} className="text-lg font-bold">
         {label}
       </label>
       {hint && (
-        <p id={`${id}-hint`} className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p id={`${id}-hint`} className="text-base text-muted">
           {hint}
         </p>
       )}
       {children}
       {error && (
-        <p id={`${id}-error`} role="alert" className="text-sm text-red-700 dark:text-red-300">
+        <p id={`${id}-error`} role="alert" className="text-base font-semibold text-danger">
           {error}
         </p>
       )}
@@ -183,19 +185,19 @@ export function ChoiceGroup({
   ];
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="text-base font-semibold">{legend}</legend>
-      {hint && <p className="text-sm text-zinc-600 dark:text-zinc-400">{hint}</p>}
-      <div className="flex flex-wrap gap-2">
+      <legend className="text-lg font-bold">{legend}</legend>
+      {hint && <p className="text-base text-muted">{hint}</p>}
+      <div className="flex flex-wrap gap-3">
         {all.map((option) => (
           <label key={option.value ?? "not-sure"} className="relative">
             <input
               type="radio"
               name={name}
-              className="peer absolute inset-0 opacity-0"
+              className="peer absolute inset-0 h-full w-full cursor-pointer opacity-0"
               checked={value === option.value}
               onChange={() => onChange(option.value)}
             />
-            <span className="flex min-h-12 items-center rounded-lg border border-zinc-400 px-4 text-base peer-checked:border-emerald-700 peer-checked:bg-emerald-50 peer-checked:font-semibold peer-focus-visible:outline-2 peer-focus-visible:outline-emerald-700 dark:border-zinc-600 dark:peer-checked:bg-emerald-950">
+            <span className="flex min-h-14 items-center rounded-xl border-2 border-line bg-surface px-5 text-lg transition-colors peer-checked:border-primary peer-checked:bg-primary-soft peer-checked:font-bold peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary">
               {option.label}
             </span>
           </label>

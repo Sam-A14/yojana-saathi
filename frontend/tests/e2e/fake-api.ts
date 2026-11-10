@@ -22,6 +22,15 @@ export const DOCUMENTS = [
   { code: "bpl_card", name_en: "BPL (below poverty line) card", name_hi: "बीपीएल (गरीबी रेखा से नीचे) कार्ड", household_level: true },
 ];
 
+// GET /schemes: the schemes that appear in the sample eligibility result, once each.
+const SCHEMES = [
+  ...new Map(
+    (eligibility as { members: { schemes: { scheme: { slug: string } }[] }[] }).members
+      .flatMap((m) => m.schemes)
+      .map((s) => [s.scheme.slug, s.scheme]),
+  ).values(),
+];
+
 type Json = Record<string, unknown>;
 
 // The real API always sends all five answers about a home, null when never answered.
@@ -120,6 +129,7 @@ export class FakeApi {
       });
 
     if (path === "/documents") return reply(200, DOCUMENTS);
+    if (path === "/schemes") return reply(200, SCHEMES);
     if (path === "/households" && request.method() === "POST") {
       const id = randomUUID();
       const token = randomBytes(32).toString("base64url");
