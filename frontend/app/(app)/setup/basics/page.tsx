@@ -2,63 +2,62 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SetupFrame } from "@/components/SetupFrame";
 import { HouseholdForm } from "@/components/HouseholdForm";
-import { Button } from "@/components/ui";
-import { api, errorKind } from "@/lib/api";
-import { makeFamilyCode } from "@/lib/family-code";
-import { STEP_PATHS, forgetFamily, saveFamily, useStoredFamily } from "@/lib/storage";
+import { type ErrorKind, api, errorKind } from "@/lib/api";
+import { nextPathFor } from "@/lib/next-path";
+import { type Session, setHouseholdId, useSession } from "@/lib/session";
 import type { HouseholdFields } from "@/lib/types";
 
-// The form is a child that exists only while there is no saved family, so what was typed for one
-// family is gone when the next one starts. Without this the previous family's district, area and
-// income came back in the new form (tests/e2e/shared-phone.spec.ts fails without it).
+// The form is a child that exists only for a signed-in person with no household yet, so what was
+// typed for one person is gone when the next one signs in. Without this the previous family's
+// district, area and income came back in the new form (tests/e2e/shared-phone.spec.ts fails without it).
 export default function BasicsPage() {
-  const t = useTranslations("basics");
   const tc = useTranslations("common");
   const router = useRouter();
-  const { ready, family: existing } = useStoredFamily();
+  const { ready, session } = useSession();
 
-  if (!ready) return <p>{tc("loading")}</p>;
+  useEffect(() => {
+    if (!ready) return;
+    if (!session) {
+      router.replace("/signin");
+      return;
+    }
+    // Already has a household (for example, signed in on a second phone): carry on from where the
+    // server says they are.
+    if (session.householdId) {
+      nextPathFor(session)
+        .then((path) => router.replace(path))
+        .catch(() => router.replace("/dashboard"));
+    }
+  }, [ready, session, router]);
 
-  // Starting again would replace the saved code on this phone, so ask first.
-  if (existing) {
-    return (
-      <SetupFrame step={1}>
-        <h1 className="text-2xl font-bold">{t("existingTitle")}</h1>
-        <div className="flex flex-col gap-3">
-          <Button onClick={() => router.push(STEP_PATHS[existing.step])}>{t("existingContinue")}</Button>
-          <Button variant="secondary" onClick={forgetFamily}>
-            {t("existingNew")}
-          </Button>
-          <p className="text-base text-zinc-600 dark:text-zinc-400">{t("existingNewNote")}</p>
-        </div>
-      </SetupFrame>
-    );
-  }
-
-  return <BasicsForm />;
+  if (!ready || !session || session.householdId) return <p>{tc("loading")}</p>;
+  return <BasicsForm key={session.token} session={session} />;
 }
 
-function BasicsForm() {
+function BasicsForm({ session }: { session: Session }) {
   const t = useTranslations("basics");
   const tc = useTranslations("common");
   const te = useTranslations("errors");
   const router = useRouter();
   const [saving, setSaving] = useState(false);
-  const [problem, setProblem] = useState<"network" | "denied" | "limit" | "generic" | null>(null);
+  const [problem, setProblem] = useState<ErrorKind | null>(null);
 
   async function create(data: HouseholdFields) {
     setSaving(true);
     setProblem(null);
     try {
-      const created = await api.createHousehold(data);
-      // The token is returned only now and never again, so it is saved before anything else.
-      const code = makeFamilyCode({ id: created.id, token: created.access_token });
-      saveFamily(code, "code");
-      router.push("/setup/code");
+      const created = await api.createHousehold(session.token, data);
+      setHouseholdId(created.id);
+      router.push("/setup/members");
     } catch (error) {
+      // 409: this person already has a household (made on another phone while this form was open).
+      if (errorKind(error) === "limit") {
+        router.replace(await nextPathFor(session).catch(() => "/dashboard"));
+        return;
+      }
       setProblem(errorKind(error));
       setSaving(false);
     }

@@ -6,14 +6,14 @@ async function openDashboard(page: Page, api: FakeApi) {
   const family = api.seedHousehold();
   api.seedMembers(family.id, ["Asha"]);
   await page.addInitScript(
-    ([key, code]) => {
+    ([key, value]) => {
       // Runs on every page load, so only set it the first time: a test that clears it must stay cleared.
       if (!sessionStorage.getItem("seeded")) {
         sessionStorage.setItem("seeded", "1");
-        localStorage.setItem(key, JSON.stringify({ code, step: "done" }));
+        localStorage.setItem(key, value);
       }
     },
-    [STORAGE_KEY, family.code],
+    [STORAGE_KEY, api.storedSession(family)],
   );
   await page.goto("/dashboard");
   await expect(page.getByRole("heading", { name: "Your data" })).toBeVisible();
@@ -36,7 +36,15 @@ test.describe("Delete my data", () => {
     expect(await stored(page)).not.toBeNull();
   });
 
-  test("deletes the family on the server, then forgets this phone", async ({ page, api }) => {
+  test("says the email is erased too", async ({ page, api }) => {
+    await openDashboard(page, api);
+
+    await page.getByRole("button", { name: "Delete my data" }).click();
+
+    await expect(page.getByRole("alertdialog", { name: "Delete everything?" })).toContainText("your email address");
+  });
+
+  test("deletes the user, their email and family on the server, then forgets this phone", async ({ page, api }) => {
     const family = await openDashboard(page, api);
 
     await page.getByRole("button", { name: "Delete my data" }).click();
@@ -45,9 +53,10 @@ test.describe("Delete my data", () => {
     await expect(page).toHaveURL(/\/deleted$/);
     await expect(page.getByRole("heading", { name: "Your data was deleted" })).toBeVisible();
     expect(deletes(api)).toEqual([
-      expect.objectContaining({ path: `/households/${family.id}`, authorization: `Bearer ${family.token}` }),
+      expect.objectContaining({ path: "/me", authorization: `Bearer ${family.token}` }),
     ]);
     expect(api.households.has(family.id)).toBe(false);
+    expect(api.users.has(family.email)).toBe(false);
     expect(await stored(page)).toBeNull();
   });
 
@@ -67,35 +76,51 @@ test.describe("Delete my data", () => {
   });
 });
 
-test.describe("Forget this device", () => {
-  test("asks first, with a reminder to keep the family code, and keeping it changes nothing", async ({ page, api }) => {
-    await openDashboard(page, api);
+test.describe("Sign out", () => {
+  test("shows who is signed in, asks first, and staying signed in changes nothing", async ({ page, api }) => {
+    const family = await openDashboard(page, api);
+    await expect(page.getByText(`Signed in as ${family.email}`)).toBeVisible();
 
-    await page.getByRole("button", { name: "Forget this device" }).click();
-    const dialog = page.getByRole("alertdialog", { name: "Remove the family code from this phone?" });
+    await page.getByRole("button", { name: "Sign out" }).click();
+    const dialog = page.getByRole("alertdialog", { name: "Sign out on this phone?" });
     await expect(dialog).toContainText("Your family’s information stays on our server.");
-    await expect(dialog).toContainText("Keep your family code safe, for example on the printed paper.");
-    await page.getByRole("button", { name: "No, keep it here" }).click();
+    await page.getByRole("button", { name: "No, stay signed in" }).click();
 
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
     expect(await stored(page)).not.toBeNull();
+    expect(api.requests.some((r) => r.path === "/auth/sign-out")).toBe(false);
   });
 
-  test("clears this phone only: the family stays on the server and opens again with its code", async ({ page, api }) => {
+  test("ends the session on the server and on this phone; the family stays and opens again by signing in", async ({ page, api }) => {
     const family = await openDashboard(page, api);
 
-    await page.getByRole("button", { name: "Forget this device" }).click();
-    await page.getByRole("button", { name: "Yes, forget this phone" }).click();
+    await page.getByRole("button", { name: "Sign out" }).click();
+    await page.getByRole("button", { name: "Yes, sign out" }).click();
 
     await expect(page).toHaveURL(/\/$/);
     expect(await stored(page)).toBeNull();
     expect(deletes(api)).toHaveLength(0);
     expect(api.households.has(family.id)).toBe(true);
+    expect(api.sessions.has(family.token)).toBe(false); // the token is dead on the server too
 
-    // The code still opens it.
-    await page.getByRole("link", { name: "Resume with family code" }).click();
-    await page.getByLabel("Family code").fill(family.code);
-    await page.getByRole("button", { name: "Open my family" }).click();
+    // The same email opens it again.
+    await page.getByRole("link", { name: "Sign in with email" }).click();
+    await page.getByLabel("Your email address").fill(family.email);
+    await page.getByRole("button", { name: "Send me a code" }).click();
+    await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
+    await page.getByLabel("6-digit code").fill(api.lastCode(family.email));
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Your family’s schemes" })).toBeVisible();
+  });
+
+  test("signs out on this phone even if the server cannot be reached", async ({ page, api }) => {
+    await openDashboard(page, api);
+    await page.getByRole("button", { name: "Sign out" }).click();
+
+    api.offline = true;
+    await page.getByRole("button", { name: "Yes, sign out" }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+    expect(await stored(page)).toBeNull();
   });
 });

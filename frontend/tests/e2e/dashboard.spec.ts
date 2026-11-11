@@ -9,8 +9,8 @@ async function openDashboard(page: Page, api: FakeApi) {
   const family = api.seedHousehold();
   api.seedMembers(family.id, NAMES);
   await page.addInitScript(
-    ([key, code]) => localStorage.setItem(key, JSON.stringify({ code, step: "done" })),
-    [STORAGE_KEY, family.code],
+    ([key, value]) => localStorage.setItem(key, value),
+    [STORAGE_KEY, api.storedSession(family)],
   );
   await page.goto("/dashboard");
   await expect(page.getByRole("heading", { name: "Your family’s schemes" })).toBeVisible();
@@ -91,17 +91,34 @@ test("the dashboard speaks Hindi", async ({ page, api }) => {
   await expect(card(page, "Kamla").getByText("आपके परिवार के लिए उपलब्ध नहीं").first()).toBeVisible();
 });
 
-test("a code that no longer opens anything leads back to resume", async ({ page, api }) => {
+test("a session the server no longer knows leads back to sign-in", async ({ page, api }) => {
   const family = api.seedHousehold();
   await page.addInitScript(
-    ([key, code]) => localStorage.setItem(key, JSON.stringify({ code, step: "done" })),
-    [STORAGE_KEY, `${family.id}.${"A".repeat(43)}`],
+    ([key, value]) => localStorage.setItem(key, value),
+    [STORAGE_KEY, api.storedSession({ ...family, token: "A".repeat(43) })], // not a live session
   );
 
   await page.goto("/dashboard");
 
-  await expect(page.getByText("This family code did not work.")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Resume with family code" })).toBeVisible();
+  // The 401 ends the session on this phone; the screen says so and offers sign-in.
+  await expect(page.getByText("You are not signed in on this phone.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Sign in with email" })).toBeVisible();
+  expect(await page.evaluate((k) => localStorage.getItem(k), STORAGE_KEY)).toBeNull();
+});
+
+test("someone else's household is refused and never shown", async ({ page, api }) => {
+  const mine = api.seedHousehold({ state: "UP" }, "mine@example.com");
+  const other = api.seedHousehold({ state: "BR" }, "other@example.com");
+  api.seedMembers(other.id, ["Secret"]);
+  await page.addInitScript(
+    ([key, value]) => localStorage.setItem(key, value),
+    [STORAGE_KEY, api.storedSession({ ...mine, id: other.id })], // my session, their household id
+  );
+
+  await page.goto("/dashboard");
+
+  await expect(page.getByText("We could not open this family. Please sign in again.")).toBeVisible();
+  await expect(page.getByText("Secret")).toHaveCount(0);
 });
 
 test("a lost connection can be retried", async ({ page, api }) => {
@@ -109,8 +126,8 @@ test("a lost connection can be retried", async ({ page, api }) => {
   const family = api.seedHousehold();
   api.seedMembers(family.id, ["Asha"]);
   await page.addInitScript(
-    ([key, code]) => localStorage.setItem(key, JSON.stringify({ code, step: "done" })),
-    [STORAGE_KEY, family.code],
+    ([key, value]) => localStorage.setItem(key, value),
+    [STORAGE_KEY, api.storedSession(family)],
   );
   await page.goto("/dashboard");
   await expect(page.getByText(/We could not reach the server/)).toBeVisible();
@@ -121,8 +138,21 @@ test("a lost connection can be retried", async ({ page, api }) => {
   await expect(card(page, "Asha")).toBeVisible();
 });
 
-test("without a saved family there is nothing to show", async ({ page }) => {
+test("when nobody is signed in there is nothing to show, and signing in is offered", async ({ page }) => {
   await page.goto("/dashboard");
 
-  await expect(page.getByText("We could not find a saved family on this phone.")).toBeVisible();
+  await expect(page.getByText("You are not signed in on this phone.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Sign in with email" })).toBeVisible();
+});
+
+test("signed in without a household goes to the first setup screen", async ({ page, api }) => {
+  const person = api.seedSession("new@example.com");
+  await page.addInitScript(
+    ([key, value]) => localStorage.setItem(key, value),
+    [STORAGE_KEY, api.storedSession(person)],
+  );
+
+  await page.goto("/dashboard");
+
+  await expect(page).toHaveURL(/\/setup\/basics$/);
 });

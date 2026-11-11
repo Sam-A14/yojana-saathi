@@ -5,13 +5,14 @@ import { useEffect } from "react";
 import { useFamily } from "./use-family";
 import type { Family } from "./types";
 
-/** The saved family for a setup screen. Without one there is nothing to set up, so go to the
- * first step. Returns null until the family is known. */
+/** The household for a setup screen. Not signed in: go to sign-in. Signed in but no household yet:
+ * go to the first step. Returns null until the family is known. */
 export function useSetupFamily(): Family | null {
-  const { ready, family } = useFamily();
+  const { ready, family, session } = useFamily();
   const router = useRouter();
   useEffect(() => {
-    if (ready && !family) router.replace("/setup/basics");
-  }, [ready, family, router]);
+    if (!ready || family) return;
+    router.replace(session ? "/setup/basics" : "/signin");
+  }, [ready, family, session, router]);
   return family;
 }

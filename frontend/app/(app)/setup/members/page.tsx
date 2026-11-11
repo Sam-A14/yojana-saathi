@@ -6,15 +6,14 @@ import { useEffect, useState } from "react";
 import { MemberForm } from "@/components/MemberForm";
 import { SetupFrame } from "@/components/SetupFrame";
 import { Button, ButtonLink, ErrorNote } from "@/components/ui";
-import { api, errorKind } from "@/lib/api";
+import { api, errorKind, type ErrorKind } from "@/lib/api";
 import { isRelation } from "@/lib/options";
-import { advanceTo } from "@/lib/storage";
 import type { Member, MemberInput } from "@/lib/types";
 import { useSetupFamily } from "@/lib/use-setup-family";
 
 const MAX_MEMBERS = 20; // the same limit the API enforces
 
-type Problem = "network" | "denied" | "limit" | "generic";
+type Problem = ErrorKind;
 
 export default function MembersPage() {
   const t = useTranslations("members");
@@ -88,7 +87,6 @@ export default function MembersPage() {
       setNeedOne(true);
       return;
     }
-    advanceTo("documents");
     router.push("/setup/documents");
   }
 
@@ -98,7 +96,7 @@ export default function MembersPage() {
 
   if (editing) {
     return (
-      <SetupFrame step={3}>
+      <SetupFrame step={2}>
         <MemberForm
           // A new form for each person, so one person's answers never carry over to the next.
           key={editing === "new" ? "new" : editing.id}
@@ -118,7 +116,7 @@ export default function MembersPage() {
 
   const full = members.length >= MAX_MEMBERS;
   return (
-    <SetupFrame step={3}>
+    <SetupFrame step={2}>
       <h1 className="text-2xl font-bold">{t("title")}</h1>
       <p>{t("intro")}</p>
 
@@ -167,7 +165,8 @@ export default function MembersPage() {
       {problem && <ErrorNote>{te(problem)}</ErrorNote>}
       <div className="flex flex-col gap-3">
         <Button onClick={goOn}>{tc("next")}</Button>
-        <ButtonLink href="/setup/code" variant="secondary">
+        {/* The home answers are saved already, so Back is the edit screen (not the first-step form, which only creates). */}
+        <ButtonLink href="/household/edit" variant="secondary">
           {tc("back")}
         </ButtonLink>
       </div>

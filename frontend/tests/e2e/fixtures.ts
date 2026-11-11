@@ -11,4 +11,4 @@ export const test = base.extend<{ api: FakeApi }>({
 });
 export { expect } from "@playwright/test";
 
-export const STORAGE_KEY = "yojana.family";
+export const STORAGE_KEY = "yojana.session";

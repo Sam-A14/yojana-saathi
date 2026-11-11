@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SetupFrame } from "@/components/SetupFrame";
 import { Button, ButtonLink, ErrorNote, YesNoGroup } from "@/components/ui";
-import { api, errorKind } from "@/lib/api";
-import { advanceTo } from "@/lib/storage";
+import { api, errorKind, type ErrorKind } from "@/lib/api";
 import type { DocumentInfo, Member } from "@/lib/types";
 import { useSetupFamily } from "@/lib/use-setup-family";
 
@@ -63,7 +62,7 @@ export default function DocumentsPage() {
 
   const [data, setData] = useState<Loaded | null>(null);
   const [saving, setSaving] = useState(false);
-  const [problem, setProblem] = useState<"network" | "denied" | "limit" | "generic" | null>(null);
+  const [problem, setProblem] = useState<ErrorKind | null>(null);
 
   useEffect(() => {
     if (!family) return;
@@ -101,7 +100,6 @@ export default function DocumentsPage() {
       setSaving(false);
       return;
     }
-    advanceTo("exclusions");
     router.push("/setup/exclusions");
   }
 
@@ -113,7 +111,7 @@ export default function DocumentsPage() {
   const personalDocs = data.documents.filter((d) => !d.household_level);
 
   return (
-    <SetupFrame step={4}>
+    <SetupFrame step={3}>
       <h1 className="text-2xl font-bold">{t("title")}</h1>
       <p>{t("intro")}</p>
 

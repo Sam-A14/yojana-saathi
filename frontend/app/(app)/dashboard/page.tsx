@@ -1,12 +1,15 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { MemberResults } from "@/components/MemberResults";
 import { MyData } from "@/components/MyData";
 import { Button, ButtonLink, ErrorNote } from "@/components/ui";
 import { formatDate } from "@/lib/format";
 import { useFamilyResults } from "@/lib/use-family-results";
 import { useFamily } from "@/lib/use-family";
+import type { Session } from "@/lib/session";
 import type { Eligibility, Family } from "@/lib/types";
 
 // How many (person, scheme) results fall in each group, across the whole family.
@@ -22,24 +25,30 @@ function count(eligibility: Eligibility) {
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
   const tc = useTranslations("common");
-  const { ready, family } = useFamily();
+  const { ready, family, session } = useFamily();
+  const router = useRouter();
 
-  if (!ready) return <p role="status">{tc("loading")}</p>;
-  if (!family) {
+  // Signed in but no household yet: the first setup screen is the next step.
+  useEffect(() => {
+    if (ready && session && !family) router.replace("/setup/basics");
+  }, [ready, session, family, router]);
+
+  if (!ready || (session && !family)) return <p role="status">{tc("loading")}</p>;
+  if (!family || !session) {
     return (
       <div className="flex flex-col gap-5">
         <h1 className="text-2xl font-bold">{t("none")}</h1>
-        <ButtonLink href="/resume">{t("toResume")}</ButtonLink>
+        <ButtonLink href="/signin">{t("toSignIn")}</ButtonLink>
         <ButtonLink href="/" variant="secondary">
           {t("toStart")}
         </ButtonLink>
       </div>
     );
   }
-  return <DashboardScreen key={family.id} family={family} />;
+  return <DashboardScreen key={family.id} family={family} session={session} />;
 }
 
-function DashboardScreen({ family }: { family: Family }) {
+function DashboardScreen({ family, session }: { family: Family; session: Session }) {
   const t = useTranslations("dashboard");
   const te = useTranslations("errors");
   const locale = useLocale() === "hi" ? "hi" : "en";
@@ -54,8 +63,8 @@ function DashboardScreen({ family }: { family: Family }) {
       {results.state === "error" && (
         <div className="flex flex-col gap-4">
           <ErrorNote>{te(results.kind)}</ErrorNote>
-          {results.kind === "denied" ? (
-            <ButtonLink href="/resume">{t("toResume")}</ButtonLink>
+          {results.kind === "denied" || results.kind === "signedOut" ? (
+            <ButtonLink href="/signin">{t("toSignIn")}</ButtonLink>
           ) : (
             <Button onClick={reload}>{t("retry")}</Button>
           )}
@@ -82,7 +91,7 @@ function DashboardScreen({ family }: { family: Family }) {
         </>
       )}
 
-      <MyData family={family} />
+      <MyData session={session} />
     </div>
   );
 }
