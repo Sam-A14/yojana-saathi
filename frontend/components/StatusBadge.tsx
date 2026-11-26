@@ -17,7 +17,7 @@ export function StatusBadge({ kind }: { kind: ResultKind }) {
   const t = useTranslations("status");
   return (
     <span
-      className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-base font-bold ${COLOURS[kind]}`}
+      className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-base font-bold ring-1 ring-current/25 ${COLOURS[kind]}`}
     >
       <StatusIcon kind={kind} size={20} />
       {t(kind)}

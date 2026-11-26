@@ -36,6 +36,17 @@
   --ask-fg: #1e3a8a;
   --block-bg: #fee2e2;
   --block-fg: #7f1d1d;
+  /* Initials avatars: five soft pairs so family members are easy to tell apart. All 7:1 or better. */
+  --av1-bg: #e3f0e8;
+  --av1-fg: #174a38;
+  --av2-bg: #fde8d0;
+  --av2-fg: #7a3a00;
+  --av3-bg: #e6e0f7;
+  --av3-fg: #3f2a86;
+  --av4-bg: #d9ecf7;
+  --av4-fg: #0c4a6e;
+  --av5-bg: #fbdde6;
+  --av5-fg: #85163f;
   --shadow-card: 0 1px 2px rgb(43 33 24 / 0.06), 0 10px 28px -10px rgb(43 33 24 / 0.18);
   --shadow-lift: 0 2px 4px rgb(43 33 24 / 0.08), 0 18px 36px -12px rgb(43 33 24 / 0.28);
 }
@@ -69,6 +80,16 @@
     --ask-fg: #bfd4ff;
     --block-bg: #3b1212;
     --block-fg: #fecaca;
+    --av1-bg: #1d3a2d;
+    --av1-fg: #a9e8c6;
+    --av2-bg: #3d2a12;
+    --av2-fg: #fbc98a;
+    --av3-bg: #2d2550;
+    --av3-fg: #cfc3f5;
+    --av4-bg: #14344a;
+    --av4-fg: #b3dcf5;
+    --av5-bg: #4a1a2b;
+    --av5-fg: #f7c0d3;
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 28px -10px rgb(0 0 0 / 0.6);
     --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.5), 0 18px 36px -12px rgb(0 0 0 / 0.7);
   }
@@ -103,6 +124,16 @@
   --color-ask-fg: var(--ask-fg);
   --color-block-bg: var(--block-bg);
   --color-block-fg: var(--block-fg);
+  --color-av1-bg: var(--av1-bg);
+  --color-av1-fg: var(--av1-fg);
+  --color-av2-bg: var(--av2-bg);
+  --color-av2-fg: var(--av2-fg);
+  --color-av3-bg: var(--av3-bg);
+  --color-av3-fg: var(--av3-fg);
+  --color-av4-bg: var(--av4-bg);
+  --color-av4-fg: var(--av4-fg);
+  --color-av5-bg: var(--av5-bg);
+  --color-av5-fg: var(--av5-fg);
   --shadow-card: var(--shadow-card);
   --shadow-lift: var(--shadow-lift);
   --font-sans: var(--font-jakarta), var(--font-devanagari), system-ui, sans-serif;
@@ -168,6 +199,29 @@ body {
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: none; }
 }
+/* The small celebration when someone may qualify. Each piece flies out from the middle once and
+ * fades. The base style is invisible, so with animation switched off (reduced motion) nothing shows. */
+@keyframes confetti {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(var(--r)); }
+}
+@keyframes pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.confetti-piece {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.6rem;
+  height: 0.9rem;
+  border-radius: 2px;
+  opacity: 0;
+  animation: confetti 1.2s ease-out var(--d, 0s) 1 both;
+}
+.pop { animation: pop 0.5s ease-out both; }
 .float { animation: float 7s ease-in-out infinite; }
 .glow { animation: glow 8s ease-in-out infinite; }
 .rise { animation: rise 0.6s ease-out both; }
