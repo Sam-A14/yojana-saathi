@@ -57,6 +57,7 @@ def test_every_endpoint_that_needs_a_signed_in_user_requires_it(schema: dict[str
     [
         ("post", "/auth/request-code"),
         ("post", "/auth/verify"),
+        ("post", "/auth/google"),
         ("get", "/documents"),
         ("get", "/schemes"),
         ("get", "/schemes/{slug}"),

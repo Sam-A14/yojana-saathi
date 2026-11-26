@@ -10,13 +10,24 @@ keyed hash) the database.
 """
 
 from datetime import datetime, timedelta
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, Response
+from pydantic import TypeAdapter, ValidationError
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import CurrentSession, CurrentUser, DbSession, Mailer, Now
-from app.api.schemas import MeOut, RequestCodeIn, RequestCodeOut, SessionOut, VerifyIn
+from app.api.google import GoogleTokenError, Verifier
+from app.api.schemas import (
+    Email,
+    GoogleSignInIn,
+    MeOut,
+    RequestCodeIn,
+    RequestCodeOut,
+    SessionOut,
+    VerifyIn,
+)
 from app.api.security import hash_code, hash_token, hashes_match, new_code, new_token
 from app.config import get_settings
 from app.db.models import Household, LoginCode, User, UserSession
@@ -28,6 +39,8 @@ CODE_LIFETIME = timedelta(minutes=10)
 MAX_WRONG_GUESSES = 5
 CODES_PER_EMAIL_PER_HOUR = 3
 SESSION_LIFETIME = timedelta(days=30)
+# Google puts either spelling in the "iss" claim of an ID token.
+GOOGLE_ISSUERS = {"accounts.google.com", "https://accounts.google.com"}
 
 
 def _problem(status: int, code: str, message: str, **extra: object) -> HTTPException:
@@ -138,11 +151,25 @@ def verify_code(data: VerifyIn, db: DbSession, now: Now) -> SessionOut:
         )
 
     latest.used_at = now
-    user = db.scalar(select(User).where(User.email == data.email))
+    user = _find_or_create_user(db, data.email, latest.language)
+    out = _open_session(db, user, now)
+    db.commit()
+    return out
+
+
+def _find_or_create_user(db: Session, email: str, language: str) -> User:
+    """The one user for this (lower-case) email, made on first sign-in. Email codes and Google
+    both come through here, so both reach the same account and the same household."""
+    user = db.scalar(select(User).where(User.email == email))
     if user is None:
-        user = User(email=data.email, language=latest.language)
+        user = User(email=email, language=language)
         db.add(user)
         db.flush()
+    return user
+
+
+def _open_session(db: Session, user: User, now: datetime) -> SessionOut:
+    """Issue the 30-day session token. The caller commits."""
     db.execute(delete(UserSession).where(UserSession.expires_at <= now))  # tidy up
     token = new_token()
     session = UserSession(
@@ -152,8 +179,66 @@ def verify_code(data: VerifyIn, db: DbSession, now: Now) -> SessionOut:
         expires_at=now + SESSION_LIFETIME,
     )
     db.add(session)
-    db.commit()
     return SessionOut(access_token=token, expires_at=session.expires_at)
+
+
+def _google_email(claims: dict[str, Any], client_id: str, now: datetime) -> str | None:
+    """The email in verified Google claims, or None if the token is not usable for us.
+
+    Signature is already proven. Here: it was issued to OUR app (a token made for another app's
+    client ID must not sign anyone in here), by Google, not expired, and Google vouches for the
+    email. An unverified email could be anyone's, so it never signs in.
+    """
+    exp = claims.get("exp")
+    valid = (
+        claims.get("aud") == client_id
+        and claims.get("iss") in GOOGLE_ISSUERS
+        and isinstance(exp, int | float)
+        and exp > now.timestamp()
+        and claims.get("email_verified") is True  # a real boolean, not the string "true"
+    )
+    if not valid:
+        return None
+    try:
+        return TypeAdapter(Email).validate_python(claims.get("email"))
+    except ValidationError:
+        return None
+
+
+@router.post("/auth/google", response_model=SessionOut)
+def sign_in_with_google(
+    data: GoogleSignInIn, db: DbSession, now: Now, verify: Verifier
+) -> SessionOut:
+    """Sign in with a Google ID token. We keep only the email: not the name, photo or token.
+
+    The email-code limits do not apply: no email is sent and nothing here uses the daily quota.
+    """
+    client_id = get_settings().google_client_id
+    if not client_id:
+        raise _problem(
+            503,
+            "google_unavailable",
+            "Sign-in with Google is not available right now. Please use your email instead.",
+        )
+    # One answer for every kind of bad token, so the reply teaches an attacker nothing.
+    refused = _problem(
+        401,
+        "invalid_google_token",
+        "We could not check your Google sign-in. Please try again, or use your email instead.",
+    )
+    try:
+        claims = verify(data.credential)
+    except GoogleTokenError:
+        raise refused from None
+    email = _google_email(claims, client_id, now)
+    if email is None:
+        raise refused
+
+    _lock_email(db, email)  # same lock as email codes: two sign-ins cannot create two users
+    user = _find_or_create_user(db, email, data.language)
+    out = _open_session(db, user, now)
+    db.commit()
+    return out
 
 
 @router.get("/me", response_model=MeOut)

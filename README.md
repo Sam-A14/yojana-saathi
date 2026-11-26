@@ -83,6 +83,7 @@ household is not yours, or does not exist, gives `403`. Each person has one hous
 | --- | --- | --- |
 | `POST /auth/request-code` | no | Email a sign-in code. Same answer for any address. `429` after 3 an hour, `503` when the day's cap is used. |
 | `POST /auth/verify` | no | Swap the emailed code for a session token. |
+| `POST /auth/google` | no | Swap a Google ID token for the same session token. Finds or creates the user by lower-case email. `401` for any bad token, `503` if `GOOGLE_CLIENT_ID` is not set. |
 | `POST /auth/sign-out` | yes | End this browser's session. |
 | `GET /me` | yes | Your email and your household id (null until you set one up). |
 | `DELETE /me` | yes | **Delete my data:** the user, their email, and the household, members, documents and results. |
@@ -102,6 +103,14 @@ labelled, not hidden. Only the rules engine decides. The family gives a birth *y
 *band*, so the engine is run for the youngest and oldest possible age and the lowest and highest
 income; if the answer changes, the status is `unknown` with `reasons` of `depends_on_exact_age`
 and/or `depends_on_exact_income` (see `docs/decisions/009-eligibility-endpoint.md`).
+
+**Sign in with Google.** `POST /auth/google` takes the ID token Google's button gives the page.
+The server checks the signature against Google's public keys (the `google-auth` library), then that
+the token was made for our own client ID (`GOOGLE_CLIENT_ID`), comes from `accounts.google.com`,
+has not expired, and carries a verified email. Then it finds or creates the user by lower-case
+email, so Google and email codes reach the same household, and issues the same 30-day session
+token. Only the email is kept: never the Google name, photo, id or token. It uses no email codes,
+so the per-email and per-day limits do not change. See `docs/decisions/027-google-sign-in.md`.
 
 Rules for what you send: unknown fields are rejected (`422`), so identity numbers cannot be sent;
 only birth *year* is stored; a question left as `null` means "not answered", which is different
@@ -172,6 +181,7 @@ Without `TEST_DATABASE_URL`, the database tests are skipped (CI refuses to skip 
 | backend | `EMAIL_FROM` | Sender shown on the email. Default `Yojana Saathi <onboarding@resend.dev>`, which only reaches your own address. See "Going live with a custom domain". |
 | backend | `EMAIL_PROVIDER` | `resend` (default) or `fake` (tests only, sends nothing). |
 | backend | `EMAIL_DAILY_LIMIT` | Optional. Most sign-in codes sent per UTC day. Default 80 (Resend's free plan is about 100 a day). |
+| backend | `GOOGLE_CLIENT_ID` | Optional. The OAuth client ID for "Continue with Google". Public, not a secret. Unset or empty turns Google sign-in off (`POST /auth/google` answers `503`). See "Sign in with Google". |
 | backend | `APP_VERSION` | Optional. Version shown by `/health`. |
 | frontend | `NEXT_PUBLIC_API_URL` | Where the backend lives. Visible to anyone using the site, so never put secrets in it. |
 
@@ -253,6 +263,29 @@ slug. The run summary shows the proposal, whether it passed validation, and the 
 4. Deploy, then copy the Vercel address into `FRONTEND_URL` on Render (step 2.5).
 
 `NEXT_PUBLIC_` values are baked in at build time, so redeploy the frontend after changing it.
+
+## Sign in with Google
+
+Google sign-in costs nothing and needs no domain, so anyone can sign in even while email codes only
+reach your own address.
+
+1. In [Google Cloud Console](https://console.cloud.google.com/) create a project, then APIs &
+   Services > OAuth consent screen (External; app name, your email), then Credentials > Create
+   credentials > OAuth client ID, type **Web application**.
+2. Under **Authorized JavaScript origins** add exactly these (no paths, no trailing slash):
+   `http://localhost:3000` and `https://yojana-saathi-hazel.vercel.app`. No redirect URIs are needed.
+3. Copy the client ID (`...apps.googleusercontent.com`). On Render set `GOOGLE_CLIENT_ID` to it and
+   redeploy. (The frontend's `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, added with the sign-in button, is the
+   same value.)
+
+**Google sign-in only works on `yojana-saathi-hazel.vercel.app` and `localhost`.** Google does not
+allow wildcards in Authorized JavaScript origins, so Vercel preview URLs (one new address per
+deployment) can never be listed. On a preview, use the email option, or leave
+`NEXT_PUBLIC_GOOGLE_CLIENT_ID` unset there so the button is hidden. If you buy a domain, add it to
+the origins too.
+
+While the OAuth consent screen is in "Testing", only the test users you list can sign in. Press
+"Publish app" to open it to everyone; the basic email scope needs no Google review.
 
 ## Going live with a custom domain
 
