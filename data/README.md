@@ -15,7 +15,9 @@ Hand-made data files. The database is loaded from these files, so a mistake here
 
 1. Copy `schemes_seed/TEMPLATE.json` to `schemes_seed/<slug>.json`. The file name **must equal** the
    `slug` inside (lowercase words joined by `-`, for example `pm-kisan`).
-2. Fill it in from the scheme's **official** page. Put that page in `source_url`.
+2. Fill it in from the scheme's **official** page. Put that page in `source_url`. `category` must be one of
+   `education`, `health`, `housing`, `family_welfare`, `farmer`, `widow_pension`, `pension`; the landing
+   page's topic cards count schemes by it (a new category means editing the schema list, `frontend/lib/categories.ts`, the icons and the words together; a test checks they agree).
 3. Keep `"$schema": "../scheme.schema.json"` at the top. VS Code then underlines mistakes as you type.
 4. Leave `verified_at` as `null` until you (a person) have checked every rule against the official
    source, then set it to that day's date, for example `"2026-11-02"`.

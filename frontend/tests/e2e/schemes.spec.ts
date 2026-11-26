@@ -61,7 +61,7 @@ test("a scheme shows only the fields the API sent, and says nothing about the mi
       name_en: "Full scheme",
       level: "state",
       state: "UP",
-      category: "student",
+      category: "education",
       benefit_text_en: "Pays for books.",
       deadline_start: "2026-04-01",
       deadline_end: "2027-03-31",

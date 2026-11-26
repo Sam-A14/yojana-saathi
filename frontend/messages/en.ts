@@ -513,7 +513,10 @@ export const en = {
   categories: {
     farmer: "Farmers",
     widow_pension: "Widow pension",
-    student: "Students",
+    education: "Education",
+    health: "Health",
+    housing: "Housing",
+    family_welfare: "Family welfare",
     pension: "Elders",
     other: "Other",
   },

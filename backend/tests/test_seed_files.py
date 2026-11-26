@@ -94,6 +94,40 @@ def test_committed_schemes_have_real_categories() -> None:
     assert categories == {"farmer", "widow_pension"}
 
 
+CATEGORIES = [
+    "education",
+    "health",
+    "housing",
+    "family_welfare",
+    "farmer",
+    "widow_pension",
+    "pension",
+]
+
+
+def test_schema_allows_exactly_the_agreed_categories() -> None:
+    """The landing cards and the Schemes page are written against this list
+    (frontend/lib/categories.ts, checked by a frontend unit test). Changing it is a decision, so it
+    is pinned here."""
+    allowed = load("scheme.schema.json")["properties"]["category"]["enum"]
+
+    assert allowed == CATEGORIES
+
+
+@pytest.mark.parametrize("category", CATEGORIES)
+def test_every_listed_category_is_accepted(category: str) -> None:
+    scheme = load("schemes_seed/pm-kisan.json") | {"category": category}
+
+    assert schema_problems(_validator(SCHEMA_PATH), scheme) == []
+
+
+@pytest.mark.parametrize("category", ["student", "helth", "replace_with_category", "Farmer", ""])
+def test_a_category_outside_the_list_is_rejected(category: str) -> None:
+    scheme = load("schemes_seed/pm-kisan.json") | {"category": category}
+
+    assert schema_problems(_validator(SCHEMA_PATH), scheme) != []
+
+
 def test_examples_are_marked_unverified() -> None:
     for slug in ("pm-kisan", "ignwps"):
         scheme = load(f"schemes_seed/{slug}.json")

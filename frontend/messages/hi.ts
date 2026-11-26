@@ -542,10 +542,14 @@ export const hi: typeof en = {
   textSize: { label: "अक्षर का आकार", normal: "सामान्य अक्षर", large: "बड़े अक्षर" },
   // needs native review: new in PR 2. "Match device" is meant as "same as the phone's own setting".
   theme: { label: "रंग-रूप", light: "हल्का", dark: "गहरा", device: "फ़ोन जैसा" },
+  // needs native review: education, health, housing, family_welfare are new
   categories: {
     farmer: "किसान",
     widow_pension: "विधवा पेंशन",
-    student: "विद्यार्थी",
+    education: "शिक्षा",
+    health: "स्वास्थ्य",
+    housing: "आवास",
+    family_welfare: "परिवार कल्याण",
     pension: "बुज़ुर्ग",
     other: "अन्य",
   },

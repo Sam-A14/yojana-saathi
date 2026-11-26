@@ -6,10 +6,9 @@ import { CategoryIcon, categoryKey } from "@/components/icons";
 import { SchemeCard } from "@/components/SchemeCard";
 import { Button, Skeleton } from "@/components/ui";
 import { api } from "@/lib/api";
+import { GROUP_ORDER } from "@/lib/categories";
 import type { SchemeSummary } from "@/lib/types";
 
-// The order the groups are shown in. A category we have no words for is shown last, as "Other".
-const ORDER = ["student", "farmer", "pension", "widow_pension", "other"] as const;
 
 /** Every scheme in the catalogue, grouped by category. Public: no sign-in, no family data. Loaded in
  * the browser (see decision 018), so a sleeping backend never blocks the page itself. */
@@ -53,7 +52,7 @@ export function SchemesList() {
 
   return (
     <div className="flex flex-col gap-8">
-      {ORDER.map((group) => {
+      {GROUP_ORDER.map((group) => {
         const schemes = state.filter((scheme) => categoryKey(scheme.category) === group);
         if (schemes.length === 0) return null;
         return (
