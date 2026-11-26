@@ -5,6 +5,7 @@
     "source_reached": false,
     "notes": [
       "TEMPLATE: copy this file to <slug>.json (the file name must equal the slug), replace every value, then delete this notes block or fill it in honestly.",
+      "Set category to one of the values listed under category in ../scheme.schema.json (education, health, housing, family_welfare, farmer, widow_pension, pension).",
       "Set source_reached to true only if you read the official page yourself.",
       "Leave verified_at as null until a human has checked the rules against the official source."
     ],
@@ -17,7 +18,7 @@
   "name_hi": "योजना का नाम हिंदी में",
   "level": "central",
   "state": null,
-  "category": "replace_with_category",
+  "category": "education",
   "official_url": "https://example.gov.in/scheme",
   "status": "active",
   "version": {

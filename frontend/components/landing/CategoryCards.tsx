@@ -5,24 +5,24 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { TOPIC_CATEGORIES } from "@/lib/categories";
 import type { SchemeSummary } from "@/lib/types";
 
-// Each card is a TOPIC the family thinks in. `category` is the value the backend stores on a scheme
-// (GET /schemes). A topic with no backend category yet (null) always reads "Coming soon": we never
-// invent a count or a scheme for it. Healthcare and Families get a category when schemes for them
-// are added to data/schemes_seed.
+// Each card is a TOPIC the family thinks in. Which backend categories it counts is decided in
+// lib/categories.ts (TOPIC_CATEGORIES). A topic with no seeded scheme reads "Coming soon": we never
+// invent a count or a scheme for it, and it turns into a count and a link by itself once a scheme
+// in one of its categories is seeded.
 const CARDS: {
-  key: "Education" | "Agriculture" | "Healthcare" | "Women" | "Seniors" | "Families";
-  category: string | null;
+  key: keyof typeof TOPIC_CATEGORIES;
   Icon: LucideIcon;
   tone: 1 | 2 | 3 | 4 | 5 | 6;
 }[] = [
-  { key: "Education", category: "student", Icon: GraduationCap, tone: 1 },
-  { key: "Agriculture", category: "farmer", Icon: Wheat, tone: 2 },
-  { key: "Healthcare", category: null, Icon: HeartPulse, tone: 3 },
-  { key: "Women", category: "widow_pension", Icon: HandHeart, tone: 4 },
-  { key: "Seniors", category: "pension", Icon: Armchair, tone: 5 },
-  { key: "Families", category: null, Icon: House, tone: 6 },
+  { key: "Education", Icon: GraduationCap, tone: 1 },
+  { key: "Agriculture", Icon: Wheat, tone: 2 },
+  { key: "Healthcare", Icon: HeartPulse, tone: 3 },
+  { key: "Women", Icon: HandHeart, tone: 4 },
+  { key: "Seniors", Icon: Armchair, tone: 5 },
+  { key: "Families", Icon: House, tone: 6 },
 ];
 
 // The pastel pairs are tokens (globals.css), written out here so Tailwind can see every class name.
@@ -56,12 +56,14 @@ export function CategoryCards() {
   return (
     <>
       <ul aria-label={t("categoriesLabel")} className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {CARDS.map(({ key, category, Icon, tone }) => {
-          const count =
-            schemes === "loading" || schemes === "failed" || category === null
-              ? null
-              : schemes.filter((scheme) => scheme.category === category).length;
-          const linked = count !== null && count > 0 && category !== null;
+        {CARDS.map(({ key, Icon, tone }) => {
+          const categories: readonly string[] = TOPIC_CATEGORIES[key];
+          const inTopic =
+            schemes === "loading" || schemes === "failed" ? [] : schemes.filter((scheme) => categories.includes(scheme.category));
+          const count = schemes === "loading" || schemes === "failed" ? null : inTopic.length;
+          const linked = count !== null && count > 0;
+          // A topic can cover several categories; the link opens the first group that has a scheme.
+          const target = categories.find((category) => inTopic.some((scheme) => scheme.category === category));
 
           const body = (
             <>
@@ -74,9 +76,9 @@ export function CategoryCards() {
               <span className="text-lg">{t(`cat${key}Body`)}</span>
               {/* min-h keeps the card the same height while the count is still loading. */}
               <span className="mt-auto flex min-h-10 items-center justify-between gap-3">
-                {schemes === "loading" && category !== null ? (
+                {schemes === "loading" ? (
                   <span className="text-base font-semibold">{t("countChecking")}</span>
-                ) : schemes === "failed" && category !== null ? null : linked ? (
+                ) : schemes === "failed" ? null : linked ? (
                   <>
                     <span className="rounded-full bg-accent px-4 py-1 text-base font-bold text-on-accent">
                       {t(count === 1 ? "countOne" : "countMany", { count })}
@@ -94,7 +96,7 @@ export function CategoryCards() {
           return (
             <li key={key}>
               {linked ? (
-                <Link href={`/schemes#group-${category}`} className={`${shape} transition duration-200 hover:-translate-y-1 hover:shadow-lift`}>
+                <Link href={`/schemes#group-${target}`} className={`${shape} transition duration-200 hover:-translate-y-1 hover:shadow-lift`}>
                   {body}
                 </Link>
               ) : (

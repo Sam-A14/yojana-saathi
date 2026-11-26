@@ -60,11 +60,30 @@ test.describe("topic cards", () => {
     await schemesAre(page, [scheme({ category: "farmer" })]);
     await page.goto("/");
 
-    // Education has a backend category (student) but no scheme in it; Healthcare and Families have no category yet.
     for (const name of ["Education", "Healthcare", "Families", "Senior Citizens"]) {
       await expect(card(page, name)).toContainText("Coming soon");
       await expect(card(page, name).getByRole("link")).toHaveCount(0);
     }
+  });
+
+  test("a card stops saying Coming soon as soon as a scheme in one of its categories exists", async ({ page, api }) => {
+    void api; // installs the fake server, which also answers the browser's CORS preflight
+    await schemesAre(page, [
+      scheme({ slug: "e", category: "education" }),
+      scheme({ slug: "h", category: "health" }),
+      scheme({ slug: "w", category: "family_welfare" }),
+      scheme({ slug: "x", category: "housing" }),
+    ]);
+    await page.goto("/");
+
+    await expect(card(page, "Education")).toContainText("1 scheme");
+    await expect(card(page, "Education").getByRole("link")).toHaveAttribute("href", "/schemes#group-education");
+    await expect(card(page, "Healthcare")).toContainText("1 scheme");
+    await expect(card(page, "Healthcare").getByRole("link")).toHaveAttribute("href", "/schemes#group-health");
+    // Families counts two categories together and opens the first group that has a scheme.
+    await expect(card(page, "Families")).toContainText("2 schemes");
+    await expect(card(page, "Families").getByRole("link")).toHaveAttribute("href", "/schemes#group-family_welfare");
+    await expect(card(page, "Agriculture")).toContainText("Coming soon");
   });
 
   test("the template placeholder category never becomes a card or a count", async ({ page, api }) => {

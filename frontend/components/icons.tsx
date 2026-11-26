@@ -9,6 +9,7 @@ import {
   GraduationCap,
   HandHeart,
   Heart,
+  HeartPulse,
   House,
   IdCard,
   IndianRupee,
@@ -29,6 +30,7 @@ import {
   Wheat,
   type LucideIcon,
 } from "lucide-react";
+import { CATEGORIES, type Category } from "@/lib/categories";
 import type { ResultKind } from "./StatusBadge";
 
 // One place that decides which picture stands for what. Icons come from lucide-react (named
@@ -53,8 +55,11 @@ const DOCUMENT_ICONS: Record<string, LucideIcon> = {
   voter_id: Vote,
 };
 
-const CATEGORY_ICONS: Record<string, LucideIcon> = {
-  student: GraduationCap,
+const CATEGORY_ICONS: Record<Category, LucideIcon> = {
+  education: GraduationCap,
+  health: HeartPulse,
+  housing: House,
+  family_welfare: Users,
   farmer: Wheat,
   pension: HandHeart,
   widow_pension: Flower2,
@@ -68,8 +73,8 @@ const STATUS_ICONS: Record<ResultKind, LucideIcon> = {
 };
 
 /** The words for a category (messages "categories"); a category we have no words for reads "Other". */
-export function categoryKey(category: string): "student" | "farmer" | "pension" | "widow_pension" | "other" {
-  return category in CATEGORY_ICONS ? (category as "student" | "farmer" | "pension" | "widow_pension") : "other";
+export function categoryKey(category: string): Category | "other" {
+  return (CATEGORIES as readonly string[]).includes(category) ? (category as Category) : "other";
 }
 
 /** The picture at the top of each section of a scheme page (the heading always carries the words). */
@@ -89,7 +94,7 @@ export function DocumentIcon({ code, ...props }: IconProps & { code: string }) {
 }
 
 export function CategoryIcon({ category, ...props }: IconProps & { category: string }) {
-  const Icon = CATEGORY_ICONS[category] ?? BadgeIndianRupee; // a new category must not break a page
+  const Icon = CATEGORY_ICONS[categoryKey(category) as Category] ?? BadgeIndianRupee; // a new category must not break a page
   return <Icon {...props} />;
 }
 

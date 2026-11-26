@@ -50,9 +50,16 @@
       "description": "State code such as UP. null for central schemes."
     },
     "category": {
-      "type": "string",
-      "pattern": "^[a-z][a-z0-9_]*$",
-      "description": "For example farmer, student, widow_pension."
+      "enum": [
+        "education",
+        "health",
+        "housing",
+        "family_welfare",
+        "farmer",
+        "widow_pension",
+        "pension"
+      ],
+      "description": "The topic group the scheme is shown under. A fixed list, so a typo fails here instead of leaving a landing-page card on 'Coming soon'. Keep frontend/lib/categories.ts in step; a test checks it."
     },
     "official_url": {
       "type": "string",
