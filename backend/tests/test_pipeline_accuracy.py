@@ -104,15 +104,18 @@ def test_precision_recall_and_the_missed_and_extra_lists() -> None:
 
     assert result.expected_count == 3 and result.extracted_count == 3
     text = render_accuracy([result])
-    assert "test-scheme: precision 67% (2/3), recall 67% (2/3)" in text
+    assert "exact:      precision 67% (2/3), recall 67% (2/3)" in text
+    assert "test-scheme:" in text
     assert 'Missed (in the seed file, not extracted):\n    - category in ["OBC","SC","ST"]' in text
-    assert 'Extra (extracted, not in the seed file):\n    - gender eq "female"' in text
+    # gender is a closed list, so the extra condition is canonicalised to "in" in the second score.
+    assert '    - gender eq "female"' in text
     assert "Every condition matches." not in text
 
 
 def test_a_perfect_match_says_so() -> None:
     text = render_accuracy([compare_rules("x", rules(AGE), rules(AGE))])
-    assert "precision 100% (1/1), recall 100% (1/1)" in text
+    assert "exact:      precision 100% (1/1), recall 100% (1/1)" in text
+    assert "normalised: precision 100% (1/1), recall 100% (1/1)" in text
     assert "Every condition matches." in text
 
 
@@ -132,12 +135,13 @@ def test_overall_adds_up_counts_across_schemes() -> None:
         "b", rules(AGE, CATEGORY, NO_TAX), rules(AGE)
     )  # 1/1, 1/3: overall 3/3 and 3/5
     text = render_accuracy([first, second])
-    assert "OVERALL (2 schemes): precision 100% (3/3), recall 60% (3/5)" in text
+    assert "OVERALL (2 schemes):" in text
+    assert "exact:      precision 100% (3/3), recall 60% (3/5)" in text
 
 
 def test_an_empty_extraction_has_no_precision_and_zero_recall() -> None:
     result = compare_rules("x", rules(AGE), {"all": []})
-    assert "precision n/a, recall 0% (0/1)" in render_accuracy([result])
+    assert "exact:      precision n/a, recall 0% (0/1)" in render_accuracy([result])
 
 
 def test_unreadable_rules_raise_instead_of_scoring_zero() -> None:
@@ -186,7 +190,8 @@ def test_cli_prints_per_scheme_and_overall(
 
     assert main(files) == 0
     out = capsys.readouterr().out
-    assert "pm-kisan: precision 100%" in out and "ignwps: precision 100%" in out
+    assert "pm-kisan:\n  exact:      precision 100%" in out
+    assert "ignwps:\n  exact:      precision 100%" in out
     assert "OVERALL (2 schemes)" in out
 
 

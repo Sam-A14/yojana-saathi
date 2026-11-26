@@ -134,7 +134,8 @@ def test_cli_reports_accuracy_with_missed_and_extra_conditions(
     out = capsys.readouterr().out
     assert code == 0
     assert "### Validation: passed" in out
-    assert "pm-kisan: precision" in out
+    assert "pm-kisan:\n  exact:      precision" in out
+    assert "normalised: precision" in out
     assert "Missed (in the seed file, not extracted):" in out
     assert "Extra (extracted, not in the seed file):\n    - age gte 18" in out
 
