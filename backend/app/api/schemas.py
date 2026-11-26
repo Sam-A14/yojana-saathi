@@ -79,17 +79,18 @@ class HouseholdOut(HouseholdFields):
 # A simple shape check, not full email validation: the only real test is that the code arrives.
 EMAIL_SHAPE = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 
+# Lower-cased and trimmed first, so "Asha@Mail.com " and "asha@mail.com" are one person. Used for
+# emails typed in and for the email Google tells us, so both reach the same user.
+Email = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, to_lower=True, max_length=254, pattern=EMAIL_SHAPE),
+]
+
 
 class RequestCodeIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    # Lower-cased and trimmed first, so "Asha@Mail.com " and "asha@mail.com" are one person.
-    email: Annotated[
-        str,
-        StringConstraints(
-            strip_whitespace=True, to_lower=True, max_length=254, pattern=EMAIL_SHAPE
-        ),
-    ]
+    email: Email
     language: Literal["en", "hi"] = "en"
 
 
@@ -102,13 +103,20 @@ class RequestCodeOut(BaseModel):
 class VerifyIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    email: Annotated[
-        str,
-        StringConstraints(
-            strip_whitespace=True, to_lower=True, max_length=254, pattern=EMAIL_SHAPE
-        ),
-    ]
+    email: Email
     code: Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^\d{6}$")]
+
+
+class GoogleSignInIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    # The ID token ("credential") Google's button hands to the page. A real one is about 1 KB;
+    # the cap only stops absurd bodies. It is checked, used once and never stored.
+    credential: Annotated[
+        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=4096)
+    ]
+    # Used only if this sign-in creates a new user (same meaning as in request-code).
+    language: Literal["en", "hi"] = "en"
 
 
 class SessionOut(BaseModel):

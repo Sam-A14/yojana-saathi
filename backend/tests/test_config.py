@@ -45,3 +45,14 @@ def test_empty_llm_model_environment_variable_falls_back(monkeypatch: pytest.Mon
 
 def test_a_real_model_name_is_kept_and_trimmed() -> None:
     assert Settings(llm_model=" gemini-x ", _env_file=None).llm_model == "gemini-x"
+
+
+@pytest.mark.parametrize("blank", ["", "   "])
+def test_a_blank_google_client_id_means_the_feature_is_off(blank: str) -> None:
+    assert Settings(google_client_id=blank, _env_file=None).google_client_id is None
+
+
+def test_a_google_client_id_is_trimmed() -> None:
+    assert Settings(
+        google_client_id=" abc.apps.googleusercontent.com ", _env_file=None
+    ).google_client_id == ("abc.apps.googleusercontent.com")

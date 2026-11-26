@@ -67,6 +67,10 @@ class Settings(BaseSettings):
     # request-code says "busy" instead of silently using up the quota.
     email_daily_limit: int = 80
 
+    # Sign in with Google. The OAuth client ID is public (it is also in the frontend), so this is
+    # not a secret. Unset means the feature is off: /auth/google answers 503 and the button hides.
+    google_client_id: str | None = None
+
     @field_validator("llm_model", mode="before")
     @classmethod
     def blank_model_means_default(cls, value: object) -> object:
@@ -76,10 +80,11 @@ class Settings(BaseSettings):
             return DEFAULT_LLM_MODEL
         return value.strip() if isinstance(value, str) else value
 
-    @field_validator("vercel_project", "vercel_team", mode="before")
+    @field_validator("vercel_project", "vercel_team", "google_client_id", mode="before")
     @classmethod
     def blank_slug_means_unset(cls, value: object) -> object:
-        # Same reason as the model setting above: an unset variable can arrive as "".
+        # Same reason as the model setting above: an unset variable can arrive as "" (this covers
+        # the Google client ID too).
         if isinstance(value, str) and not value.strip():
             return None
         return value.strip() if isinstance(value, str) else value
