@@ -20,8 +20,10 @@ def test_list_holds_only_real_schemes_never_the_template(client: TestClient, see
     """The landing page counts per category from this list, so the template must not be in it."""
     schemes = client.get("/schemes").json()
 
-    assert {s["slug"] for s in schemes} == {"pm-kisan", "ignwps"}
-    assert {s["category"] for s in schemes} == {"farmer", "widow_pension"}
+    slugs = {s["slug"] for s in schemes}
+    assert {"pm-kisan", "ignwps"} <= slugs  # at least: approved schemes are added by pull request
+    assert "replace-with-scheme-slug" not in slugs
+    assert "replace_with_category" not in {s["category"] for s in schemes}
 
 
 def test_verified_scheme_says_so(client: TestClient, db: Session, seeded) -> None:
