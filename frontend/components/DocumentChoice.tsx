@@ -53,7 +53,7 @@ export function DocumentChoice({
               onChange={() => onChange(choice)}
             />
             <span
-              className={`flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border-2 border-line bg-surface px-1 py-2 text-center text-base font-semibold leading-tight transition peer-checked:font-bold peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary peer-active:scale-95 ${picked}`}
+              className={`flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border-2 border-line bg-surface px-1 py-2 text-center text-base font-semibold leading-tight transition peer-checked:font-bold peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary ${picked}`}
             >
               <Icon size={22} aria-hidden />
               {labels[key]}

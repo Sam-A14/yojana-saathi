@@ -21,6 +21,19 @@ export function Card({ className = "", ...props }: ComponentProps<"div">) {
   );
 }
 
+/** A grey placeholder shaped like a form while it loads. It has the words "Loading…" for screen
+ * readers. Unlike a one-line "Loading…", it is already close to the real height. */
+export function Skeleton({ label }: { label: string }) {
+  return (
+    <div role="status" className="flex animate-pulse flex-col gap-4">
+      <span className="sr-only">{label}</span>
+      <div aria-hidden className="h-8 w-2/3 rounded-lg bg-soft" />
+      <div aria-hidden className="h-28 rounded-2xl bg-soft" />
+      <div aria-hidden className="h-28 rounded-2xl bg-soft" />
+    </div>
+  );
+}
+
 export function Button({
   variant = "primary",
   className = "",
@@ -198,7 +211,7 @@ export function ChoiceGroup({
               checked={value === option.value}
               onChange={() => onChange(option.value)}
             />
-            <span className="flex min-h-14 items-center rounded-xl border-2 border-line bg-surface px-5 text-lg transition-colors peer-checked:border-primary peer-checked:bg-primary-soft peer-checked:font-bold peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary">
+            <span className="flex min-h-14 items-center rounded-xl border-2 border-line bg-surface px-5 text-lg transition peer-checked:border-primary peer-checked:bg-primary-soft peer-checked:font-bold peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary">
               {option.label}
             </span>
           </label>

@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { MemberForm } from "@/components/MemberForm";
 import { SetupFrame } from "@/components/SetupFrame";
-import { Button, ButtonLink, ErrorNote } from "@/components/ui";
+import { Avatar } from "@/components/Avatar";
+import { Button, ButtonLink, Card, ErrorNote, Skeleton } from "@/components/ui";
 import { api, errorKind, type ErrorKind } from "@/lib/api";
 import { isRelation } from "@/lib/options";
 import type { Member, MemberInput } from "@/lib/types";
@@ -91,7 +92,7 @@ export default function MembersPage() {
   }
 
   if (!members) {
-    return problem ? <ErrorNote>{te(problem)}</ErrorNote> : <p>{tc("loading")}</p>;
+    return problem ? <ErrorNote>{te(problem)}</ErrorNote> : <Skeleton label={tc("loading")} />;
   }
 
   if (editing) {
@@ -117,38 +118,45 @@ export default function MembersPage() {
   const full = members.length >= MAX_MEMBERS;
   return (
     <SetupFrame step={2}>
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
-      <p>{t("intro")}</p>
+      <h1 className="display text-3xl">{t("title")}</h1>
+      <p className="text-lg">{t("intro")}</p>
 
       {members.length === 0 && <p>{t("addFirst")}</p>}
       <ul className="flex flex-col gap-3">
         {members.map((member) => (
-          <li key={member.id} className="rounded-lg border border-zinc-300 p-4 dark:border-zinc-700">
-            <p className="text-lg font-semibold">{member.nickname}</p>
-            <p className="text-zinc-600 dark:text-zinc-400">
-              {isRelation(member.relation) ? to(`relation.${member.relation}`) : member.relation}
-              {member.birth_year ? ` · ${t("bornIn", { year: member.birth_year })}` : ""}
-            </p>
-            {removing === member.id ? (
-              <div className="mt-3 flex flex-col gap-2">
-                <p>{t("removeConfirm", { name: member.nickname })}</p>
-                <Button variant="danger" onClick={() => remove(member)}>
-                  {t("removeYes")}
-                </Button>
-                <Button variant="secondary" onClick={() => setRemoving(null)}>
-                  {t("removeKeep")}
-                </Button>
+          <li key={member.id}>
+            <Card className="flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                <Avatar name={member.nickname} size="lg" />
+                <div className="min-w-0">
+                  <p className="break-words text-xl font-bold">{member.nickname}</p>
+                  <p className="text-base text-muted">
+                    {isRelation(member.relation) ? to(`relation.${member.relation}`) : member.relation}
+                    {member.birth_year ? ` · ${t("bornIn", { year: member.birth_year })}` : ""}
+                  </p>
+                </div>
               </div>
-            ) : (
-              <div className="mt-3 flex gap-2">
-                <Button variant="secondary" onClick={() => setEditing(member)} aria-label={`${t("edit")}: ${member.nickname}`}>
-                  {t("edit")}
-                </Button>
-                <Button variant="secondary" onClick={() => setRemoving(member.id)} aria-label={`${t("remove")}: ${member.nickname}`}>
-                  {t("remove")}
-                </Button>
-              </div>
-            )}
+              {removing === member.id ? (
+                <div className="flex flex-col gap-3">
+                  <p>{t("removeConfirm", { name: member.nickname })}</p>
+                  <Button variant="danger" onClick={() => remove(member)}>
+                    {t("removeYes")}
+                  </Button>
+                  <Button variant="secondary" onClick={() => setRemoving(null)}>
+                    {t("removeKeep")}
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-3">
+                  <Button variant="secondary" className="flex-1" onClick={() => setEditing(member)} aria-label={`${t("edit")}: ${member.nickname}`}>
+                    {t("edit")}
+                  </Button>
+                  <Button variant="secondary" className="flex-1" onClick={() => setRemoving(member.id)} aria-label={`${t("remove")}: ${member.nickname}`}>
+                    {t("remove")}
+                  </Button>
+                </div>
+              )}
+            </Card>
           </li>
         ))}
       </ul>
