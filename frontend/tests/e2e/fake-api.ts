@@ -1,7 +1,12 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import type { Page, Route } from "@playwright/test";
 import eligibility from "../fixtures/eligibility.json";
+import emptyResults from "../fixtures/eligibility-empty.json";
 import missingHome from "../fixtures/eligibility-missing-home.json";
+
+// A sample family for whom no scheme may fit, is close, needs an answer or is blocked (each person
+// only has schemes that do not fit, which are counted, not listed).
+export const EMPTY_RESULTS = emptyResults;
 
 // A sample family that has not told us its state, area or income (real engine output).
 export const MISSING_HOME = missingHome;

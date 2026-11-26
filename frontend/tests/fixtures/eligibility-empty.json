@@ -1,0 +1,35 @@
+{
+  "household_id": "68f4bcb2-ce71-4bdc-af90-7cb87caa7468",
+  "computed_on": "2026-11-03",
+  "members": [
+    {
+      "member_id": "afb3d34c-12e8-4d57-8d81-2952ab2cf06e",
+      "nickname": "Kamla",
+      "schemes": [],
+      "excluded": [],
+      "not_eligible_count": 2
+    },
+    {
+      "member_id": "154d526b-12c3-4a52-a9bc-654551da4dcb",
+      "nickname": "Asha",
+      "schemes": [],
+      "excluded": [],
+      "not_eligible_count": 2
+    },
+    {
+      "member_id": "56559a35-4406-48df-97b1-dadd155746da",
+      "nickname": "Ramesh",
+      "schemes": [],
+      "excluded": [],
+      "not_eligible_count": 2
+    },
+    {
+      "member_id": "34f02770-abb6-423b-b1b7-6f08c645cc39",
+      "nickname": "Gudiya",
+      "schemes": [],
+      "excluded": [],
+      "not_eligible_count": 2
+    }
+  ],
+  "skipped_schemes": []
+}

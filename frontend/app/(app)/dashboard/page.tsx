@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { EmptyResults } from "@/components/EmptyResults";
 import { FamilySummary } from "@/components/FamilySummary";
 import { MemberResults } from "@/components/MemberResults";
 import { MyData } from "@/components/MyData";
@@ -18,6 +19,13 @@ function count(eligibility: Eligibility) {
   const all = eligibility.members.flatMap((m) => m.schemes);
   const of = (status: string) => all.filter((s) => s.status === status).length;
   return { fit: of("eligible"), close: of("near_miss"), unsure: of("unknown") };
+}
+
+// True when we found nothing at all for anyone: no scheme that may fit, is close, needs an answer or
+// is blocked. (Schemes that simply do not fit are only counted, so they do not make it non-empty.)
+function nothingFound(eligibility: Eligibility): boolean {
+  const { fit, close, unsure } = count(eligibility);
+  return fit + close + unsure === 0 && eligibility.members.every((m) => m.excluded.length === 0);
 }
 
 // Next.js can keep pages the person left (hidden, with their state) for Back/Forward. The screen is
@@ -74,13 +82,19 @@ function DashboardScreen({ family, session }: { family: Family; session: Session
 
       {results.state === "ready" && (
         <>
-          <FamilySummary
-            counts={count(results.eligibility)}
-            checkedOn={formatDate(results.eligibility.computed_on, locale)}
-          />
-          <ButtonLink href="/household/edit" variant="secondary">
-            {t("editHousehold")}
-          </ButtonLink>
+          {nothingFound(results.eligibility) ? (
+            <EmptyResults checkedOn={formatDate(results.eligibility.computed_on, locale)} />
+          ) : (
+            <>
+              <FamilySummary
+                counts={count(results.eligibility)}
+                checkedOn={formatDate(results.eligibility.computed_on, locale)}
+              />
+              <ButtonLink href="/household/edit" variant="secondary">
+                {t("editHousehold")}
+              </ButtonLink>
+            </>
+          )}
           {results.eligibility.skipped_schemes.length > 0 && (
             <ErrorNote>{t("skipped", { count: results.eligibility.skipped_schemes.length })}</ErrorNote>
           )}

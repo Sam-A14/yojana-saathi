@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ExternalLink, type LucideIcon } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useParams, useSearchParams } from "next/navigation";
 import { benefitText, documentName, formatDate, schemeName } from "@/lib/format";
@@ -11,27 +11,12 @@ import { useFamily } from "@/lib/use-family";
 import { useRuleText } from "@/lib/use-text";
 import { Avatar } from "./Avatar";
 import { DocumentIcon, SECTION_ICONS } from "./icons";
+import { IconSection as Section } from "./IconSection";
 import { NeededAnswers } from "./NeededAnswers";
 import { RuleList } from "./RuleList";
 import { StatusBadge, type ResultKind } from "./StatusBadge";
 import { VerificationLabel } from "./VerificationLabel";
 import { Button, ButtonLink, ErrorNote, Skeleton, buttonClass } from "./ui";
-
-/** One block of the page: a card with a picture and a heading. The picture is decoration; the
- * heading says what the block is. */
-function Section({ title, icon: Icon, children }: { title: string; icon: LucideIcon; children: React.ReactNode }) {
-  return (
-    <section className="flex flex-col gap-4 rounded-3xl border border-line-soft bg-surface p-5 shadow-card">
-      <h2 className="flex items-center gap-3 text-xl font-extrabold">
-        <span aria-hidden className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
-          <Icon size={24} />
-        </span>
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
 
 /** One scheme for one person: what it gives, why it may fit (each rule ticked or crossed), the
  * papers still missing, and where to check it officially. */

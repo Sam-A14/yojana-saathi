@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api, errorKind, type ErrorKind } from "@/lib/api";
@@ -16,6 +17,7 @@ import { Button, ErrorNote } from "./ui";
  */
 export function MyData({ session }: { session: Session }) {
   const t = useTranslations("privacy");
+  const tp = useTranslations("privacyPage");
   const te = useTranslations("errors");
   const router = useRouter();
   const [panel, setPanel] = useState<"delete" | "signout" | null>(null);
@@ -54,6 +56,9 @@ export function MyData({ session }: { session: Session }) {
         {t("title")}
       </h2>
       <p>{t("intro")}</p>
+      <Link href="/privacy" className="inline-flex min-h-12 items-center font-bold text-primary underline">
+        {tp("link")}
+      </Link>
       <p className="font-semibold">{t("signedInAs", { email: session.email })}</p>
 
       {panel === null && (
