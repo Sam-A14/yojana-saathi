@@ -1,4 +1,4 @@
-# 026 — Portal redesign: the last visual pass (PR 1 of 2)
+# 026 — Portal redesign: the last visual pass (PR 1 and PR 2)
 
 ## Context
 Decisions 018, 021 and 022 gave the app a cream-and-green look with a dark green hero. The owner chose
@@ -76,3 +76,34 @@ later work may fix bugs and add content, not change the look.
 - Healthcare and Families need a backend category (and schemes) before they can show a count.
 - New Hindi strings are first drafts, marked "needs native review" in `messages/hi.ts`.
 - Lighthouse lab numbers (mobile, local build) are in the PR description.
+
+## PR 2: the same look on every other page
+- **One frame, `PageFrame`.** Every page outside the home page sits in a soft teal band (`--band`) with a
+  curved bottom edge behind the title, then a centred column. The band is decoration (`aria-hidden`,
+  absolutely positioned), so it cannot move anything. The footer still stays below the fold while a
+  page loads (`min-h-svh`, decision 021).
+- **Two widths, two route groups.** `app/(app)/` is the narrow column (sign-in, setup, privacy, one
+  scheme, edit, deleted): a comfortable line length and big single-column forms. `app/(wide)/` is for the
+  pages that list things: `/schemes`, `/dashboard`, `/example`. Cards sit two to a row from tablet width.
+  Route groups do not change any URL.
+- **One title style, `.page-title`:** the heading plus a short gold bar (a fill, never gold text). Cards
+  use the same `rounded-3xl` as the landing page. `--band` was added with contrast tests
+  (ink, muted and primary on it, 7:1 or better in light and dark).
+- **Performance, found by measuring.**
+  - The "हिन्दी" button is on every page, so the 120 KB Devanagari web font was downloaded even by English
+    readers. On an English page that one button now uses the phone's own Devanagari font; the web font
+    loads only when the page is in Hindi (a test checks both). Naming "Noto Sans Devanagari" in the
+    override would have pulled the web font in again, because next/font registers it under that plain name.
+  - The dashboard had a 0.247 layout shift in two of three runs: the "My data" block sat under the grey
+    placeholder and was pushed down when the results arrived. It now appears once the results (or an
+    error) are there.
+  - Lighthouse numbers vary by several points between runs on this machine (the same `/schemes` build
+    gave 94, 89 and 88 on different days), so the PR reports medians of 3 runs, taken the same way before
+    and after.
+- **The trust-strip line was softened** to "Each scheme shows whether and when it was last checked".
+
+## Alternatives (PR 2)
+- **One width for everything:** simpler, but a phone-sized column looked lost on a computer.
+- **A banner image or a larger hero on every page:** heavier on a cheap phone and not needed for a form.
+- **`:has()` to widen the column from inside a page:** no extra route group, but old Android WebViews
+  do not support it.
