@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeft, ExternalLink, type LucideIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useParams, useSearchParams } from "next/navigation";
 import { benefitText, documentName, formatDate, schemeName } from "@/lib/format";
@@ -8,16 +9,25 @@ import type { DocumentInfo, Eligibility, ExcludedScheme, Family, MemberEligibili
 import { useFamilyResults } from "@/lib/use-family-results";
 import { useFamily } from "@/lib/use-family";
 import { useRuleText } from "@/lib/use-text";
+import { Avatar } from "./Avatar";
+import { DocumentIcon, SECTION_ICONS } from "./icons";
 import { NeededAnswers } from "./NeededAnswers";
 import { RuleList } from "./RuleList";
 import { StatusBadge, type ResultKind } from "./StatusBadge";
 import { VerificationLabel } from "./VerificationLabel";
-import { Button, ButtonLink, ErrorNote, buttonClass } from "./ui";
+import { Button, ButtonLink, ErrorNote, Skeleton, buttonClass } from "./ui";
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+/** One block of the page: a card with a picture and a heading. The picture is decoration; the
+ * heading says what the block is. */
+function Section({ title, icon: Icon, children }: { title: string; icon: LucideIcon; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-xl font-bold">{title}</h2>
+    <section className="flex flex-col gap-4 rounded-3xl border border-line-soft bg-surface p-5 shadow-card">
+      <h2 className="flex items-center gap-3 text-xl font-extrabold">
+        <span aria-hidden className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+          <Icon size={24} />
+        </span>
+        {title}
+      </h2>
       {children}
     </section>
   );
@@ -31,11 +41,11 @@ export function SchemeView() {
   const td = useTranslations("dashboard");
   const { ready, family } = useFamily();
 
-  if (!ready) return <p role="status">{t("loading")}</p>;
+  if (!ready) return <Skeleton label={t("loading")} />;
   if (!family) {
     return (
       <div className="flex flex-col gap-5">
-        <h1 className="text-2xl font-bold">{td("none")}</h1>
+        <h1 className="display text-3xl">{td("none")}</h1>
         <ButtonLink href="/signin">{td("toSignIn")}</ButtonLink>
       </div>
     );
@@ -51,7 +61,7 @@ function SchemeScreen({ family }: { family: Family }) {
   const memberId = useSearchParams().get("member");
   const { results, reload } = useFamilyResults(family);
 
-  if (results.state === "loading") return <p role="status">{t("loading")}</p>;
+  if (results.state === "loading") return <Skeleton label={t("loading")} />;
   if (results.state === "error") {
     return (
       <div className="flex flex-col gap-4">
@@ -92,6 +102,7 @@ export function SchemeDetail({
 
   const back = (
     <ButtonLink href={backHref} variant="secondary">
+      <ArrowLeft aria-hidden size={22} />
       {t("back")}
     </ButtonLink>
   );
@@ -102,7 +113,7 @@ export function SchemeDetail({
   if (!member || (!found && !excluded)) {
     return (
       <div className="flex flex-col gap-5">
-        <h1 className="text-2xl font-bold">{memberId ? t("notFound") : t("chooseMember")}</h1>
+        <h1 className="display text-3xl">{memberId ? t("notFound") : t("chooseMember")}</h1>
         {back}
       </div>
     );
@@ -119,8 +130,11 @@ export function SchemeDetail({
   return (
     <article className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
-        <p className="text-base text-zinc-600 dark:text-zinc-400">{t("forName", { name: member.nickname })}</p>
-        <h1 className="text-3xl font-bold">{schemeName(scheme, locale)}</h1>
+        <div className="flex items-center gap-3">
+          <Avatar name={member.nickname} />
+          <p className="text-lg font-bold text-muted">{t("forName", { name: member.nickname })}</p>
+        </div>
+        <h1 className="display text-3xl">{schemeName(scheme, locale)}</h1>
         <div className="flex flex-wrap items-center gap-3">
           <StatusBadge kind={kind} />
           <VerificationLabel scheme={scheme} />
@@ -128,7 +142,7 @@ export function SchemeDetail({
         {!scheme.verified && <p>{t("unverifiedNote")}</p>}
       </div>
 
-      <Section title={t("summaryTitle")}>
+      <Section title={t("summaryTitle")} icon={SECTION_ICONS.summary}>
         <p>{summary ?? t("noSummary")}</p>
         {dates.map((line) => (
           <p key={String(line)} className="font-semibold">
@@ -138,22 +152,22 @@ export function SchemeDetail({
       </Section>
 
       {found && (
-        <Section title={t("whyTitle")}>
+        <Section title={t("whyTitle")} icon={SECTION_ICONS.why}>
           {found.passed_rules.length > 0 && (
             <div className="flex flex-col gap-2">
-              <h3 className="font-bold">{t("met")}</h3>
+              <h3 className="text-lg font-bold">{t("met")}</h3>
               <RuleList rules={found.passed_rules} mark="met" describe={describe} />
             </div>
           )}
           {found.failed_rules.length > 0 && (
             <div className="flex flex-col gap-2">
-              <h3 className="font-bold">{t("notMet")}</h3>
+              <h3 className="text-lg font-bold">{t("notMet")}</h3>
               <RuleList rules={found.failed_rules} mark="notMet" describe={describe} />
             </div>
           )}
           {found.unknown_rules.length > 0 && (
             <div className="flex flex-col gap-2">
-              <h3 className="font-bold">{t("notChecked")}</h3>
+              <h3 className="text-lg font-bold">{t("notChecked")}</h3>
               <RuleList rules={found.unknown_rules} mark="notChecked" describe={describe} />
               <NeededAnswers needed={neededAnswers(found)} memberName={member.nickname} documents={documents} />
             </div>
@@ -162,19 +176,24 @@ export function SchemeDetail({
       )}
 
       {excluded && (
-        <Section title={t("excludedTitle")}>
+        <Section title={t("excludedTitle")} icon={SECTION_ICONS.why}>
           <p className="font-semibold">{t("excludedBecause", { names: excluded.excluded_by.join(", ") })}</p>
           <RuleList rules={excluded.failed_rules} mark="notMet" describe={describe} />
         </Section>
       )}
 
       {found && (
-        <Section title={t("docsTitle")}>
+        <Section title={t("docsTitle")} icon={SECTION_ICONS.docs}>
           {found.missing_documents.length === 0 && <p>{t("docsNone")}</p>}
           <ul className="flex flex-col gap-4">
             {found.missing_documents.map((doc) => (
-              <li key={doc.code} className="flex flex-col gap-1 rounded-lg border border-zinc-300 p-4 dark:border-zinc-700">
-                <p className="text-lg font-semibold">{documentName(documents, doc.code, locale)}</p>
+              <li key={doc.code} className="flex flex-col gap-1 rounded-2xl border border-line-soft bg-soft/60 p-4">
+                <p className="flex items-center gap-3 text-lg font-bold">
+                  <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                    <DocumentIcon code={doc.code} size={22} />
+                  </span>
+                  <span className="min-w-0 break-words">{documentName(documents, doc.code, locale)}</span>
+                </p>
                 <p>{doc.state === "no" ? t("docNo") : t("docUnknown")}</p>
                 {(locale === "hi" ? doc.how_to_get_hi : doc.how_to_get_en) && (
                   <p>
@@ -193,9 +212,10 @@ export function SchemeDetail({
         </Section>
       )}
 
-      <Section title={t("officialTitle")}>
+      <Section title={t("officialTitle")} icon={SECTION_ICONS.official}>
         <a href={scheme.official_url} target="_blank" rel="noopener noreferrer" className={buttonClass("primary")}>
           {t("openOfficial")}
+          <ExternalLink aria-hidden size={20} />
         </a>
         {scheme.verified && scheme.verified_at && <p>{t("lastChecked", { date: formatDate(scheme.verified_at, locale) })}</p>}
       </Section>

@@ -2,7 +2,7 @@
 // Colours come from the tokens in globals.css, so dark mode needs no extra classes.
 
 export const buttonBase =
-  "inline-flex min-h-14 items-center justify-center gap-2 rounded-xl px-6 text-lg font-bold transition duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex min-h-14 items-center justify-center gap-2 rounded-xl px-6 text-center text-lg font-bold transition duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50";
 export const buttonLook = {
   primary: "bg-primary text-on-primary shadow-card hover:bg-primary-hover",
   // Marigold: for the one main action on a dark background (the home page hero).
