@@ -9,7 +9,7 @@ to be warm and trustworthy, easy for older eyes, and light to download.
 - **Tokens, not colours.** Every colour is a CSS variable in `app/globals.css` (cream page, white
   cards, deep green `--primary`, marigold `--accent`, four result-state pairs). Tailwind classes
   read them (`bg-surface`, `text-muted`, `bg-ok-bg`). Dark mode redefines the same variables
-  under `prefers-color-scheme`, so components carry no `dark:` classes.
+  under `data-theme` (first under `prefers-color-scheme`; see decision 022), so components carry no `dark:` classes.
 - **Contrast measured, not guessed.** Body and helper text are 7:1 or better (AAA) in both themes;
   button, chip and link text is 4.5:1 or better (AA, most pairs are over 7:1). White text on
   marigold is only 2.2:1, so marigold buttons use dark text. Marigold as text uses `--accent-ink`.
@@ -34,7 +34,7 @@ to be warm and trustworthy, easy for older eyes, and light to download.
 ## Alternatives
 - Hand-drawn inline SVG icons: no dependency, but ~35 icons to draw and maintain. `lucide-react`
   is tree-shaken, so only the icons we import are shipped.
-- A manual dark/light switch: not asked for; `prefers-color-scheme` covers it.
+- A manual dark/light switch: not asked for at the time. Later added, with light as the default (decision 022).
 - Fetching `/schemes` on the server: faster first paint of the cards, but a sleeping backend would
   slow or break the whole home page, and the fetch could not be faked in the Playwright tests.
 - Scaling text with the browser's own zoom only: many older users do not know how; a visible button does.

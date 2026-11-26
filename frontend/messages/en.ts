@@ -402,6 +402,7 @@ export const en = {
     },
   },
   textSize: { label: "Text size", normal: "normal text", large: "larger text" },
+  theme: { label: "Colour theme", light: "Light", dark: "Dark", device: "Match device" },
   categories: {
     farmer: "Farmers",
     widow_pension: "Widow pension",

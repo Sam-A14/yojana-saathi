@@ -424,6 +424,8 @@ export const hi: typeof en = {
   },
   // needs native review: textSize, categories and landing are first drafts, read them aloud.
   textSize: { label: "अक्षर का आकार", normal: "सामान्य अक्षर", large: "बड़े अक्षर" },
+  // needs native review: new in PR 2. "Match device" is meant as "same as the phone's own setting".
+  theme: { label: "रंग-रूप", light: "हल्का", dark: "गहरा", device: "फ़ोन जैसा" },
   categories: {
     farmer: "किसान",
     widow_pension: "विधवा पेंशन",

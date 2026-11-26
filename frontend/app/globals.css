@@ -6,6 +6,7 @@
  * borders of inputs are 3:1 or better. The pairs were measured, see docs/decisions/018-visual-design-system.md.
  */
 :root {
+  color-scheme: light;
   --bg: #fff8ec; /* warm cream page */
   --surface: #ffffff; /* cards */
   --soft: #f3ead7; /* quiet panels */
@@ -51,8 +52,65 @@
   --shadow-lift: 0 2px 4px rgb(43 33 24 / 0.08), 0 18px 36px -12px rgb(43 33 24 / 0.28);
 }
 
+/*
+ * Dark theme. Light is the default for everyone, whatever the phone's own setting: a person chooses
+ * Dark or "Match device" with the toggle in the header (components/ThemeToggle.tsx), and a script in
+ * <head> sets data-theme on <html> before the first paint (app/layout.tsx).
+ *
+ * The same dark values appear TWICE below: once for data-theme="dark" and once for "device" when
+ * the phone itself is dark. They are repeated on purpose, not folded into CSS light-dark(), because
+ * light-dark() needs Chrome 123 (2024) and an older Android phone would lose every colour.
+ * tests/unit/theme-tokens.spec.ts fails if the two copies ever differ.
+ */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #1a1410;
+  --surface: #251d17;
+  --soft: #2f251d;
+  --ink: #f5ebdd;
+  --muted: #c9baa5;
+  --line: #8c7a66;
+  --line-soft: #3d3025;
+  --primary: #8fddb4;
+  --primary-hover: #a9e8c6;
+  --on-primary: #0e2a20;
+  --primary-soft: #1d3a2d;
+  --accent: #f5b33d;
+  --accent-hover: #f8c560;
+  --on-accent: #1a1410;
+  --accent-ink: #f5b33d;
+  --hero: #0b2a20;
+  --focus: #8fddb4;
+  --danger: #fca5a5;
+  --danger-bg: #3b1212;
+  --ok-bg: #123524;
+  --ok-fg: #a7f3d0;
+  --close-bg: #3a2a0a;
+  --close-fg: #fcd34d;
+  --ask-bg: #1b2a5c;
+  --ask-fg: #bfd4ff;
+  --block-bg: #3b1212;
+  --block-fg: #fecaca;
+  --av1-bg: #1d3a2d;
+  --av1-fg: #a9e8c6;
+  --av2-bg: #3d2a12;
+  --av2-fg: #fbc98a;
+  --av3-bg: #2d2550;
+  --av3-fg: #cfc3f5;
+  --av4-bg: #14344a;
+  --av4-fg: #b3dcf5;
+  --av5-bg: #4a1a2b;
+  --av5-fg: #f7c0d3;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 28px -10px rgb(0 0 0 / 0.6);
+  --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.5), 0 18px 36px -12px rgb(0 0 0 / 0.7);
+}
+
+:root[data-theme="device"] {
+  color-scheme: light dark;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root[data-theme="device"] {
     --bg: #1a1410;
     --surface: #251d17;
     --soft: #2f251d;
