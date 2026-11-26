@@ -1,5 +1,5 @@
 import { type Page } from "@playwright/test";
-import { type FakeApi, MISSING_HOME } from "./fake-api";
+import { EMPTY_RESULTS, type FakeApi, MISSING_HOME } from "./fake-api";
 import { expect, test, STORAGE_KEY } from "./fixtures";
 
 const NAMES = ["Kamla", "Asha", "Ramesh", "Gudiya"];
@@ -191,4 +191,49 @@ test("the celebration is switched off for people who ask for less motion", async
   await openDashboard(page, api);
   // The paper pieces are still in the page (they are decorative) but nothing animates.
   await expect(page.getByTestId("celebration").locator(".confetti-piece").first()).toHaveCSS("animation-name", "none");
+});
+
+// --- When nothing was found for anyone ---
+
+test("when nothing was found for anyone, an empty state offers two next steps", async ({ page, api }) => {
+  api.fixture = EMPTY_RESULTS;
+  await openDashboard(page, api);
+
+  await expect(page.getByRole("heading", { name: "We did not find a scheme for your family yet" })).toBeVisible();
+  await expect(page.getByText("Checked on 3 November 2026")).toBeVisible();
+  // One main full-width action, and the quieter one.
+  const review = page.getByRole("link", { name: "Review household details" });
+  await expect(review).toHaveAttribute("href", "/household/edit");
+  await expect(page.getByRole("link", { name: "See all schemes" })).toHaveAttribute("href", "/schemes");
+  expect((await review.boundingBox())!.height).toBeGreaterThanOrEqual(48);
+  // No summary sentence, no celebration, and no second "edit" button next to the empty state.
+  await expect(page.getByText(/Your family may qualify for/)).toHaveCount(0);
+  await expect(page.getByTestId("celebration")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Edit household details" })).toHaveCount(0);
+  // The people are still listed, with what does not fit counted.
+  for (const name of NAMES) await expect(card(page, name)).toBeVisible();
+  await expect(card(page, "Kamla").getByText("2 other schemes do not fit.")).toBeVisible();
+
+  await review.click();
+  await expect(page).toHaveURL(/\/household\/edit$/);
+});
+
+test("the empty state is in Hindi when the language is Hindi", async ({ page, api }) => {
+  api.fixture = EMPTY_RESULTS;
+  await openDashboard(page, api);
+  await page.getByRole("button", { name: "हिन्दी" }).click();
+
+  await expect(page.getByRole("heading", { name: "अभी आपके परिवार के लिए कोई योजना नहीं मिली" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "घर की जानकारी जाँचें" })).toBeVisible();
+});
+
+test("a family with anything to show does not get the empty state", async ({ page, api }) => {
+  await openDashboard(page, api); // the sample family: one may qualify, some need answers
+  await expect(page.getByRole("heading", { name: "We did not find a scheme for your family yet" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Edit household details" })).toBeVisible();
+
+  api.fixture = MISSING_HOME; // only "needs an answer" results: still something to show
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Your family’s schemes" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "We did not find a scheme for your family yet" })).toHaveCount(0);
 });

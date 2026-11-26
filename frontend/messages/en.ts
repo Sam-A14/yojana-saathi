@@ -144,6 +144,12 @@ export const en = {
       excluded: "Not available for your family",
     },
     nothing: "No schemes found for {name} yet.",
+    empty: {
+      title: "We did not find a scheme for your family yet",
+      body: "Please check your household details. State, area and income change which schemes we can match. We are adding more schemes.",
+      review: "Review household details",
+      allSchemes: "See all schemes",
+    },
     notFit:
       "{count, plural, one {# other scheme does not fit.} other {# other schemes do not fit.}}",
     excludedBecause: "Not available because of {names}.",
