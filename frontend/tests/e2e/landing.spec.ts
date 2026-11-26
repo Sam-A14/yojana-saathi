@@ -101,7 +101,7 @@ test("the trust strip uses honest wording and makes no claim we cannot back", as
   await page.goto("/");
 
   await expect(page.getByText("Every scheme links to its official source")).toBeVisible();
-  await expect(page.getByText("Each result shows when it was last checked")).toBeVisible();
+  await expect(page.getByText("Each scheme shows whether and when it was last checked")).toBeVisible();
   await expect(page.getByText("We never ask for Aadhaar numbers. Delete your data anytime.")).toBeVisible();
 
   const text = (await page.locator("main").innerText()).toLowerCase();

@@ -115,7 +115,7 @@ export default function DocumentsPage() {
 
   return (
     <SetupFrame step={3}>
-      <h1 className="display text-3xl">{t("title")}</h1>
+      <h1 className="page-title">{t("title")}</h1>
       <p className="text-lg">{t("intro")}</p>
 
       {familyDocs.length > 0 && (

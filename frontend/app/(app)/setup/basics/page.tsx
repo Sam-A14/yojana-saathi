@@ -67,7 +67,7 @@ function BasicsForm({ session }: { session: Session }) {
   return (
     <SetupFrame step={1}>
       <div className="flex flex-col gap-6">
-        <h1 className="display text-3xl">{t("title")}</h1>
+        <h1 className="page-title">{t("title")}</h1>
         <p className="text-lg">{t("intro")}</p>
         <Card>
         <HouseholdForm

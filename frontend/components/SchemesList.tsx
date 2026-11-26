@@ -62,7 +62,7 @@ export function SchemesList() {
               <CategoryIcon category={group} size={26} />
               {tCategory(group)}
             </h2>
-            <ul className="flex flex-col gap-4">
+            <ul className="grid gap-4 md:grid-cols-2">
               {schemes.map((scheme) => (
                 <li key={scheme.slug}>
                   <SchemeCard scheme={scheme} showCategory={false} />

@@ -22,7 +22,7 @@ export default function EditHouseholdPage() {
   if (!family) {
     return (
       <div className="flex flex-col gap-5">
-        <h1 className="text-2xl font-bold">{t("none")}</h1>
+        <h1 className="page-title">{t("none")}</h1>
         <ButtonLink href="/signin">{t("toSignIn")}</ButtonLink>
       </div>
     );
@@ -91,7 +91,7 @@ function HouseholdEditor({ family }: { family: Family }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <h1 className="page-title">{t("title")}</h1>
       <p>{t("intro")}</p>
       <HouseholdForm
         initial={{

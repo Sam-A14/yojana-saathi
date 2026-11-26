@@ -118,7 +118,7 @@ export default function MembersPage() {
   const full = members.length >= MAX_MEMBERS;
   return (
     <SetupFrame step={2}>
-      <h1 className="display text-3xl">{t("title")}</h1>
+      <h1 className="page-title">{t("title")}</h1>
       <p className="text-lg">{t("intro")}</p>
 
       {members.length === 0 && <p>{t("addFirst")}</p>}

@@ -7,7 +7,7 @@ export default async function SchemesPage() {
   const t = await getTranslations("schemesPage");
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="display text-3xl">{t("title")}</h1>
+      <h1 className="page-title">{t("title")}</h1>
       <p className="text-lg">{t("intro")}</p>
       <ButtonLink href="/setup/basics">{t("cta")}</ButtonLink>
       <SchemesList />
