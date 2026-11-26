@@ -28,7 +28,7 @@ export function LanguageToggle() {
           lang={code}
           aria-pressed={locale === code}
           onClick={() => choose(code)}
-          className="min-h-12 px-3 text-base font-semibold transition-colors aria-pressed:bg-primary aria-pressed:text-on-primary"
+          className="min-h-[2.667rem] px-2.5 sm:min-h-12 sm:px-3 text-base font-semibold transition-colors aria-pressed:bg-primary aria-pressed:text-on-primary"
         >
           {t(code)}
         </button>

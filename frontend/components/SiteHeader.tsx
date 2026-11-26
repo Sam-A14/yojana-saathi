@@ -45,7 +45,7 @@ export function SiteHeader() {
   return (
     <header className="print:hidden border-b border-line-soft bg-surface">
       <div className="border-b border-line-soft bg-soft">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-end gap-2 px-4 py-2">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-end gap-2 px-5 py-1 sm:px-4 sm:py-2">
           <TextSizeToggle />
           <LanguageToggle />
           <div className="hidden md:block">
@@ -54,11 +54,11 @@ export function SiteHeader() {
         </div>
       </div>
 
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="flex min-h-12 items-center gap-3" onClick={() => setOpen(false)}>
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-2 px-5 py-1.5 sm:gap-4 sm:px-4 sm:py-3">
+        <Link href="/" className="flex min-h-[2.667rem] items-center gap-2 sm:min-h-12 sm:gap-3" onClick={() => setOpen(false)}>
           <Logo />
           <span className="flex flex-col">
-            <span className="text-xl font-extrabold leading-tight">{tc("appName")}</span>
+            <span className="text-lg font-extrabold leading-tight sm:text-xl">{tc("appName")}</span>
             <span className="hidden max-w-[17rem] text-base leading-snug text-muted sm:block">{tc("tagline")}</span>
           </span>
         </Link>
@@ -80,7 +80,7 @@ export function SiteHeader() {
           aria-expanded={open}
           aria-controls="mobile-menu"
           onClick={() => setOpen((value) => !value)}
-          className="inline-flex min-h-12 items-center gap-2 rounded-xl border-2 border-primary px-4 text-lg font-bold text-primary hover:bg-primary-soft lg:hidden"
+          className="inline-flex min-h-[2.667rem] items-center gap-2 rounded-xl border-2 border-primary px-3 sm:min-h-12 sm:px-4 text-lg font-bold text-primary hover:bg-primary-soft lg:hidden"
         >
           {open ? <X aria-hidden size={22} /> : <Menu aria-hidden size={22} />}
           {open ? t("closeMenu") : t("menu")}

@@ -1,4 +1,4 @@
-# 026 — Portal redesign: the last visual pass (PR 1 and PR 2)
+# 026 — Portal redesign: the last visual pass (PR 1, PR 2 and PR 3)
 
 ## Context
 Decisions 018, 021 and 022 gave the app a cream-and-green look with a dark green hero. The owner chose
@@ -107,3 +107,26 @@ later work may fix bugs and add content, not change the look.
 - **A banner image or a larger hero on every page:** heavier on a cheap phone and not needed for a form.
 - **`:has()` to widen the column from inside a page:** no extra route group, but old Android WebViews
   do not support it.
+
+## PR 3: a compact phone header and hero
+- **Why.** On a 390px phone two header rows (156px) and a 3-line headline filled the first screen; the
+  family photo started at about 850px, below the fold of an 844px phone.
+- **Phone only, below 720px.** Every change is a mobile class with an `sm:` class restoring the old value,
+  so from 720px up nothing changes. A pixel comparison of full-page screenshots at 1440, 1280, 768 and 820
+  wide, in English and Hindi, was identical before and after.
+- **Header:** the toolbar row (A/A+, language) and the logo + Menu row are 48px controls with minimal
+  padding, about 123px in total at the normal text size (was 157px). Tap targets are 48px at the normal text
+  size and grow with A+, because they are in `rem`. **The root font is 18px, so Tailwind's `min-h-12` is
+  54px, not 48px;** the phone controls use `2.667rem` (48px) to meet the compact target without going below it.
+  The app name is `text-lg` on a phone so "Yojana Saathi" and Menu fit at 360px.
+- **Hero:** headline `clamp(2.1rem, 1.35rem + 4.2vw, 2.4rem)` (39 to 43px at 360 to 430px wide) with
+  `text-wrap: balance` (phone only), a 3-line headline; description 18px; main button full width, 59px
+  tall; 20px side padding.
+- **Order:** headline, description, main button, **photo**, then the "free" line and the two quiet links.
+  They are rendered twice (`HeroExtras`), once under the button for 720px and up and once under the photo on
+  a phone; the copy not shown is `display:none`, so a screen reader meets each link once. 4:3 trims only the
+  sides of the photo, and all four faces stay visible at 360px.
+- **Result at 844px tall, normal text size:** the photo starts at 510 to 560px at every width from 360 to
+  430px, in English and Hindi (was 817 to 851px). With A+ it starts at 616 to 697px, still inside the screen.
+- **Alternative rejected:** moving the free line and links into the toolbar or removing them; they are the
+  only ways in for a returning person (Sign in) and for a visitor who wants to look first (example).
