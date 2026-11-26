@@ -105,6 +105,46 @@ test("the code box takes only six digits", async ({ page, api }) => {
   await expect(box).toHaveAttribute("autocomplete", "one-time-code");
 });
 
+// --- The six-box look over one real input ---
+
+test("the code is six boxes drawn over one real input", async ({ page, api }) => {
+  void api;
+  await askForCode(page, "asha@example.com");
+
+  const box = page.getByLabel("6-digit code");
+  await expect(page.locator("form input")).toHaveCount(1); // one field for the keyboard and screen readers
+  await expect(page.getByTestId("otp-box")).toHaveCount(6);
+  await expect(box).toHaveAttribute("inputmode", "numeric");
+  await expect(box).toHaveAttribute("autocomplete", "one-time-code");
+
+  await box.click();
+  await page.keyboard.type("4829");
+  await expect(page.getByTestId("otp-box")).toHaveText(["4", "8", "2", "9", "", ""]);
+});
+
+test("a code pasted as '123 456' fills all six boxes, and nothing past six is kept", async ({ page, api }) => {
+  void api;
+  await askForCode(page, "asha@example.com");
+
+  const box = page.getByLabel("6-digit code");
+  await box.focus();
+  await page.keyboard.insertText("123 456"); // what a paste does: the text arrives in one go
+  await expect(box).toHaveValue("123456");
+  await expect(page.getByTestId("otp-box")).toHaveText(["1", "2", "3", "4", "5", "6"]);
+
+  await box.fill("");
+  await page.keyboard.insertText("98 76 54 32");
+  await expect(box).toHaveValue("987654");
+});
+
+test("the code row is one big tap target", async ({ page, api }) => {
+  void api;
+  await askForCode(page, "asha@example.com");
+  const box = await page.getByLabel("6-digit code").boundingBox();
+  expect(box!.height).toBeGreaterThanOrEqual(48);
+  expect(box!.width).toBeGreaterThan(250);
+});
+
 test("an address that is not an email is refused before anything is sent", async ({ page, api }) => {
   await page.goto("/signin");
   await page.getByLabel("Your email address").fill("not-an-email");
@@ -114,12 +154,23 @@ test("an address that is not an email is refused before anything is sent", async
   expect(api.requests.some((r) => r.path === "/auth/request-code")).toBe(false);
 });
 
-test("a new code can be sent, and a different email can be used", async ({ page, api }) => {
+test("a new code can be sent after a short wait, and a different email can be used", async ({ page, api }) => {
+  await page.clock.install(); // so the 30-second wait can be skipped
   await askForCode(page, "asha@example.com");
 
-  await page.getByRole("button", { name: "Send me a new code" }).click();
+  // Right after a code is sent the button waits, and the number of seconds is on screen.
+  const resend = page.getByRole("button", { name: "Send me a new code" });
+  await expect(resend).toBeDisabled();
+  await expect(page.getByText("You can ask for a new code in 30 seconds.").first()).toBeVisible();
+
+  await page.clock.fastForward(30_000);
+  await expect(resend).toBeEnabled();
+  await expect(page.getByText("You can ask for a new code now.").first()).toBeVisible();
+
+  await resend.click();
   await expect(page.getByText("A new code is on its way.")).toBeVisible();
   expect(api.requests.filter((r) => r.path === "/auth/request-code")).toHaveLength(2);
+  await expect(resend).toBeDisabled(); // and the wait starts again
 
   await page.getByRole("button", { name: "Use a different email" }).click();
   await expect(page.getByLabel("Your email address")).toBeVisible();

@@ -4,12 +4,19 @@ import { KeyRound, Mail, ShieldCheck } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useRef, useState } from "react";
+import { OtpInput } from "@/components/OtpInput";
 import { Button, ButtonLink, Card, ErrorNote, Skeleton, TextField } from "@/components/ui";
 import { ApiError, api, errorKind } from "@/lib/api";
 import { nextPathFor } from "@/lib/next-path";
 import { saveSession, useSession } from "@/lib/session";
+import { useCountdown } from "@/lib/use-countdown";
 
 // The same shape check as the server's: the only real test is that the code arrives.
+// How long "Send me a new code" waits after a code was sent. Only a convenience against double taps
+// and an impatient second request: the server has its own limits (per email per hour, and a daily
+// cap) and does not rely on this.
+const RESEND_WAIT_SECONDS = 30;
+
 const EMAIL_SHAPE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 // The reasons the sign-in endpoints can give (detail.code), each with its own plain message.
@@ -40,6 +47,7 @@ export default function SignInPage() {
   const locale = useLocale() === "hi" ? "hi" : "en";
   const router = useRouter();
   const { ready, session } = useSession();
+  const wait = useCountdown(RESEND_WAIT_SECONDS);
 
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
@@ -83,6 +91,7 @@ export default function SignInPage() {
     try {
       await api.requestCode(address, locale);
       setEmail(address);
+      wait.restart();
       setStep("code");
     } catch (error) {
       setProblem(describe(error));
@@ -96,6 +105,7 @@ export default function SignInPage() {
     setNotice(null);
     try {
       await api.requestCode(email, locale);
+      wait.restart();
       setCode("");
       setNotice(t("resent"));
     } catch (error) {
@@ -137,17 +147,7 @@ export default function SignInPage() {
         <p className="text-lg">{t("codeIntro", { email })}</p>
         <p className="text-base text-muted">{t("spam")}</p>
         <Card className="flex flex-col gap-6">
-        <TextField
-          label={t("codeLabel")}
-          value={code}
-          // No maxLength on the box: it would cut "123 456" (pasted with a space) to 5 digits before
-          // this filter keeps the first six digits.
-          onChange={(value) => setCode(value.replace(/\D/g, "").slice(0, 6))}
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          error={null}
-          className="tracking-[0.4em]"
-        />
+        <OtpInput label={t("codeLabel")} value={code} onChange={setCode} />
         {notice && <p role="status" className="font-semibold text-primary">{notice}</p>}
         {problem && <ErrorNote>{problem}</ErrorNote>}
         <Button type="submit" disabled={busy || code.length !== 6} className="w-full">
@@ -155,7 +155,15 @@ export default function SignInPage() {
         </Button>
         </Card>
         <div className="flex flex-col gap-3">
-          <Button variant="secondary" onClick={resend} disabled={busy}>
+          {/* The number on screen changes every second, so it is hidden from screen readers; they
+              get one sentence when the wait starts and one when it ends. */}
+          <p aria-hidden className="text-base font-semibold text-muted">
+            {wait.left > 0 ? t("resendWait", { seconds: wait.left }) : t("resendReady")}
+          </p>
+          <p role="status" className="sr-only">
+            {wait.left > 0 ? t("resendWait", { seconds: RESEND_WAIT_SECONDS }) : t("resendReady")}
+          </p>
+          <Button variant="secondary" onClick={resend} disabled={busy || wait.left > 0}>
             {t("resend")}
           </Button>
           <Button
@@ -180,6 +188,9 @@ export default function SignInPage() {
       <IconTile><Mail size={30} /></IconTile>
       <h1 className="display text-3xl">{t("title")}</h1>
       <p className="text-lg">{t("intro")}</p>
+      {/* Sign-in options live in this one block. A future "Continue with Google" button and an "or"
+          divider go ABOVE this card, so nothing below has to be moved. Not built yet, so nothing is
+          shown for it. */}
       <Card className="flex flex-col gap-6">
       <TextField
         label={t("emailLabel")}
