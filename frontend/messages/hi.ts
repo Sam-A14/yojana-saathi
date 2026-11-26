@@ -20,6 +20,7 @@ export const hi: typeof en = {
     yes: "हाँ",
     no: "नहीं",
     notSure: "पक्का नहीं पता",
+    retry: "फिर कोशिश करें",
     choose: "चुनें…",
     waking: "सर्वर को जगाया जा रहा है। पहली बार में एक मिनट तक लग सकता है।",
   },
@@ -425,6 +426,21 @@ export const hi: typeof en = {
       "10k_plus": "हाँ, महीने में ₹10,000 या उससे ज़्यादा",
     },
   },
+  // needs native review (new in PR 3): everything in schemeCard and schemesPage.
+  schemeCard: {
+    central: "केंद्र सरकार की योजना",
+    state: "राज्य की योजना",
+    stateNamed: "राज्य की योजना: {state}",
+  },
+  schemesPage: {
+    title: "हम जो सभी योजनाएँ जाँचते हैं",
+    intro:
+      "आज हम इन योजनाओं को जाँचते हैं। हर योजना के साथ उसकी आधिकारिक वेबसाइट का लिंक है। आपके परिवार को कौन-सी मिल सकती हैं, यह देखने के लिए अपना परिवार जोड़िए।",
+    cta: "मेरा परिवार जाँचें",
+    loading: "योजनाएँ खुल रही हैं…",
+    failed: "अभी योजनाएँ नहीं खुल पाईं। कृपया एक मिनट बाद फिर कोशिश कीजिए।",
+    none: "अभी दिखाने के लिए कोई योजना नहीं है।",
+  },
   // needs native review: textSize, categories and landing are first drafts, read them aloud.
   textSize: { label: "अक्षर का आकार", normal: "सामान्य अक्षर", large: "बड़े अक्षर" },
   // needs native review: new in PR 2. "Match device" is meant as "same as the phone's own setting".
@@ -456,6 +472,8 @@ export const hi: typeof en = {
     schemesIntro: "आज हम इनमें से कुछ योजनाएँ जाँचते हैं। और योजनाएँ जोड़ी जा रही हैं।",
     schemesLoading: "योजनाएँ खुल रही हैं…",
     schemesFailed: "अभी योजनाएँ नहीं खुल पाईं। कृपया एक मिनट बाद फिर कोशिश कीजिए।",
+    // needs native review (new in PR 3)
+    seeAllSchemes: "सभी योजनाएँ देखें",
     officialSite: "आधिकारिक वेबसाइट",
     privacyTitle: "आपकी निजता सबसे पहले",
     noAadhaarTitle: "आधार नंबर नहीं",

@@ -128,6 +128,9 @@ export default async function Home() {
       <Section title={l("schemesTitle")}>
         <p className="-mt-4 text-lg text-muted">{l("schemesIntro")}</p>
         <SchemesWeCheck />
+        <ButtonLink href="/schemes" variant="secondary" className="w-full sm:w-auto sm:self-start">
+          {l("seeAllSchemes")}
+        </ButtonLink>
       </Section>
 
       <Section title={l("privacyTitle")} tone="soft">

@@ -15,6 +15,7 @@ export const en = {
     yes: "Yes",
     no: "No",
     notSure: "Not sure",
+    retry: "Try again",
     choose: "Choose…",
     // Shown when the server takes more than 3 seconds to answer (the free host sleeps when idle).
     waking: "Waking up the server. This can take up to a minute the first time.",
@@ -403,6 +404,20 @@ export const en = {
       "10k_plus": "Yes, ₹10,000 a month or more",
     },
   },
+  schemeCard: {
+    central: "Central government scheme",
+    state: "State scheme",
+    stateNamed: "State scheme: {state}",
+  },
+  schemesPage: {
+    title: "All the schemes we check",
+    intro:
+      "These are the schemes we check today. Each one links to its official website. To see which may fit your family, add your family.",
+    cta: "Check my family",
+    loading: "Loading the schemes…",
+    failed: "We could not load the schemes just now. Please try again in a minute.",
+    none: "There are no schemes to show yet.",
+  },
   textSize: { label: "Text size", normal: "normal text", large: "larger text" },
   theme: { label: "Colour theme", light: "Light", dark: "Dark", device: "Match device" },
   categories: {
@@ -432,6 +447,7 @@ export const en = {
     schemesIntro: "These are some of the schemes we check today. We are adding more.",
     schemesLoading: "Loading the schemes…",
     schemesFailed: "We could not load the schemes just now. Please try again in a minute.",
+    seeAllSchemes: "See all schemes",
     officialSite: "Official website",
     privacyTitle: "Your privacy comes first",
     noAadhaarTitle: "No Aadhaar numbers",
