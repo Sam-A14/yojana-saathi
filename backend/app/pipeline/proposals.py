@@ -21,7 +21,7 @@ def save_proposal(session: Session, extraction: Extraction) -> ReviewItem:
         scheme_slug=extraction.source.slug,
         source_url=extraction.source.url,
         proposed_rules_json=validation.scheme or {},
-        source_quotes=validation.quotes,
+        source_quotes=validation.stored_quotes(),
         is_valid=validation.is_valid,
         validation_errors=[p.as_dict() for p in validation.problems],
         raw_output=extraction.raw_output,

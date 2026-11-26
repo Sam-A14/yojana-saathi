@@ -50,6 +50,10 @@ def render_report(extraction: Extraction, saved_note: str, accuracy: str | None)
         lines.append("The model's answer could not be read as a proposal. Raw text:")
         lines.append(_fence(extraction.raw_output))
     else:
-        proposal = {"scheme": validation.scheme, "rule_quotes": validation.quotes}
+        proposal = {
+            "scheme": validation.scheme,
+            "rule_quotes": validation.quotes,
+            "benefit_quote": validation.benefit_quote,
+        }
         lines.append(_fence(json.dumps(proposal, indent=2, ensure_ascii=False), "json"))
     return "\n".join(lines) + "\n"
