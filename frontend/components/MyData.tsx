@@ -49,8 +49,8 @@ export function MyData({ session }: { session: Session }) {
   }
 
   return (
-    <section aria-labelledby="my-data" className="flex flex-col gap-4 border-t border-zinc-300 pt-6 dark:border-zinc-700">
-      <h2 id="my-data" className="text-xl font-bold">
+    <section aria-labelledby="my-data" className="flex flex-col gap-4 border-t border-line-soft pt-6">
+      <h2 id="my-data" className="text-xl font-extrabold">
         {t("title")}
       </h2>
       <p>{t("intro")}</p>
@@ -68,7 +68,7 @@ export function MyData({ session }: { session: Session }) {
       )}
 
       {panel === "delete" && (
-        <div role="alertdialog" aria-labelledby="delete-title" aria-describedby="delete-warning" className="flex flex-col gap-3 rounded-lg border-2 border-red-700 p-4">
+        <div role="alertdialog" aria-labelledby="delete-title" aria-describedby="delete-warning" className="flex flex-col gap-3 rounded-2xl border-2 border-danger bg-surface p-4 shadow-card">
           <h3 id="delete-title" className="text-lg font-bold">{t("deleteTitle")}</h3>
           <p id="delete-warning">{t("deleteWarning")}</p>
           {problem && <ErrorNote>{te(problem)}</ErrorNote>}
@@ -82,7 +82,7 @@ export function MyData({ session }: { session: Session }) {
       )}
 
       {panel === "signout" && (
-        <div role="alertdialog" aria-labelledby="signout-title" aria-describedby="signout-warning" className="flex flex-col gap-3 rounded-lg border-2 border-amber-600 p-4">
+        <div role="alertdialog" aria-labelledby="signout-title" aria-describedby="signout-warning" className="flex flex-col gap-3 rounded-2xl border-2 border-close-fg bg-surface p-4 shadow-card">
           <h3 id="signout-title" className="text-lg font-bold">{t("signOutTitle")}</h3>
           <p id="signout-warning">{t("signOutWarning")}</p>
           <Button onClick={signOut}>{t("signOutYes")}</Button>

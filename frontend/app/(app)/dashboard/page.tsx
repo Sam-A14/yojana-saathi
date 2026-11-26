@@ -3,9 +3,10 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { FamilySummary } from "@/components/FamilySummary";
 import { MemberResults } from "@/components/MemberResults";
 import { MyData } from "@/components/MyData";
-import { Button, ButtonLink, ErrorNote } from "@/components/ui";
+import { Button, ButtonLink, ErrorNote, Skeleton } from "@/components/ui";
 import { formatDate } from "@/lib/format";
 import { useFamilyResults } from "@/lib/use-family-results";
 import { useFamily } from "@/lib/use-family";
@@ -33,11 +34,11 @@ export default function DashboardPage() {
     if (ready && session && !family) router.replace("/setup/basics");
   }, [ready, session, family, router]);
 
-  if (!ready || (session && !family)) return <p role="status">{tc("loading")}</p>;
+  if (!ready || (session && !family)) return <Skeleton label={tc("loading")} />;
   if (!family || !session) {
     return (
       <div className="flex flex-col gap-5">
-        <h1 className="text-2xl font-bold">{t("none")}</h1>
+        <h1 className="display text-3xl">{t("none")}</h1>
         <ButtonLink href="/signin">{t("toSignIn")}</ButtonLink>
         <ButtonLink href="/" variant="secondary">
           {t("toStart")}
@@ -56,9 +57,9 @@ function DashboardScreen({ family, session }: { family: Family; session: Session
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-3xl font-bold">{t("title")}</h1>
+      <h1 className="display text-3xl">{t("title")}</h1>
 
-      {results.state === "loading" && <p role="status">{t("loading")}</p>}
+      {results.state === "loading" && <Skeleton label={t("loading")} />}
 
       {results.state === "error" && (
         <div className="flex flex-col gap-4">
@@ -73,12 +74,10 @@ function DashboardScreen({ family, session }: { family: Family; session: Session
 
       {results.state === "ready" && (
         <>
-          <div className="flex flex-col gap-1">
-            <p className="text-lg">{t("summary", count(results.eligibility))}</p>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              {t("checkedOn", { date: formatDate(results.eligibility.computed_on, locale) })}
-            </p>
-          </div>
+          <FamilySummary
+            counts={count(results.eligibility)}
+            checkedOn={formatDate(results.eligibility.computed_on, locale)}
+          />
           <ButtonLink href="/household/edit" variant="secondary">
             {t("editHousehold")}
           </ButtonLink>
