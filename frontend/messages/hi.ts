@@ -38,6 +38,8 @@ export const hi: typeof en = {
     menu: "मेनू",
     closeMenu: "मेनू बंद करें",
     signIn: "साइन इन",
+    myFamily: "मेरा परिवार",
+    signOut: "साइन आउट",
   },
   // needs native review (independent, github, photoCredit are new)
   footer: {

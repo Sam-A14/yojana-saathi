@@ -81,7 +81,7 @@ test.describe("Sign out", () => {
     const family = await openDashboard(page, api);
     await expect(page.getByText(`Signed in as ${family.email}`)).toBeVisible();
 
-    await page.getByRole("button", { name: "Sign out" }).click();
+    await page.getByRole("main").getByRole("button", { name: "Sign out" }).click();
     const dialog = page.getByRole("alertdialog", { name: "Sign out on this phone?" });
     await expect(dialog).toContainText("Your family’s information stays on our server.");
     await page.getByRole("button", { name: "No, stay signed in" }).click();
@@ -94,7 +94,7 @@ test.describe("Sign out", () => {
   test("ends the session on the server and on this phone; the family stays and opens again by signing in", async ({ page, api }) => {
     const family = await openDashboard(page, api);
 
-    await page.getByRole("button", { name: "Sign out" }).click();
+    await page.getByRole("main").getByRole("button", { name: "Sign out" }).click();
     await page.getByRole("button", { name: "Yes, sign out" }).click();
 
     await expect(page).toHaveURL(/\/$/);
@@ -115,7 +115,7 @@ test.describe("Sign out", () => {
 
   test("signs out on this phone even if the server cannot be reached", async ({ page, api }) => {
     await openDashboard(page, api);
-    await page.getByRole("button", { name: "Sign out" }).click();
+    await page.getByRole("main").getByRole("button", { name: "Sign out" }).click();
 
     api.offline = true;
     await page.getByRole("button", { name: "Yes, sign out" }).click();
