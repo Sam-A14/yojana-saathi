@@ -71,6 +71,29 @@ def test_template_is_valid_and_never_loaded() -> None:
     assert "replace-with-scheme-slug" not in {s["slug"] for s in read_seed_files().schemes}
 
 
+def test_template_in_the_seed_folder_is_skipped_by_name(tmp_path: Any) -> None:
+    """A valid-looking TEMPLATE.json next to a real scheme must not become a scheme: it would show
+    up on /schemes and in the landing page's category counts with a placeholder category."""
+    for name in ("documents.json", "documents.schema.json", "scheme.schema.json"):
+        (tmp_path / name).write_text((DEFAULT_DATA_DIR / name).read_text(encoding="utf-8"))
+    seeds = tmp_path / "schemes_seed"
+    seeds.mkdir()
+    for name in ("pm-kisan.json", TEMPLATE_NAME):
+        source = DEFAULT_DATA_DIR / "schemes_seed" / name
+        (seeds / name).write_text(source.read_text(encoding="utf-8"))
+
+    schemes = read_seed_files(tmp_path).schemes
+
+    assert [s["slug"] for s in schemes] == ["pm-kisan"]
+
+
+def test_committed_schemes_have_real_categories() -> None:
+    categories = {s["category"] for s in read_seed_files().schemes}
+
+    assert "replace_with_category" not in categories
+    assert categories == {"farmer", "widow_pension"}
+
+
 def test_examples_are_marked_unverified() -> None:
     for slug in ("pm-kisan", "ignwps"):
         scheme = load(f"schemes_seed/{slug}.json")

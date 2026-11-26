@@ -9,7 +9,7 @@ function rememberLanguage(language: "en" | "hi") {
   document.cookie = `${LOCALE_COOKIE}=${language}; path=/; max-age=31536000; samesite=lax`;
 }
 
-export function LanguageToggle({ onDark = false }: { onDark?: boolean }) {
+export function LanguageToggle() {
   const locale = useLocale();
   const t = useTranslations("language");
   const router = useRouter();
@@ -19,15 +19,8 @@ export function LanguageToggle({ onDark = false }: { onDark?: boolean }) {
     router.refresh(); // render the page again in the new language
   }
 
-  const look = onDark
-    ? "aria-pressed:bg-on-hero aria-pressed:text-hero"
-    : "aria-pressed:bg-primary aria-pressed:text-on-primary";
   return (
-    <div
-      role="group"
-      aria-label={t("label")}
-      className={`flex overflow-hidden rounded-xl border ${onDark ? "border-on-hero/60" : "border-line"}`}
-    >
+    <div role="group" aria-label={t("label")} className="flex overflow-hidden rounded-xl border border-line bg-surface">
       {(["en", "hi"] as const).map((code) => (
         <button
           key={code}
@@ -35,7 +28,7 @@ export function LanguageToggle({ onDark = false }: { onDark?: boolean }) {
           lang={code}
           aria-pressed={locale === code}
           onClick={() => choose(code)}
-          className={`min-h-12 px-3 text-base font-semibold transition-colors ${look}`}
+          className="min-h-12 px-3 text-base font-semibold transition-colors aria-pressed:bg-primary aria-pressed:text-on-primary"
         >
           {t(code)}
         </button>

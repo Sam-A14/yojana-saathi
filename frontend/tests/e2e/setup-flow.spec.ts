@@ -23,9 +23,9 @@ test("a family goes from the home page, through sign-in, to a finished setup", a
   // Home -> basics
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "See every government benefit your family may be missing" }),
+    page.getByRole("heading", { name: "Discover the benefits your family deserves." }),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Start" }).click();
+  await page.getByRole("link", { name: "Find schemes for my family" }).click();
 
   // Not signed in yet: Start leads to the email sign-in.
   await expect(page).toHaveURL(/\/signin$/);

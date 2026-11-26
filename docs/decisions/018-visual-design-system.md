@@ -1,5 +1,7 @@
 # 018 — Visual design system: tokens, fonts, icons, text size
 
+> Superseded in part by [026](026-portal-redesign.md): the palette (now ivory, navy, teal, gold), the dark green hero and the hero motion. The rules on contrast, text size, tap targets, fonts and icons still hold.
+
 ## Context
 The first UI worked but was plain. The main users are a family's "digital helper" and the parents
 and grandparents they set it up for, often on a cheap Android phone and slow data. So the look has

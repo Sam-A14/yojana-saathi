@@ -16,6 +16,14 @@ def test_list_is_public_and_includes_unverified_schemes(client: TestClient, seed
     assert by_slug["ignwps"]["verified_at"] is None
 
 
+def test_list_holds_only_real_schemes_never_the_template(client: TestClient, seeded) -> None:
+    """The landing page counts per category from this list, so the template must not be in it."""
+    schemes = client.get("/schemes").json()
+
+    assert {s["slug"] for s in schemes} == {"pm-kisan", "ignwps"}
+    assert {s["category"] for s in schemes} == {"farmer", "widow_pension"}
+
+
 def test_verified_scheme_says_so(client: TestClient, db: Session, seeded) -> None:
     db.execute(update(SchemeVersion).values(verified_at="2026-11-01T00:00:00+00:00"))
 

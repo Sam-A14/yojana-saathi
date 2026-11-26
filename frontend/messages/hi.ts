@@ -13,6 +13,8 @@ export const hi: typeof en = {
   // needs native review
   common: {
     appName: "योजना साथी",
+    // needs native review
+    tagline: "सरकारी योजनाएँ, परिवारों के लिए आसान",
     back: "पीछे",
     next: "आगे बढ़ें",
     cancel: "रद्द करें",
@@ -25,10 +27,25 @@ export const hi: typeof en = {
     waking: "सर्वर को जगाया जा रहा है। पहली बार में एक मिनट तक लग सकता है।",
   },
   language: { label: "भाषा", en: "English", hi: "हिन्दी" },
-  // needs native review
+  // needs native review (new: every line in nav)
+  nav: {
+    label: "मुख्य मेनू",
+    home: "मुख्य पृष्ठ",
+    schemes: "योजनाएँ",
+    howItWorks: "यह कैसे काम करता है",
+    faq: "सवाल-जवाब",
+    about: "हमारे बारे में",
+    menu: "मेनू",
+    closeMenu: "मेनू बंद करें",
+    signIn: "साइन इन",
+  },
+  // needs native review (independent, github, photoCredit are new)
   footer: {
     disclaimer: "यह केवल जानकारी है, सरकारी निर्णय नहीं। यह सरकारी ऐप नहीं है।",
     noAadhaar: "हम आधार नंबर कभी नहीं माँगते।",
+    independent: "योजना साथी एक स्वतंत्र विद्यार्थी प्रोजेक्ट है, सरकारी वेबसाइट नहीं।",
+    github: "कोड GitHub पर",
+    photoCredit: "फ़ोटो: the Amritdev / Pexels",
   },
   // needs native review
   errors: {
@@ -41,13 +58,14 @@ export const hi: typeof en = {
   },
   // needs native review
   home: {
-    title: "देखें कि आपके परिवार को कौन-से सरकारी लाभ छूट रहे हैं",
+    title: "वे लाभ खोजिए जिनके आपका परिवार हक़दार है।",
     intro:
       "अपने परिवार के बारे में एक बार बताइए। हम बताएँगे कि हर सदस्य किन सरकारी योजनाओं के लिए पात्र हो सकता है और कौन-से कागज़ अभी चाहिए।",
-    start: "शुरू करें",
+    start: "मेरे परिवार के लिए योजनाएँ खोजें",
     signIn: "ईमेल से साइन इन करें",
     example: "एक उदाहरण देखें",
     free: "मुफ़्त। बस अपने ईमेल से साइन इन करें।",
+    photoAlt: "कई पीढ़ियों का एक मुस्कुराता परिवार, पार्क में साथ खड़ा हुआ",
   },
   // needs native review
   steps: {
@@ -519,6 +537,31 @@ export const hi: typeof en = {
     other: "अन्य",
   },
   landing: {
+    // needs native review: every new line from here to "trust3" (portal redesign)
+    categoriesTitle: "विषय के हिसाब से मदद खोजिए",
+    categoriesIntro: "कोई विषय चुनिए और देखिए कि आज हमारे पास कौन-सी योजनाएँ हैं। और जोड़ी जा रही हैं।",
+    categoriesLabel: "विषय",
+    catEducation: "शिक्षा",
+    catEducationBody: "विद्यार्थियों और उनके परिवारों के लिए छात्रवृत्ति और मदद।",
+    catAgriculture: "खेती",
+    catAgricultureBody: "किसान परिवारों के लिए आय सहायता और मदद।",
+    catHealthcare: "स्वास्थ्य",
+    catHealthcareBody: "परिवार के लिए स्वास्थ्य बीमा और इलाज में मदद।",
+    catWomen: "महिला और परिवार",
+    catWomenBody: "विधवाओं और महिलाओं के लिए पेंशन और सहायता।",
+    catSeniors: "वरिष्ठ नागरिक",
+    catSeniorsBody: "बुज़ुर्गों के लिए पेंशन और सहायता।",
+    catFamilies: "परिवार",
+    catFamiliesBody: "पूरे घर को एक साथ देखने वाली मदद।",
+    countOne: "{count} योजना",
+    countMany: "{count} योजनाएँ",
+    comingSoon: "जल्द आ रहा है",
+    countChecking: "देख रहे हैं…",
+    countsFailed: "अभी योजनाओं की संख्या नहीं खुल पाई। आप फिर भी सभी योजनाएँ देख सकते हैं।",
+    trustTitle: "हम इसे ईमानदार कैसे रखते हैं",
+    trust1: "हर योजना अपने आधिकारिक स्रोत से जुड़ी है",
+    trust2: "हर नतीजा बताता है कि उसे आख़िरी बार कब जाँचा गया",
+    trust3: "हम आधार नंबर कभी नहीं माँगते। अपना डेटा जब चाहें मिटाइए।",
     howTitle: "यह कैसे काम करता है",
     step1Title: "अपने परिवार के बारे में बताइए",
     step1Body: "हर सदस्य को एक बार जोड़िए: उम्र, काम और कुछ आसान बातें। इसमें लगभग पाँच मिनट लगते हैं।",
@@ -526,28 +569,9 @@ export const hi: typeof en = {
     step2Body: "हम हर सदस्य को सरकारी योजनाओं से मिलाकर वे योजनाएँ दिखाते हैं जो उसके लिए ठीक हो सकती हैं।",
     step3Title: "जानिए कौन-से कागज़ बनवाने हैं",
     step3Body: "हम बताते हैं कि कौन-से कागज़ कम हैं और उन्हें कैसे बनवाएँ। जिन योजनाओं के आप करीब हैं, वे भी दिखाते हैं।",
-    whoTitle: "यह किसके काम आता है",
-    studentsTitle: "विद्यार्थी",
-    // "जल्द आ रहा है" stays until a verified student scheme is seeded.
-    studentsExample: "जल्द आ रहा है: विद्यार्थी देख सकेंगे कि उनके अंकों और परिवार की आमदनी के हिसाब से कौन-सी छात्रवृत्तियाँ मिल सकती हैं।",
-    farmersTitle: "किसान",
-    farmersExample: "सुनीता के परिवार के पास खेत है। वह देख सकती है कि पीएम-किसान की आय सहायता उनके लिए हो सकती है या नहीं।",
-    eldersTitle: "बुज़ुर्ग और विधवाएँ",
-    eldersExample: "सावित्री के पति का देहांत हो गया है। वह देख सकती है कि विधवा पेंशन उसके लिए हो सकती है या नहीं।",
-    schemesTitle: "हम ये योजनाएँ जाँचते हैं",
-    schemesIntro: "आज हम इनमें से कुछ योजनाएँ जाँचते हैं। और योजनाएँ जोड़ी जा रही हैं।",
-    schemesLoading: "योजनाएँ खुल रही हैं…",
-    schemesFailed: "अभी योजनाएँ नहीं खुल पाईं। कृपया एक मिनट बाद फिर कोशिश कीजिए।",
     // needs native review (new in PR 3)
     seeAllSchemes: "सभी योजनाएँ देखें",
     officialSite: "आधिकारिक वेबसाइट",
-    privacyTitle: "आपकी निजता सबसे पहले",
-    noAadhaarTitle: "आधार नंबर नहीं",
-    noAadhaarBody: "हम आधार, पैन या बैंक नंबर कभी नहीं माँगते। हम बस यह लिखते हैं कि आपके पास कागज़ है या नहीं।",
-    noPasswordTitle: "कोई पासवर्ड नहीं",
-    noPasswordBody: "आपको कभी पासवर्ड नहीं बनाना पड़ता। हर बार साइन इन करने पर हम आपको 6 अंकों का कोड ईमेल करते हैं।",
-    deleteTitle: "जब चाहें मिटाइए",
-    deleteBody: "एक बटन से आपके परिवार की जानकारी और आपका ईमेल पता हमारे डेटाबेस से मिट जाते हैं।",
     privacyLink: "हम आपकी जानकारी कैसे सँभालते हैं",
     emailPromise: "हम आपका ईमेल पता सिर्फ़ साइन इन कराने के लिए इस्तेमाल करते हैं। यह हमारी ईमेल सेवा Resend के पास सिर्फ़ आपको कोड भेजने के लिए जाता है। हम इसे बेचते नहीं हैं।",
     faqTitle: "लोग अक्सर पूछते हैं",

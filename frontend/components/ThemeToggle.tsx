@@ -28,17 +28,13 @@ const ICONS: Record<Theme, LucideIcon> = { light: Sun, dark: Moon, device: Monit
 
 /** "Light / Dark / Match device". Every choice is an icon AND a word. Light is the default, so the
  * page never turns dark just because the phone is set to dark. */
-export function ThemeToggle({ onDark = false }: { onDark?: boolean }) {
+export function ThemeToggle() {
   const t = useTranslations("theme");
   // app/layout.tsx runs a tiny script before first paint that applies the saved choice.
   const current = useSyncExternalStore(subscribe, currentTheme, () => "light" as Theme);
 
-  const border = onDark ? "border-on-hero/60" : "border-line";
-  const pressed = onDark
-    ? "aria-pressed:bg-on-hero aria-pressed:text-hero"
-    : "aria-pressed:bg-primary aria-pressed:text-on-primary";
   return (
-    <div role="group" aria-label={t("label")} className={`grid grid-cols-3 overflow-hidden rounded-xl border ${border}`}>
+    <div role="group" aria-label={t("label")} className="grid grid-cols-3 overflow-hidden rounded-xl border border-line bg-surface">
       {THEMES.map((choice) => {
         const Icon = ICONS[choice];
         return (
@@ -47,7 +43,7 @@ export function ThemeToggle({ onDark = false }: { onDark?: boolean }) {
             type="button"
             aria-pressed={current === choice}
             onClick={() => applyTheme(choice)}
-            className={`flex min-h-12 items-center justify-center gap-2 px-3 text-center text-base font-semibold leading-tight transition-colors ${pressed}`}
+            className="flex min-h-12 items-center justify-center gap-2 px-3 text-center text-base font-semibold leading-tight transition-colors aria-pressed:bg-primary aria-pressed:text-on-primary"
           >
             <Icon aria-hidden size={20} className="shrink-0" />
             {t(choice)}

@@ -2,30 +2,36 @@
 
 /*
  * Design tokens. Every colour on screen comes from here, so light and dark mode are one switch.
- * Contrast (WCAG): body text is 7:1 or better (AAA); every other text pair is 4.5:1 or better (AA);
- * borders of inputs are 3:1 or better. The pairs were measured, see docs/decisions/018-visual-design-system.md.
+ * Palette ("modern Indian public-service portal", docs/decisions/026-portal-redesign.md): white and
+ * soft ivory backgrounds, deep navy and muted teal for the brand, warm gold for highlights.
+ * Contrast (WCAG): body and helper text are 7:1 or better (AAA); every other text pair is 4.5:1 or
+ * better (AA); borders of inputs are 3:1 or better. Gold is NEVER used for text on ivory or white
+ * (2:1): it is a fill, with navy text on it, or a border. Gold-coloured text uses --accent-ink.
+ * Every pair is measured by tests/unit/contrast.spec.ts, which reads this file.
  */
 :root {
   color-scheme: light;
-  --bg: #fff8ec; /* warm cream page */
+  --bg: #fbf8f1; /* soft ivory page */
   --surface: #ffffff; /* cards */
-  --soft: #f3ead7; /* quiet panels */
-  --ink: #2b2118; /* body text, 14.9:1 on --bg */
-  --muted: #5a4a3a; /* helper text, 8:1 on --bg */
-  --line: #8c7a66; /* borders of inputs and tap targets (3.9:1) */
-  --line-soft: #e6d9c0; /* decorative card borders */
-  --primary: #1f5d46; /* deep green: main buttons, links, progress */
-  --primary-hover: #174a38;
+  --soft: #f1ede2; /* quiet panels and the alternate sections */
+  --ink: #141d33; /* body text, 15.8:1 on --bg */
+  --muted: #424c66; /* helper text, 9:1 on --bg */
+  --line: #77809a; /* borders of inputs and tap targets (3.7:1) */
+  --line-soft: #e2ddd0; /* decorative card borders */
+  --primary: #1a3463; /* deep navy: main buttons, links, progress */
+  --primary-hover: #11264b;
   --on-primary: #ffffff;
-  --primary-soft: #e3f0e8;
-  --accent: #f59e0b; /* marigold: highlights and the Start button on the dark hero */
-  --accent-hover: #fbb43a;
-  --on-accent: #2b2118;
-  --accent-ink: #8a4200; /* marigold used as TEXT, 7:1 on --surface */
-  --hero: #0f3a2b; /* the dark green first screen */
-  --on-hero: #fff8ec;
-  --on-hero-muted: #d6e6dd;
-  --focus: #1f5d46;
+  --primary-soft: #e5ebf5;
+  --teal: #145862; /* muted teal: second brand colour, icons and small accents */
+  --teal-soft: #def0ef;
+  --accent: #f0b030; /* warm gold: highlights and fills with navy text, never text itself */
+  --accent-hover: #f5c04f;
+  --on-accent: #141d33;
+  --accent-ink: #714800; /* gold used as TEXT, 7.5:1 on --bg */
+  --hero: #11203f; /* deep navy: the footer and the trust strip */
+  --on-hero: #fbf8f1;
+  --on-hero-muted: #cfd8ea;
+  --focus: #1a3463;
   --danger: #8f1d1d;
   --danger-bg: #fee2e2;
   /* The four result states. Each is a colour AND an icon AND a word. */
@@ -48,8 +54,21 @@
   --av4-fg: #0c4a6e;
   --av5-bg: #fbdde6;
   --av5-fg: #85163f;
-  --shadow-card: 0 1px 2px rgb(43 33 24 / 0.06), 0 10px 28px -10px rgb(43 33 24 / 0.18);
-  --shadow-lift: 0 2px 4px rgb(43 33 24 / 0.08), 0 18px 36px -12px rgb(43 33 24 / 0.28);
+  /* Category cards on the home page: one soft pastel per category, dark text on it, 7:1 or better. */
+  --cat1-bg: #e3ecfa;
+  --cat1-fg: #173a73;
+  --cat2-bg: #e2f3e4;
+  --cat2-fg: #1b5130;
+  --cat3-bg: #fbe4ea;
+  --cat3-fg: #7d1a3c;
+  --cat4-bg: #ece6f9;
+  --cat4-fg: #4a2c8f;
+  --cat5-bg: #fcecd3;
+  --cat5-fg: #6c3a00;
+  --cat6-bg: #dcf1f0;
+  --cat6-fg: #0f5058;
+  --shadow-card: 0 1px 2px rgb(20 29 51 / 0.06), 0 10px 28px -10px rgb(20 29 51 / 0.16);
+  --shadow-lift: 0 2px 4px rgb(20 29 51 / 0.08), 0 18px 36px -12px rgb(20 29 51 / 0.26);
 }
 
 /*
@@ -64,23 +83,27 @@
  */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #1a1410;
-  --surface: #251d17;
-  --soft: #2f251d;
-  --ink: #f5ebdd;
-  --muted: #c9baa5;
-  --line: #8c7a66;
-  --line-soft: #3d3025;
-  --primary: #8fddb4;
-  --primary-hover: #a9e8c6;
-  --on-primary: #0e2a20;
-  --primary-soft: #1d3a2d;
-  --accent: #f5b33d;
-  --accent-hover: #f8c560;
-  --on-accent: #1a1410;
-  --accent-ink: #f5b33d;
-  --hero: #0b2a20;
-  --focus: #8fddb4;
+  --bg: #0e1526;
+  --surface: #16203a;
+  --soft: #1c2745;
+  --ink: #eef2fa;
+  --muted: #b9c3da;
+  --line: #7482a3;
+  --line-soft: #2b3858;
+  --primary: #9db8ee;
+  --primary-hover: #b7cbf3;
+  --on-primary: #0b1530;
+  --primary-soft: #1a2646;
+  --teal: #6fd0d3;
+  --teal-soft: #153a44;
+  --accent: #f2b84b;
+  --accent-hover: #f6c971;
+  --on-accent: #0e1526;
+  --accent-ink: #f2b84b;
+  --hero: #0a1020;
+  --on-hero: #eef2fa;
+  --on-hero-muted: #c3cde3;
+  --focus: #9db8ee;
   --danger: #fca5a5;
   --danger-bg: #3b1212;
   --ok-bg: #123524;
@@ -101,6 +124,18 @@
   --av4-fg: #b3dcf5;
   --av5-bg: #4a1a2b;
   --av5-fg: #f7c0d3;
+  --cat1-bg: #1b2a4d;
+  --cat1-fg: #bcd0f5;
+  --cat2-bg: #16352a;
+  --cat2-fg: #b3e8c4;
+  --cat3-bg: #40182a;
+  --cat3-fg: #f7c4d3;
+  --cat4-bg: #2b2350;
+  --cat4-fg: #d2c8f7;
+  --cat5-bg: #3d2a12;
+  --cat5-fg: #fbcf92;
+  --cat6-bg: #123a3d;
+  --cat6-fg: #b0e8e6;
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 28px -10px rgb(0 0 0 / 0.6);
   --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.5), 0 18px 36px -12px rgb(0 0 0 / 0.7);
 }
@@ -111,23 +146,27 @@
 
 @media (prefers-color-scheme: dark) {
   :root[data-theme="device"] {
-    --bg: #1a1410;
-    --surface: #251d17;
-    --soft: #2f251d;
-    --ink: #f5ebdd;
-    --muted: #c9baa5;
-    --line: #8c7a66;
-    --line-soft: #3d3025;
-    --primary: #8fddb4;
-    --primary-hover: #a9e8c6;
-    --on-primary: #0e2a20;
-    --primary-soft: #1d3a2d;
-    --accent: #f5b33d;
-    --accent-hover: #f8c560;
-    --on-accent: #1a1410;
-    --accent-ink: #f5b33d;
-    --hero: #0b2a20;
-    --focus: #8fddb4;
+    --bg: #0e1526;
+    --surface: #16203a;
+    --soft: #1c2745;
+    --ink: #eef2fa;
+    --muted: #b9c3da;
+    --line: #7482a3;
+    --line-soft: #2b3858;
+    --primary: #9db8ee;
+    --primary-hover: #b7cbf3;
+    --on-primary: #0b1530;
+    --primary-soft: #1a2646;
+    --teal: #6fd0d3;
+    --teal-soft: #153a44;
+    --accent: #f2b84b;
+    --accent-hover: #f6c971;
+    --on-accent: #0e1526;
+    --accent-ink: #f2b84b;
+    --hero: #0a1020;
+    --on-hero: #eef2fa;
+    --on-hero-muted: #c3cde3;
+    --focus: #9db8ee;
     --danger: #fca5a5;
     --danger-bg: #3b1212;
     --ok-bg: #123524;
@@ -148,6 +187,18 @@
     --av4-fg: #b3dcf5;
     --av5-bg: #4a1a2b;
     --av5-fg: #f7c0d3;
+    --cat1-bg: #1b2a4d;
+    --cat1-fg: #bcd0f5;
+    --cat2-bg: #16352a;
+    --cat2-fg: #b3e8c4;
+    --cat3-bg: #40182a;
+    --cat3-fg: #f7c4d3;
+    --cat4-bg: #2b2350;
+    --cat4-fg: #d2c8f7;
+    --cat5-bg: #3d2a12;
+    --cat5-fg: #fbcf92;
+    --cat6-bg: #123a3d;
+    --cat6-fg: #b0e8e6;
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 28px -10px rgb(0 0 0 / 0.6);
     --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.5), 0 18px 36px -12px rgb(0 0 0 / 0.7);
   }
@@ -165,6 +216,8 @@
   --color-primary-hover: var(--primary-hover);
   --color-on-primary: var(--on-primary);
   --color-primary-soft: var(--primary-soft);
+  --color-teal: var(--teal);
+  --color-teal-soft: var(--teal-soft);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-on-accent: var(--on-accent);
@@ -192,6 +245,18 @@
   --color-av4-fg: var(--av4-fg);
   --color-av5-bg: var(--av5-bg);
   --color-av5-fg: var(--av5-fg);
+  --color-cat1-bg: var(--cat1-bg);
+  --color-cat1-fg: var(--cat1-fg);
+  --color-cat2-bg: var(--cat2-bg);
+  --color-cat2-fg: var(--cat2-fg);
+  --color-cat3-bg: var(--cat3-bg);
+  --color-cat3-fg: var(--cat3-fg);
+  --color-cat4-bg: var(--cat4-bg);
+  --color-cat4-fg: var(--cat4-fg);
+  --color-cat5-bg: var(--cat5-bg);
+  --color-cat5-fg: var(--cat5-fg);
+  --color-cat6-bg: var(--cat6-bg);
+  --color-cat6-fg: var(--cat6-fg);
   --shadow-card: var(--shadow-card);
   --shadow-lift: var(--shadow-lift);
   --font-sans: var(--font-jakarta), var(--font-devanagari), system-ui, sans-serif;
@@ -245,18 +310,6 @@ body {
 }
 
 /* Small, CSS-only motion. Each one is only a hint; nothing depends on it. */
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(-2deg); }
-  50% { transform: translateY(-12px) rotate(-2deg); }
-}
-@keyframes glow {
-  0%, 100% { opacity: 0.55; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.06); }
-}
-@keyframes rise {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: none; }
-}
 /* The small celebration when someone may qualify. Each piece flies out from the middle once and
  * fades. The base style is invisible, so with animation switched off (reduced motion) nothing shows. */
 @keyframes confetti {
@@ -280,9 +333,6 @@ body {
   animation: confetti 1.2s ease-out var(--d, 0s) 1 both;
 }
 .pop { animation: pop 0.5s ease-out both; }
-.float { animation: float 7s ease-in-out infinite; }
-.glow { animation: glow 8s ease-in-out infinite; }
-.rise { animation: rise 0.6s ease-out both; }
 
 /* One rule switches every animation and transition off for people who ask for less motion. */
 @media (prefers-reduced-motion: reduce) {

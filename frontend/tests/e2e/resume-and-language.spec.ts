@@ -3,7 +3,7 @@ import { expect, test } from "./fixtures";
 test("home page shows the disclaimer and the ways in", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByRole("link", { name: "Start" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Find schemes for my family" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Sign in with email" })).toBeVisible();
   await expect(page.getByRole("link", { name: "See an example" })).toBeVisible();
   await expect(
@@ -18,28 +18,16 @@ test("the language can be switched to Hindi and stays after a reload", async ({ 
 
   await page.getByRole("button", { name: "हिन्दी" }).click();
   await expect(
-    page.getByRole("heading", { name: "देखें कि आपके परिवार को कौन-से सरकारी लाभ छूट रहे हैं" }),
+    page.getByRole("heading", { name: "वे लाभ खोजिए जिनके आपका परिवार हक़दार है।" }),
   ).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "hi");
-  await expect(page.getByText("हम आधार नंबर कभी नहीं माँगते।")).toBeVisible();
+  await expect(page.getByRole("contentinfo").getByText("हम आधार नंबर कभी नहीं माँगते।")).toBeVisible();
 
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("lang", "hi");
 
   await page.getByRole("button", { name: "English" }).click();
-  await expect(page.getByRole("link", { name: "Start" })).toBeVisible();
-});
-
-test("home page lists the schemes we check, with the unverified label", async ({ page, api }) => {
-  await page.goto("/");
-
-  const schemes = page.getByRole("region", { name: "Schemes we check" });
-  await expect(schemes.getByRole("heading", { name: /Widow Pension/ })).toBeVisible();
-  await expect(schemes.getByText("Not yet verified").first()).toBeVisible();
-  await expect(schemes.getByRole("link", { name: "Official website" }).first()).toBeVisible();
-  // The catalogue is public: no family token is sent with it.
-  const call = api.requests.find((r) => r.path === "/schemes");
-  expect(call?.authorization).toBeNull();
+  await expect(page.getByRole("link", { name: "Find schemes for my family" })).toBeVisible();
 });
 
 test("the A+ button makes text bigger and the choice is remembered", async ({ page }) => {

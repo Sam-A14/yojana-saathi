@@ -27,24 +27,20 @@ function applySize(next: Size) {
 }
 
 /** "A" / "A+": makes every word bigger. The choice is remembered on this phone only. */
-export function TextSizeToggle({ onDark = false }: { onDark?: boolean }) {
+export function TextSizeToggle() {
   const t = useTranslations("textSize");
   // layout.tsx runs a tiny script before first paint that applies the saved size.
   const size = useSyncExternalStore(subscribe, currentSize, () => "normal" as Size);
 
-  const border = onDark ? "border-on-hero/60" : "border-line";
-  const pressed = onDark
-    ? "aria-pressed:bg-on-hero aria-pressed:text-hero"
-    : "aria-pressed:bg-primary aria-pressed:text-on-primary";
   return (
-    <div role="group" aria-label={t("label")} className={`flex overflow-hidden rounded-xl border ${border}`}>
+    <div role="group" aria-label={t("label")} className="flex overflow-hidden rounded-xl border border-line bg-surface">
       {(["normal", "large"] as const).map((choice) => (
         <button
           key={choice}
           type="button"
           aria-pressed={size === choice}
           onClick={() => applySize(choice)}
-          className={`min-h-12 min-w-12 px-3 text-base font-bold transition-colors ${pressed}`}
+          className="min-h-12 min-w-12 px-3 text-base font-bold transition-colors aria-pressed:bg-primary aria-pressed:text-on-primary"
         >
           {choice === "normal" ? "A" : "A+"}
           <span className="sr-only"> {t(choice)}</span>
