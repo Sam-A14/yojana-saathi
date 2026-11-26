@@ -1,5 +1,5 @@
 import { type Page } from "@playwright/test";
-import { type FakeApi } from "./fake-api";
+import { type FakeApi, MISSING_HOME } from "./fake-api";
 import { expect, test, STORAGE_KEY } from "./fixtures";
 
 const NAMES = ["Kamla", "Asha", "Ramesh", "Gudiya"];
@@ -155,4 +155,40 @@ test("signed in without a household goes to the first setup screen", async ({ pa
   await page.goto("/dashboard");
 
   await expect(page).toHaveURL(/\/setup\/basics$/);
+});
+
+// --- The look of the dashboard: avatars and the small celebration ---
+
+test("each person's card shows their initials, Hindi names included", async ({ page, api }) => {
+  const family = api.seedHousehold();
+  api.seedMembers(family.id, ["Asha Devi", "कृष्णा देवी"]);
+  await page.addInitScript(
+    ([key, value]) => localStorage.setItem(key, value),
+    [STORAGE_KEY, api.storedSession(family)],
+  );
+  await page.goto("/dashboard");
+
+  // Hindi letters are kept whole (कृ, दे), not cut in the middle of a vowel sign.
+  await expect(card(page, "Asha Devi").getByText("AD", { exact: true })).toBeVisible();
+  await expect(card(page, "कृष्णा देवी").getByText("कृदे", { exact: true })).toBeVisible();
+});
+
+test("a celebration plays only when somebody may qualify", async ({ page, api }) => {
+  await openDashboard(page, api); // the sample family: Kamla may qualify for one scheme
+  await expect(page.getByTestId("celebration")).toHaveCount(1);
+  await expect(page.getByTestId("celebration").locator(".confetti-piece").first()).toHaveCSS("animation-name", "confetti");
+});
+
+test("no celebration when nobody may qualify yet", async ({ page, api }) => {
+  api.fixture = MISSING_HOME; // every result is "unknown"
+  await openDashboard(page, api);
+  await expect(page.getByText("Your family may qualify for 0 schemes.")).toBeVisible();
+  await expect(page.getByTestId("celebration")).toHaveCount(0);
+});
+
+test("the celebration is switched off for people who ask for less motion", async ({ page, api }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await openDashboard(page, api);
+  // The paper pieces are still in the page (they are decorative) but nothing animates.
+  await expect(page.getByTestId("celebration").locator(".confetti-piece").first()).toHaveCSS("animation-name", "none");
 });

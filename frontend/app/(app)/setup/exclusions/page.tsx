@@ -4,7 +4,8 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SetupFrame } from "@/components/SetupFrame";
-import { Button, ButtonLink, ChoiceGroup, ErrorNote, YesNoGroup } from "@/components/ui";
+import { Avatar } from "@/components/Avatar";
+import { Button, ButtonLink, ChoiceGroup, ErrorNote, Skeleton, YesNoGroup } from "@/components/ui";
 import { api, errorKind, type ErrorKind } from "@/lib/api";
 import { GOVT_EMPLOYEE, PENSION_BANDS } from "@/lib/options";
 import type { Member } from "@/lib/types";
@@ -85,7 +86,7 @@ export default function ExclusionsPage() {
     router.push("/dashboard");
   }
 
-  if (!data) return problem ? <ErrorNote>{te(problem)}</ErrorNote> : <p>{tc("loading")}</p>;
+  if (!data) return problem ? <ErrorNote>{te(problem)}</ErrorNote> : <Skeleton label={tc("loading")} />;
 
   const labels = { yes: tc("yes"), no: tc("no"), notSure: tc("notSure") };
   function set<K extends keyof Answers>(id: string, key: K, value: Answers[K]) {
@@ -96,8 +97,8 @@ export default function ExclusionsPage() {
 
   return (
     <SetupFrame step={4}>
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
-      <p>{t("intro")}</p>
+      <h1 className="display text-3xl">{t("title")}</h1>
+      <p className="text-lg">{t("intro")}</p>
       {data.adults.length === 0 && <p>{t("noAdults")}</p>}
 
       {data.adults.map((member) => {
@@ -106,11 +107,14 @@ export default function ExclusionsPage() {
           <section
             key={member.id}
             aria-labelledby={`adult-${member.id}`}
-            className="flex flex-col gap-6 rounded-lg border border-zinc-300 p-4 dark:border-zinc-700"
+            className="flex flex-col gap-6 rounded-2xl border border-line-soft bg-surface p-5 shadow-card"
           >
-            <h2 id={`adult-${member.id}`} className="text-xl font-bold">
-              {t("forName", { name: member.nickname })}
-            </h2>
+            <div className="flex items-center gap-3">
+              <Avatar name={member.nickname} />
+              <h2 id={`adult-${member.id}`} className="text-xl font-extrabold">
+                {t("forName", { name: member.nickname })}
+              </h2>
+            </div>
             <YesNoGroup
               legend={t("tax")}
               value={a.paid_income_tax_last_year}

@@ -1,39 +1,66 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { schemeName } from "@/lib/format";
 import { neededAnswers } from "@/lib/rules";
 import { useRuleText } from "@/lib/use-text";
 import type { DocumentInfo, MemberEligibility, SchemeResult, SchemeSummary } from "@/lib/types";
+import { Avatar } from "./Avatar";
+import { CategoryIcon, StatusIcon, categoryKey } from "./icons";
 import { NeededAnswers } from "./NeededAnswers";
 import { RuleList } from "./RuleList";
+import { StatusBadge, type ResultKind } from "./StatusBadge";
 import { VerificationLabel } from "./VerificationLabel";
 
 const GROUPS: SchemeResult["status"][] = ["eligible", "near_miss", "unknown"];
 
+// A coloured edge on the left of each card, in the colour of its result. The chip says the same in
+// an icon and a word, so the colour is never the only signal.
+const EDGE: Record<ResultKind, string> = {
+  eligible: "border-l-ok-fg",
+  near_miss: "border-l-close-fg",
+  unknown: "border-l-ask-fg",
+  excluded: "border-l-block-fg",
+};
+
 function SchemeRow({
   href,
   scheme,
+  kind,
   children,
 }: {
   href: string;
   scheme: SchemeSummary;
+  kind: ResultKind;
   children?: React.ReactNode;
 }) {
   const locale = useLocale() === "hi" ? "hi" : "en";
+  const tCategory = useTranslations("categories");
   return (
-    <li className="flex flex-col gap-2 rounded-lg border border-zinc-300 p-4 dark:border-zinc-700">
-      <Link
-        href={href}
-        className="min-h-12 text-lg font-semibold underline"
+    <li>
+      <div
+        className={`flex flex-col gap-3 rounded-2xl border border-l-8 border-line-soft bg-surface p-4 shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-lift ${EDGE[kind]}`}
       >
-        {schemeName(scheme, locale)}
-      </Link>
-      <div>
-        <VerificationLabel scheme={scheme} />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="flex items-center gap-2 text-base font-bold text-primary">
+            <span aria-hidden className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft">
+              <CategoryIcon category={scheme.category} size={22} />
+            </span>
+            {tCategory(categoryKey(scheme.category))}
+          </span>
+          <StatusBadge kind={kind} />
+        </div>
+        <Link href={href} className="flex min-h-12 items-center justify-between gap-2 text-xl font-bold underline">
+          {schemeName(scheme, locale)}
+          <ChevronRight aria-hidden className="shrink-0" />
+        </Link>
+        <div>
+          <VerificationLabel scheme={scheme} />
+        </div>
+        {children}
       </div>
-      {children}
     </li>
   );
 }
@@ -57,11 +84,14 @@ export function MemberResults({
   return (
     <section
       aria-labelledby={`member-${member.member_id}`}
-      className="flex flex-col gap-5 rounded-lg border-2 border-zinc-300 p-4 dark:border-zinc-700"
+      className="flex flex-col gap-5 rounded-3xl border border-line-soft bg-soft/60 p-4 shadow-card"
     >
-      <h2 id={`member-${member.member_id}`} className="text-2xl font-bold">
-        {member.nickname}
-      </h2>
+      <div className="flex items-center gap-4">
+        <Avatar name={member.nickname} size="lg" />
+        <h2 id={`member-${member.member_id}`} className="break-words text-2xl font-extrabold">
+          {member.nickname}
+        </h2>
+      </div>
       {nothing && <p>{t("nothing", { name: member.nickname })}</p>}
 
       {GROUPS.map((kind) => {
@@ -69,13 +99,17 @@ export function MemberResults({
         if (results.length === 0) return null;
         return (
           <div key={kind} className="flex flex-col gap-3">
-            <h3 className="text-lg font-bold">{t(`sections.${kind}`)}</h3>
+            <h3 className="flex items-center gap-2 text-lg font-extrabold">
+              <StatusIcon kind={kind} size={22} />
+              {t(`sections.${kind}`)}
+            </h3>
             <ul className="flex flex-col gap-3">
               {results.map((result) => (
                 <SchemeRow
                   key={result.scheme.slug}
                   href={schemeHref(member.member_id, result.scheme.slug)}
                   scheme={result.scheme}
+                  kind={kind}
                 >
                   {kind === "near_miss" && (
                     <div>
@@ -103,10 +137,13 @@ export function MemberResults({
 
       {member.excluded.length > 0 && (
         <div className="flex flex-col gap-3">
-          <h3 className="text-lg font-bold">{t("sections.excluded")}</h3>
+          <h3 className="flex items-center gap-2 text-lg font-extrabold">
+            <StatusIcon kind="excluded" size={22} />
+            {t("sections.excluded")}
+          </h3>
           <ul className="flex flex-col gap-3">
             {member.excluded.map((item) => (
-              <SchemeRow key={item.scheme.slug} href={schemeHref(member.member_id, item.scheme.slug)} scheme={item.scheme}>
+              <SchemeRow key={item.scheme.slug} href={schemeHref(member.member_id, item.scheme.slug)} scheme={item.scheme} kind="excluded">
                 <p>{t("excludedBecause", { names: item.excluded_by.join(", ") })}</p>
               </SchemeRow>
             ))}
@@ -115,7 +152,7 @@ export function MemberResults({
       )}
 
       {member.not_eligible_count > 0 && (
-        <p className="text-zinc-600 dark:text-zinc-400">
+        <p className="text-base text-muted">
           {t("notFit", { count: member.not_eligible_count })}
         </p>
       )}

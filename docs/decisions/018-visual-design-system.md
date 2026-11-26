@@ -40,6 +40,6 @@ to be warm and trustworthy, easy for older eyes, and light to download.
 - Scaling text with the browser's own zoom only: many older users do not know how; a visible button does.
 
 ## Consequences
-- Pages not yet restyled still carry a few `zinc`/`emerald` classes until PR B moves them to tokens.
+- The app screens were moved to the same tokens in PR B (decision 021); no `zinc`/`emerald` classes remain.
 - Hindi strings added for the landing page are first drafts ("needs native review" in `messages/hi.ts`).
 - The landing copy makes no promise about alerts, because alerts are not built yet.

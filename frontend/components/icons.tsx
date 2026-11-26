@@ -5,18 +5,22 @@ import {
   Flower2,
   Fingerprint,
   FileText,
+  Gift,
   GraduationCap,
   HandHeart,
   Heart,
   House,
   IdCard,
   IndianRupee,
+  ListChecks,
   Landmark,
   Map as MapIcon,
   CircleCheck,
   CircleHelp,
   CircleX,
+  PartyPopper,
   Ribbon,
+  ShieldCheck,
   ShoppingBasket,
   Stamp,
   Target,
@@ -67,6 +71,15 @@ const STATUS_ICONS: Record<ResultKind, LucideIcon> = {
 export function categoryKey(category: string): "student" | "farmer" | "pension" | "widow_pension" | "other" {
   return category in CATEGORY_ICONS ? (category as "student" | "farmer" | "pension" | "widow_pension") : "other";
 }
+
+/** The picture at the top of each section of a scheme page (the heading always carries the words). */
+export const SECTION_ICONS = {
+  summary: Gift,
+  why: ListChecks,
+  docs: FileText,
+  official: ShieldCheck,
+  celebrate: PartyPopper,
+} satisfies Record<string, LucideIcon>;
 
 type IconProps = { className?: string; size?: number };
 

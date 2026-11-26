@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SetupFrame } from "@/components/SetupFrame";
 import { HouseholdForm } from "@/components/HouseholdForm";
+import { Card, Skeleton } from "@/components/ui";
 import { type ErrorKind, api, errorKind } from "@/lib/api";
 import { nextPathFor } from "@/lib/next-path";
 import { type Session, setHouseholdId, useSession } from "@/lib/session";
@@ -33,7 +34,7 @@ export default function BasicsPage() {
     }
   }, [ready, session, router]);
 
-  if (!ready || !session || session.householdId) return <p>{tc("loading")}</p>;
+  if (!ready || !session || session.householdId) return <Skeleton label={tc("loading")} />;
   return <BasicsForm key={session.token} session={session} />;
 }
 
@@ -66,8 +67,9 @@ function BasicsForm({ session }: { session: Session }) {
   return (
     <SetupFrame step={1}>
       <div className="flex flex-col gap-6">
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <p>{t("intro")}</p>
+        <h1 className="display text-3xl">{t("title")}</h1>
+        <p className="text-lg">{t("intro")}</p>
+        <Card>
         <HouseholdForm
           // Most families live in Uttar Pradesh (the state this version covers), so start there.
           initial={{ state: "UP", district: "", area: null, income: null, category: null }}
@@ -77,6 +79,7 @@ function BasicsForm({ session }: { session: Session }) {
           problem={problem && te(problem)}
           onSubmit={create}
         />
+        </Card>
       </div>
     </SetupFrame>
   );

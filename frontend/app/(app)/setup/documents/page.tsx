@@ -4,7 +4,10 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SetupFrame } from "@/components/SetupFrame";
-import { Button, ButtonLink, ErrorNote, YesNoGroup } from "@/components/ui";
+import { ChevronDown } from "lucide-react";
+import { Avatar } from "@/components/Avatar";
+import { DocumentChoice } from "@/components/DocumentChoice";
+import { Button, ButtonLink, ErrorNote, Skeleton } from "@/components/ui";
 import { api, errorKind, type ErrorKind } from "@/lib/api";
 import type { DocumentInfo, Member } from "@/lib/types";
 import { useSetupFamily } from "@/lib/use-setup-family";
@@ -103,7 +106,7 @@ export default function DocumentsPage() {
     router.push("/setup/exclusions");
   }
 
-  if (!data) return problem ? <ErrorNote>{te(problem)}</ErrorNote> : <p>{tc("loading")}</p>;
+  if (!data) return problem ? <ErrorNote>{te(problem)}</ErrorNote> : <Skeleton label={tc("loading")} />;
 
   const name = (doc: DocumentInfo) => (locale === "hi" ? doc.name_hi : doc.name_en);
   const labels = { yes: tc("yes"), no: tc("no"), notSure: tc("notSure") };
@@ -112,17 +115,18 @@ export default function DocumentsPage() {
 
   return (
     <SetupFrame step={3}>
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
-      <p>{t("intro")}</p>
+      <h1 className="display text-3xl">{t("title")}</h1>
+      <p className="text-lg">{t("intro")}</p>
 
       {familyDocs.length > 0 && (
-        <section className="flex flex-col gap-5 rounded-lg border border-zinc-300 p-4 dark:border-zinc-700">
-          <h2 className="text-xl font-bold">{t("householdTitle")}</h2>
+        <section className="flex flex-col gap-4">
+          <h2 className="text-xl font-extrabold">{t("householdTitle")}</h2>
           <p>{t("householdIntro")}</p>
           {familyDocs.map((doc) => (
-            <YesNoGroup
+            <DocumentChoice
               key={doc.code}
-              legend={name(doc)}
+              code={doc.code}
+              label={name(doc)}
               value={data.household[doc.code]}
               labels={labels}
               onChange={(has) => setData({ ...data, household: { ...data.household, [doc.code]: has } })}
@@ -135,16 +139,19 @@ export default function DocumentsPage() {
         <details
           key={member.id}
           open={index === 0}
-          className="rounded-lg border border-zinc-300 p-4 dark:border-zinc-700"
+          className="group rounded-2xl border border-line-soft bg-surface p-4 shadow-card"
         >
-          <summary className="min-h-12 cursor-pointer text-xl font-bold">
-            {t("memberTitle", { name: member.nickname })}
+          <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 text-xl font-extrabold [&::-webkit-details-marker]:hidden">
+            <Avatar name={member.nickname} />
+            <span className="flex-1 break-words">{t("memberTitle", { name: member.nickname })}</span>
+            <ChevronDown aria-hidden className="shrink-0 transition group-open:rotate-180" />
           </summary>
-          <div className="mt-4 flex flex-col gap-5">
+          <div className="mt-4 flex flex-col gap-4">
             {personalDocs.map((doc) => (
-              <YesNoGroup
+              <DocumentChoice
                 key={doc.code}
-                legend={name(doc)}
+                code={doc.code}
+                label={name(doc)}
                 value={data.byMember[member.id][doc.code]}
                 labels={labels}
                 onChange={(has) =>
