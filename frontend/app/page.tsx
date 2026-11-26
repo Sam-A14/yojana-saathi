@@ -27,6 +27,27 @@ function IconBubble({ children }: { children: ReactNode }) {
   );
 }
 
+/** The "free" line and the two quiet links under the main button. Rendered twice (under the button
+ * from 720px up, under the photo on a phone); the copy that is not shown is display:none, so a
+ * screen reader meets each link once. */
+async function HeroExtras({ className }: { className: string }) {
+  const t = await getTranslations("home");
+  const textLink = "inline-flex min-h-12 items-center text-lg font-bold text-primary underline underline-offset-4";
+  return (
+    <div className={`flex-col gap-3 ${className}`}>
+      <p className="text-lg font-semibold text-accent-ink">{t("free")}</p>
+      <div className="flex flex-col sm:flex-row sm:gap-8">
+        <Link href="/example" className={textLink}>
+          {t("example")}
+        </Link>
+        <Link href="/signin" className={textLink}>
+          {t("signIn")}
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default async function Home() {
   const t = await getTranslations("home");
   const l = await getTranslations("landing");
@@ -49,7 +70,6 @@ export default async function Home() {
     { q: l("faq4Q"), a: l("faq4A") },
     { q: l("faq5Q"), a: l("faq5A") },
   ];
-  const textLink = "inline-flex min-h-12 items-center text-lg font-bold text-primary underline underline-offset-4";
 
   return (
     <>
@@ -60,25 +80,20 @@ export default async function Home() {
           className="pointer-events-none absolute inset-0"
           style={{ background: "radial-gradient(circle at 88% 18%, var(--teal-soft), transparent 55%)" }}
         />
-        <div className="relative mx-auto grid w-full max-w-6xl items-center gap-10 px-4 pb-24 pt-10 md:grid-cols-2 md:gap-12 md:pb-32 md:pt-16">
-          <div className="flex flex-col gap-6">
-            <h1 className="display text-4xl sm:text-5xl lg:text-6xl">{t("title")}</h1>
+        {/* Phone (below 720px): tighter padding and gaps, so the photo starts inside the first screen.
+            From 720px up every class is the one the page had before, so tablet and desktop do not change. */}
+        <div className="relative mx-auto grid w-full max-w-6xl items-center gap-6 px-5 pb-14 pt-5 sm:gap-10 sm:px-4 sm:pb-24 sm:pt-10 md:grid-cols-2 md:gap-12 md:pb-32 md:pt-16">
+          <div className="flex flex-col gap-4 sm:gap-6">
+            {/* Phone: 38-43px (clamp) and balanced lines, so the 3 lines are about equal and no word is left alone. */}
+            <h1 className="display max-sm:text-balance [font-size:clamp(2.1rem,1.35rem+4.2vw,2.4rem)] sm:text-5xl lg:text-6xl">{t("title")}</h1>
             {/* A short gold bar: the one decorative use of the highlight colour in the hero. */}
-            <span aria-hidden="true" className="-mt-2 h-1.5 w-24 rounded-full bg-accent" />
-            <p className="text-xl text-muted">{t("intro")}</p>
+            <span aria-hidden="true" className="-mt-1 h-1.5 w-24 rounded-full bg-accent sm:-mt-2" />
+            <p className="text-base text-muted sm:text-xl">{t("intro")}</p>
             <div className="flex flex-col gap-3">
-              <ButtonLink href="/setup/basics" className="w-full sm:w-auto sm:self-start">
+              <ButtonLink href="/setup/basics" className="min-h-[3.25rem]! w-full px-4! sm:min-h-14! sm:w-auto sm:px-6! sm:self-start">
                 {t("start")}
               </ButtonLink>
-              <p className="text-lg font-semibold text-accent-ink">{t("free")}</p>
-              <div className="flex flex-col sm:flex-row sm:gap-8">
-                <Link href="/example" className={textLink}>
-                  {t("example")}
-                </Link>
-                <Link href="/signin" className={textLink}>
-                  {t("signIn")}
-                </Link>
-              </div>
+              <HeroExtras className="hidden sm:flex" />
             </div>
           </div>
           {/* The photo: below the buttons on a phone, in the right half on a computer. 4:3 trims only the
@@ -98,6 +113,9 @@ export default async function Home() {
               style={{ objectPosition: "50% 30%" }}
             />
           </div>
+          {/* Phone only: the "free" line and the two quiet links come after the photo, so the photo
+              follows the main button directly. */}
+          <HeroExtras className="flex sm:hidden" />
         </div>
         {/* The curve into the next section: the same colour as that section (--soft). */}
         <svg aria-hidden="true" viewBox="0 0 1440 90" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 block h-12 w-full text-soft md:h-20">

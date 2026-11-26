@@ -40,7 +40,7 @@ export function TextSizeToggle() {
           type="button"
           aria-pressed={size === choice}
           onClick={() => applySize(choice)}
-          className="min-h-12 min-w-12 px-3 text-base font-bold transition-colors aria-pressed:bg-primary aria-pressed:text-on-primary"
+          className="min-h-[2.667rem] min-w-[2.667rem] sm:min-h-12 sm:min-w-12 px-2.5 sm:px-3 text-base font-bold transition-colors aria-pressed:bg-primary aria-pressed:text-on-primary"
         >
           {choice === "normal" ? "A" : "A+"}
           <span className="sr-only"> {t(choice)}</span>

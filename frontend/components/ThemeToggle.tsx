@@ -43,7 +43,7 @@ export function ThemeToggle() {
             type="button"
             aria-pressed={current === choice}
             onClick={() => applyTheme(choice)}
-            className="flex min-h-12 items-center justify-center gap-2 px-3 text-center text-base font-semibold leading-tight transition-colors aria-pressed:bg-primary aria-pressed:text-on-primary"
+            className="flex min-h-[2.667rem] sm:min-h-12 items-center justify-center gap-2 px-3 text-center text-base font-semibold leading-tight transition-colors aria-pressed:bg-primary aria-pressed:text-on-primary"
           >
             <Icon aria-hidden size={20} className="shrink-0" />
             {t(choice)}
