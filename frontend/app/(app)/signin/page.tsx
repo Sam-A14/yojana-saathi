@@ -1,6 +1,7 @@
 "use client";
 
 import { KeyRound, Mail, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useRef, useState } from "react";
@@ -42,6 +43,7 @@ function IconTile({ children }: { children: React.ReactNode }) {
 
 export default function SignInPage() {
   const t = useTranslations("signin");
+  const tp = useTranslations("privacyPage");
   const tc = useTranslations("common");
   const te = useTranslations("errors");
   const locale = useLocale() === "hi" ? "hi" : "en";
@@ -212,6 +214,9 @@ export default function SignInPage() {
         <ShieldCheck aria-hidden size={24} className="mt-0.5 shrink-0 text-primary" />
         {t("privacy")}
       </p>
+      <Link href="/privacy" className="inline-flex min-h-12 items-center text-lg font-bold text-primary underline">
+        {tp("link")}
+      </Link>
       <ButtonLink href="/" variant="secondary">
         {tc("back")}
       </ButtonLink>

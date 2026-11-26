@@ -10,15 +10,19 @@ async function askForCode(page: Page, email: string) {
   await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
 }
 
-test("home page 'Sign in with email' opens the sign-in screen, with the privacy promise", async ({ page, api }) => {
+test("home page 'Sign in with email' opens the sign-in screen, which says where the email goes", async ({ page, api }) => {
   void api;
   await page.goto("/");
   await page.getByRole("link", { name: "Sign in with email" }).click();
 
   await expect(page).toHaveURL(/\/signin$/);
+  // Plainly: the address is used only to sign in, and it goes to the email service (Resend) to send the code.
   await expect(
-    page.getByText("We keep one email address, only to sign you in and, later, to send you alerts.").filter({ visible: true }),
+    page
+      .getByText("We use your email address only to sign you in. It goes to our email service, Resend, only to send you the code. We do not sell it.")
+      .filter({ visible: true }),
   ).toBeVisible();
+  await expect(page.getByRole("link", { name: "How we handle your information" }).first()).toHaveAttribute("href", "/privacy");
 });
 
 test("a new person signs in with a code and goes to the first setup screen", async ({ page, api }) => {

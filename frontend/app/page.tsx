@@ -1,4 +1,5 @@
 import { ChevronDown, ExternalLink, FileCheck, GraduationCap, HandHeart, KeyRound, ListChecks, ShieldCheck, Trash2, Users, Wheat } from "lucide-react";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 import { HeroPhone } from "@/components/landing/HeroPhone";
@@ -6,8 +7,7 @@ import { SchemesWeCheck } from "@/components/landing/SchemesWeCheck";
 import { WarmUp } from "@/components/landing/WarmUp";
 import { buttonClass } from "@/components/button-styles";
 import { ButtonLink, Card } from "@/components/ui";
-
-const GITHUB_URL = "https://github.com/Sam-A14/yojana-saathi";
+import { GITHUB_URL } from "@/lib/links";
 
 function Section({ title, children, tone = "bg" }: { title: string; children: ReactNode; tone?: "bg" | "soft" }) {
   return (
@@ -146,6 +146,9 @@ export default async function Home() {
           ))}
         </ul>
         <p className="text-lg font-semibold">{l("emailPromise")}</p>
+        <Link href="/privacy" className="inline-flex min-h-12 items-center text-lg font-bold text-primary underline">
+          {l("privacyLink")}
+        </Link>
       </Section>
 
       <Section title={l("faqTitle")}>

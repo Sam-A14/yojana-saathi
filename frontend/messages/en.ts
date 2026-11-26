@@ -283,18 +283,20 @@ export const en = {
   privacy: {
     title: "Your data",
     intro:
-      "Your family’s information is stored on our server. We keep one email address, only to sign you in and, later, to send you alerts. We never sell or share it.",
+      "Your family’s information is stored on our server. We use your email address only to sign you in. Our email service, Resend, gets it only to send you the code. We do not sell it.",
     signedInAs: "Signed in as {email}",
     deleteButton: "Delete my data",
     deleteTitle: "Delete everything?",
     deleteWarning:
-      "This removes your family, every person, all answers and your email address from our server for good. It cannot be undone.",
+      "This removes your family, every person, all answers and your email address from our database. It cannot be undone.",
     deleteYes: "Yes, delete my data",
     deleteNo: "No, keep my data",
     deleting: "Deleting…",
     deletedTitle: "Your data was deleted",
+    deletedNote:
+      "Copies outside our control, such as backups or the email service’s own records, may remain for a while.",
     deletedBody:
-      "Your family’s information and your email address are gone from our server and from this phone.",
+      "Your family’s information and your email address were deleted from our database and from this phone.",
     signOutButton: "Sign out",
     signOutTitle: "Sign out on this phone?",
     signOutWarning:
@@ -310,7 +312,7 @@ export const en = {
     send: "Send me a code",
     sending: "Sending…",
     privacy:
-      "We keep one email address, only to sign you in and, later, to send you alerts. We never sell or share it.",
+      "We use your email address only to sign you in. It goes to our email service, Resend, only to send you the code. We do not sell it.",
     codeTitle: "Check your email",
     codeIntro: "We sent a 6-digit code to {email}. It works for 10 minutes.",
     spam: "Cannot find it? Look in your spam folder.",
@@ -410,6 +412,61 @@ export const en = {
       "10k_plus": "Yes, ₹10,000 a month or more",
     },
   },
+  privacyPage: {
+    title: "How we handle your information",
+    intro: "Plain words, no small print. Yojana Saathi is a free project made by a student. It is not a government app.",
+    link: "How we handle your information",
+    collect: {
+      title: "What we keep",
+      intro: "Only what you tell us:",
+      email: "Your email address, to sign you in.",
+      language: "Your language: English or Hindi.",
+      home: "About your home: state, district if you type it, village or town, a yearly income range, and social category if you choose to say.",
+      people: "About each person: a first name or nickname, how they are related to you, year of birth, and the answers you give, such as work, education or farm land.",
+      papers: "Which papers each person has: yes, no or not sure. Never the number on a paper.",
+      phone: "On your phone: a sign-in key, your language, your text size and your colour choice. These stay on your phone.",
+    },
+    never: {
+      title: "What we never ask for",
+      body: "Aadhaar, PAN, bank account or paper numbers. A phone number. A password.",
+    },
+    why: {
+      title: "Why we need it",
+      body: "To sign you in, to check which schemes may fit each person, and to show which papers are missing. We use it for nothing else.",
+    },
+    how: {
+      title: "How it is used",
+      rules: "A fixed set of rules compares your answers with each scheme. Every result shows which rules were met and which were not.",
+      noAi: "Your answers are not sent to any AI service.",
+      guidance: "Results are guidance only, not an official decision. The government office decides.",
+    },
+    share: {
+      title: "Who else sees it",
+      sell: "We do not sell your information, and we do not use it for advertising.",
+      email: "Our email service, Resend, gets your email address and the sign-in code, so it can send you the code.",
+      hosting: "Our hosting and database services store the information for us.",
+      gov: "We do not send anything to the government for you.",
+    },
+    keep: {
+      title: "How long we keep it",
+      until: "Until you delete it.",
+      code: "A sign-in code works for 10 minutes. We keep only a scrambled copy of it, never the code itself.",
+      signedIn: "Staying signed in on a phone lasts up to 30 days, or until you sign out.",
+    },
+    del: {
+      title: "How to delete it",
+      step1: "Sign in and open your family.",
+      step2: "At the bottom of the page, choose “Delete my data”.",
+      step3: "Confirm. This cannot be undone.",
+      removes: "This removes your email address, your family, every person, all answers and papers, and every result from our database.",
+      limits: "It cannot reach copies outside our control. Our email service may keep a record that it sent you a sign-in email, and our hosting and database services may keep backups for a while. They follow their own rules.",
+      signOut: "“Sign out” is different: it only ends sign-in on this phone and keeps your information.",
+    },
+    code: {
+      title: "See for yourself",
+      body: "The code of this app is public.",
+    },
+  },
   schemeCard: {
     central: "Central government scheme",
     state: "State scheme",
@@ -461,8 +518,9 @@ export const en = {
     noPasswordTitle: "No password",
     noPasswordBody: "You never make a password. Each time you sign in, we email you a 6-digit code.",
     deleteTitle: "Delete any time",
-    deleteBody: "One button erases your family and your email address from our system.",
-    emailPromise: "We keep one email address, only to sign you in and, later, to send you alerts. We never sell or share it.",
+    deleteBody: "One button erases your family and your email address from our database.",
+    privacyLink: "How we handle your information",
+    emailPromise: "We use your email address only to sign you in. It goes to our email service, Resend, only to send you the code. We do not sell it.",
     faqTitle: "Questions people ask",
     faq1Q: "Does it cost anything?",
     faq1A: "No. It is free. You only sign in with your email address.",
