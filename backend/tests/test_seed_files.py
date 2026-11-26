@@ -58,7 +58,8 @@ def test_committed_files_are_valid() -> None:
     data = read_seed_files()
 
     assert len(data.documents) >= 15
-    assert {s["slug"] for s in data.schemes} == {"pm-kisan", "ignwps"}
+    # "At least", not "exactly": approved schemes are added to this folder by pull request.
+    assert {"pm-kisan", "ignwps"} <= {s["slug"] for s in data.schemes}
 
 
 def test_template_is_valid_and_never_loaded() -> None:
@@ -91,7 +92,7 @@ def test_committed_schemes_have_real_categories() -> None:
     categories = {s["category"] for s in read_seed_files().schemes}
 
     assert "replace_with_category" not in categories
-    assert categories == {"farmer", "widow_pension"}
+    assert {"farmer", "widow_pension"} <= categories <= set(CATEGORIES)
 
 
 CATEGORIES = [

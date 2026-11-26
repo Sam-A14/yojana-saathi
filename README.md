@@ -31,7 +31,7 @@ yojana-saathi/
 │                       scheme_sources/ (scheme text pasted for the LLM)
 │                       (see data/README.md for how to label a scheme)
 ├── docs/decisions/     one short note per design decision
-└── .github/workflows/  ci.yml runs on every pull request; seed-database.yml and extract-rules.yml are run by hand
+└── .github/workflows/  ci.yml runs on every pull request; seed-database.yml, extract-rules.yml and approve-scheme.yml are run by hand
 ```
 
 More folders (`rules/`, `pipeline/`, `alerts/`, `llm/`) appear as those parts are built.
@@ -255,6 +255,31 @@ same secret the seed workflow uses. Then Actions > **Extract scheme rules** > Ru
 slug. The run summary shows the proposal, whether it passed validation, and the accuracy against
 `data/schemes_seed/<slug>.json` if that exists. The proposal is saved to `review_items` as
 `pending`; nothing is published. Deploy the backend first so the latest migration has run.
+
+### Approve a scheme proposal (after you have read it)
+
+Turns a proposal you have checked into a pull request, so adding a verified scheme takes one click
+plus one review. One-time setup, in the repository settings: Settings > Actions > General >
+Workflow permissions > tick **Allow GitHub Actions to create and approve pull requests** and save.
+(Without it the last step fails with "GitHub Actions is not permitted to create or approve pull
+requests".) The workflow uses the same `DATABASE_URL` secret as the seed workflow.
+
+Then, each time:
+
+1. Read the proposal in the **Extract scheme rules** run summary and note its review item number
+   (the "Saved as review item #N" line).
+2. Actions > **Approve scheme proposal** > Run workflow, keep branch `main`, type the review item
+   number and **your GitHub user name** (it is saved in the file as `approved_by`; the pull request
+   also records who ran the workflow).
+3. Open the pull request it creates. Read each rule next to its source quote, and the benefit text
+   next to its quote. Merge it if they agree. Merging publishes nothing yet.
+4. After the merge, run **Seed database**. Only then does the scheme reach families.
+
+It refuses a proposal that did not pass validation, is no longer pending, or whose benefit text has
+no stored quote (extract again). If the file would be identical to the one already on `main`, it
+says so and opens nothing. Pull requests opened by a workflow do not start the normal CI checks:
+close and reopen the pull request to run them (the frontend test that every rule can be shown in
+words runs there). The workflow itself already ran the seed-file and test-profile tests.
 
 ### 3. Frontend: Vercel
 
