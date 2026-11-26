@@ -1,9 +1,10 @@
 "use client";
 
+import { KeyRound, Mail, ShieldCheck } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useRef, useState } from "react";
-import { Button, ButtonLink, ErrorNote, TextField } from "@/components/ui";
+import { Button, ButtonLink, Card, ErrorNote, Skeleton, TextField } from "@/components/ui";
 import { ApiError, api, errorKind } from "@/lib/api";
 import { nextPathFor } from "@/lib/next-path";
 import { saveSession, useSession } from "@/lib/session";
@@ -22,6 +23,15 @@ const KNOWN = [
 ] as const;
 type Known = (typeof KNOWN)[number];
 const isKnown = (code: string | null): code is Known => KNOWN.some((known) => known === code);
+
+/** The round picture above the title. The title right below it says what it means. */
+function IconTile({ children }: { children: React.ReactNode }) {
+  return (
+    <span aria-hidden className="pop flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-soft text-primary shadow-card">
+      {children}
+    </span>
+  );
+}
 
 export default function SignInPage() {
   const t = useTranslations("signin");
@@ -117,14 +127,16 @@ export default function SignInPage() {
     setBusy(false);
   }
 
-  if (!ready || session) return <p role="status">{tc("loading")}</p>;
+  if (!ready || session) return <Skeleton label={tc("loading")} />;
 
   if (step === "code") {
     return (
       <form onSubmit={verify} className="flex flex-col gap-6" noValidate>
+        <IconTile><KeyRound size={30} /></IconTile>
         <h1 className="display text-3xl">{t("codeTitle")}</h1>
         <p className="text-lg">{t("codeIntro", { email })}</p>
         <p className="text-base text-muted">{t("spam")}</p>
+        <Card className="flex flex-col gap-6">
         <TextField
           label={t("codeLabel")}
           value={code}
@@ -141,6 +153,7 @@ export default function SignInPage() {
         <Button type="submit" disabled={busy || code.length !== 6} className="w-full">
           {busy ? t("verifying") : t("verify")}
         </Button>
+        </Card>
         <div className="flex flex-col gap-3">
           <Button variant="secondary" onClick={resend} disabled={busy}>
             {t("resend")}
@@ -164,8 +177,10 @@ export default function SignInPage() {
 
   return (
     <form onSubmit={sendCode} className="flex flex-col gap-6" noValidate>
+      <IconTile><Mail size={30} /></IconTile>
       <h1 className="display text-3xl">{t("title")}</h1>
       <p className="text-lg">{t("intro")}</p>
+      <Card className="flex flex-col gap-6">
       <TextField
         label={t("emailLabel")}
         hint={t("emailHint")}
@@ -177,11 +192,15 @@ export default function SignInPage() {
         autoCapitalize="off"
         spellCheck={false}
       />
-      <p className="text-base text-muted">{t("privacy")}</p>
       {problem && <ErrorNote>{problem}</ErrorNote>}
       <Button type="submit" disabled={busy || email.trim() === ""} className="w-full">
         {busy ? t("sending") : t("send")}
       </Button>
+      </Card>
+      <p className="flex items-start gap-3 text-base text-muted">
+        <ShieldCheck aria-hidden size={24} className="mt-0.5 shrink-0 text-primary" />
+        {t("privacy")}
+      </p>
       <ButtonLink href="/" variant="secondary">
         {tc("back")}
       </ButtonLink>
