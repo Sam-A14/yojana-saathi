@@ -70,7 +70,7 @@ test("the dashboard does not show 'My data' under the placeholder while results 
   await page.addInitScript(([key, value]) => localStorage.setItem(key, value), [STORAGE_KEY, api.storedSession(family)]);
   await page.goto("/dashboard");
 
-  await expect(page.getByRole("status")).toBeVisible(); // the grey placeholder
+  await expect(page.getByRole("status").filter({ hasText: "Checking schemes" })).toBeVisible(); // the grey placeholder
   await expect(page.locator('section[aria-labelledby="my-data"]')).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "May qualify" }).first()).toBeVisible();
   await expect(page.locator('section[aria-labelledby="my-data"]')).toHaveCount(1);

@@ -331,7 +331,8 @@ body {
 /* The "हिन्दी" button is on every page. On an English page it uses the phone's own Devanagari font,
  * so the 120 KB Hindi web font is only downloaded when the page really is in Hindi. */
 html:not(:lang(hi)) button[lang="hi"] {
-  font-family: "Noto Sans Devanagari", "Nirmala UI", Mangal, system-ui, sans-serif;
+  /* Not "Noto Sans Devanagari": that is also the name of our web font and would download it. */
+  font-family: "Nirmala UI", "Kohinoor Devanagari", "Devanagari Sangam MN", Mangal, system-ui, sans-serif;
 }
 :lang(hi) .display {
   line-height: 1.4;
