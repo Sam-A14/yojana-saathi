@@ -49,5 +49,7 @@ rules for older and low-vision users (decisions 018, 021, 026: 48px+ tap targets
   the fallback is the unscaled button plus a larger "or use your email" button.
 - Hindi strings for this change are marked "needs native review" in `messages/hi.ts`. Google draws the
   button's own words in Hindi itself.
-- The landing page link still says "Sign in with email" (several tests pin it); with Google it could
-  say just "Sign in".
+- The landing page link now says just "Sign in" (it used to say "Sign in with email"), because Google
+  is an option too. The home page and the header then both have a "Sign in" link, so tests find the
+  landing one inside `<main>` and the header one inside the banner. The dashboard's "not signed in"
+  link still says "Sign in with email".

@@ -10,10 +10,10 @@ async function askForCode(page: Page, email: string) {
   await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
 }
 
-test("home page 'Sign in with email' opens the sign-in screen, which says where the email goes", async ({ page, api }) => {
+test("home page 'Sign in' opens the sign-in screen, which says where the email goes", async ({ page, api }) => {
   void api;
   await page.goto("/");
-  await page.getByRole("link", { name: "Sign in with email" }).click();
+  await page.getByRole("main").getByRole("link", { name: "Sign in", exact: true }).click();
 
   await expect(page).toHaveURL(/\/signin$/);
   // Plainly: the address is used only to sign in, and it goes to the email service (Resend) to send the code.
@@ -256,4 +256,13 @@ test("a session that ends while using the app sends the person to sign in", asyn
 
   await expect(page.getByText("You are not signed in on this phone.")).toBeVisible();
   expect(await stored(page)).toBeNull();
+});
+
+test("the home page link says just 'Sign in', not 'with email', in both languages", async ({ page, api }) => {
+  void api;
+  await page.goto("/");
+  await expect(page.getByRole("main").getByRole("link", { name: "Sign in", exact: true })).toHaveAttribute("href", "/signin");
+
+  await page.getByRole("button", { name: "हिन्दी" }).click();
+  await expect(page.getByRole("main").getByRole("link", { name: "साइन इन करें", exact: true })).toHaveAttribute("href", "/signin");
 });

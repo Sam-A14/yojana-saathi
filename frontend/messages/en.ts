@@ -53,7 +53,7 @@ export const en = {
     intro:
       "Tell us about your family once. We show which government schemes each person may qualify for, and which papers are still needed.",
     start: "Find schemes for my family",
-    signIn: "Sign in with email",
+    signIn: "Sign in",
     example: "See an example",
     free: "Free. Sign in with just your email.",
     photoAlt: "A smiling family of several generations standing together in a park",
