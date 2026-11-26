@@ -151,7 +151,7 @@ test.describe("header", () => {
       await expect(link).toBeVisible();
       expect((await link.boundingBox())!.height, name).toBeGreaterThanOrEqual(48);
     }
-    await expect(page.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
+    await expect(page.getByRole("banner").getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
 
     await page.keyboard.press("Escape");
     await expect(page.getByRole("button", { name: "Menu", exact: true })).toHaveAttribute("aria-expanded", "false");
@@ -182,7 +182,7 @@ test.describe("header", () => {
     await expect(page.getByText("Government schemes, simplified for families")).toBeVisible();
     await expect(page.getByRole("button", { name: "Menu", exact: true })).toBeHidden();
     await expect(page.getByRole("navigation", { name: "Main menu" }).getByRole("link", { name: "How it works" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Sign in", exact: true })).toHaveAttribute("href", "/signin");
+    await expect(page.getByRole("banner").getByRole("link", { name: "Sign in", exact: true })).toHaveAttribute("href", "/signin");
     await expect(page.getByRole("group", { name: "Colour theme" })).toBeVisible();
   });
 });

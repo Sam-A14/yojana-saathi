@@ -67,8 +67,9 @@ test("on a phone the free line and the two quiet links come after the photo, onc
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   const photo = await page.getByRole("img", { name: /family of several generations/ }).boundingBox();
-  for (const name of ["See an example", "Sign in with email"]) {
-    const link = page.getByRole("link", { name });
+  // In <main>, exact: the header has its own "Sign in" button, which is hidden on a phone.
+  for (const name of ["See an example", "Sign in"]) {
+    const link = page.getByRole("main").getByRole("link", { name, exact: true });
     await expect(link).toHaveCount(1); // the other copy is display:none, so it is not in the accessibility tree
     expect((await link.boundingBox())!.y).toBeGreaterThan(photo!.y + photo!.height);
   }

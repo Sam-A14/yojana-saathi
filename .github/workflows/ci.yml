@@ -58,6 +58,16 @@ jobs:
       # The end-to-end tests drive the built app in a real browser, with the API faked.
       - run: npx playwright install --with-deps chromium
       - run: npm test
+      # The Google button is built in only when a client ID is set at build time. So build once more
+      # with a dummy ID and run the Google sign-in tests on that build (Google's script is faked in
+      # them, so nothing talks to Google). The run above covers the build without an ID.
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: test-client-id.apps.googleusercontent.com
+      - run: npx playwright test tests/e2e/google-signin.spec.ts
+        env:
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: test-client-id.apps.googleusercontent.com
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

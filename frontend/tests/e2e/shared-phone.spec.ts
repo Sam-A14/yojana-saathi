@@ -4,7 +4,7 @@ import { expect, test, STORAGE_KEY } from "./fixtures";
 
 // Clicks through the email sign-in, like the next person who picks up the shared phone.
 async function signInByClicking(page: Page, api: FakeApi, email: string) {
-  await page.getByRole("link", { name: "Sign in with email" }).click();
+  await page.getByRole("main").getByRole("link", { name: "Sign in", exact: true }).click();
   await page.getByLabel("Your email address").fill(email);
   await page.getByRole("button", { name: "Send me a code" }).click();
   await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
@@ -61,7 +61,7 @@ test("the email and code typed for one person are not left in the boxes for the 
   await expect(page.getByRole("heading", { name: "Your family’s schemes" })).toBeVisible();
 
   await signOutByClicking(page);
-  await page.getByRole("link", { name: "Sign in with email" }).click();
+  await page.getByRole("main").getByRole("link", { name: "Sign in", exact: true }).click();
 
   await expect(page.getByLabel("Your email address")).toHaveValue("");
   await page.getByLabel("Your email address").fill(family.email);

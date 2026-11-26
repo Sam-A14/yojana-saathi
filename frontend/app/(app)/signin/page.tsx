@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useRef, useState } from "react";
+import { GoogleSignIn } from "@/components/GoogleSignIn";
 import { OtpInput } from "@/components/OtpInput";
 import { Button, ButtonLink, Card, ErrorNote, Skeleton, TextField } from "@/components/ui";
 import { ApiError, api, errorKind } from "@/lib/api";
+import { GOOGLE_CLIENT_ID } from "@/lib/google";
 import { nextPathFor } from "@/lib/next-path";
 import { saveSession, useSession } from "@/lib/session";
 import { useCountdown } from "@/lib/use-countdown";
@@ -28,6 +30,8 @@ const KNOWN = [
   "too_many_codes",
   "busy",
   "email_failed",
+  "invalid_google_token",
+  "google_unavailable",
 ] as const;
 type Known = (typeof KNOWN)[number];
 const isKnown = (code: string | null): code is Known => KNOWN.some((known) => known === code);
@@ -57,6 +61,7 @@ export default function SignInPage() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
+  const [googleProblem, setGoogleProblem] = useState<string | null>(null);
 
   // Signed in (just now, or earlier): go where the app goes next. The guard stops a second request
   // when the session text changes while we are still asking the server.
@@ -112,6 +117,25 @@ export default function SignInPage() {
       setNotice(t("resent"));
     } catch (error) {
       setProblem(describe(error));
+    }
+    setBusy(false);
+  }
+
+  // Google gave the page an ID token. Our server checks it and answers with the same session token
+  // an email code gives, so everything after this (routing, sign-out, delete) is shared.
+  async function signInWithGoogle(credential: string) {
+    if (busy) return;
+    setBusy(true);
+    setGoogleProblem(null);
+    setProblem(null);
+    try {
+      const opened = await api.signInWithGoogle(credential, locale);
+      // That answer has only the token. Ask who it is, so the session carries the email ("My data"
+      // shows it) and the household, if this person already has one.
+      const me = await api.getMe(opened.access_token);
+      saveSession({ token: opened.access_token, email: me.email, householdId: me.household_id });
+    } catch (error) {
+      setGoogleProblem(describe(error));
     }
     setBusy(false);
   }
@@ -188,11 +212,20 @@ export default function SignInPage() {
   return (
     <form onSubmit={sendCode} className="flex flex-col gap-6" noValidate>
       <IconTile><Mail size={30} /></IconTile>
-      <h1 className="page-title">{t("title")}</h1>
+      <h1 className="page-title">{t(GOOGLE_CLIENT_ID ? "titleWithGoogle" : "title")}</h1>
+      {/* Google first (when it is switched on and its script loads), then the email option. */}
+      {GOOGLE_CLIENT_ID && (
+        <>
+          <GoogleSignIn
+            clientId={GOOGLE_CLIENT_ID}
+            locale={locale}
+            onCredential={signInWithGoogle}
+            orLabel={t("or")}
+          />
+          {googleProblem && <ErrorNote>{googleProblem}</ErrorNote>}
+        </>
+      )}
       <p className="text-lg">{t("intro")}</p>
-      {/* Sign-in options live in this one block. A future "Continue with Google" button and an "or"
-          divider go ABOVE this card, so nothing below has to be moved. Not built yet, so nothing is
-          shown for it. */}
       <Card className="flex flex-col gap-6">
       <TextField
         label={t("emailLabel")}
@@ -214,6 +247,12 @@ export default function SignInPage() {
         <ShieldCheck aria-hidden size={24} className="mt-0.5 shrink-0 text-primary" />
         {t("privacy")}
       </p>
+      {GOOGLE_CLIENT_ID && (
+        <p className="flex items-start gap-3 text-base text-muted">
+          <ShieldCheck aria-hidden size={24} className="mt-0.5 shrink-0 text-primary" />
+          {t("googlePrivacy")}
+        </p>
+      )}
       <Link href="/privacy" className="inline-flex min-h-12 items-center text-lg font-bold text-primary underline">
         {tp("link")}
       </Link>

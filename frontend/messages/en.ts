@@ -53,7 +53,7 @@ export const en = {
     intro:
       "Tell us about your family once. We show which government schemes each person may qualify for, and which papers are still needed.",
     start: "Find schemes for my family",
-    signIn: "Sign in with email",
+    signIn: "Sign in",
     example: "See an example",
     free: "Free. Sign in with just your email.",
     photoAlt: "A smiling family of several generations standing together in a park",
@@ -322,6 +322,9 @@ export const en = {
   },
   signin: {
     title: "Sign in with email",
+    // The heading when "Continue with Google" is shown too: "with email" would be wrong above it.
+    titleWithGoogle: "Sign in",
+    or: "or",
     intro: "We send a 6-digit code to your email. You do not need a password.",
     emailLabel: "Your email address",
     emailHint: "For example name@example.com",
@@ -329,6 +332,8 @@ export const en = {
     sending: "Sending…",
     privacy:
       "We use your email address only to sign you in. It goes to our email service, Resend, only to send you the code. We do not sell it.",
+    googlePrivacy:
+      "If you use Google, Google tells us your email address. We keep only that, not your name or photo.",
     codeTitle: "Check your email",
     codeIntro: "We sent a 6-digit code to {email}. It works for 10 minutes.",
     spam: "Cannot find it? Look in your spam folder.",
@@ -349,6 +354,8 @@ export const en = {
     too_many_codes: "Too many codes for this email. Please try again in an hour.",
     busy: "Sign-in is busy today. Please try again tomorrow.",
     email_failed: "We could not send the email. Please try again in a minute.",
+    invalid_google_token: "We could not check your Google sign-in. Please try again, or use your email instead.",
+    google_unavailable: "Sign-in with Google is not available right now. Please use your email instead.",
   },
   example: {
     label: "Example",
@@ -460,6 +467,8 @@ export const en = {
       title: "Who else sees it",
       sell: "We do not sell your information, and we do not use it for advertising.",
       email: "Our email service, Resend, gets your email address and the sign-in code, so it can send you the code.",
+      google: "If you choose “Continue with Google”, Google tells us your email address. We keep only the email, not your Google name, photo or anything else.",
+      googleScript: "The “Continue with Google” button comes from Google. When the sign-in page shows it, Google can see that the page was opened.",
       hosting: "Our hosting and database services store the information for us.",
       gov: "We do not send anything to the government for you.",
     },

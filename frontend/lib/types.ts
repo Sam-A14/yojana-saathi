@@ -4,7 +4,7 @@
 // The household's id and the session token of the person who is signed in (decision 019).
 export type Family = { id: string; token: string };
 
-// POST /auth/verify, GET /me
+// POST /auth/verify and /auth/google, GET /me
 export type SessionToken = { access_token: string; expires_at: string };
 export type Me = { email: string; language: "en" | "hi"; household_id: string | null };
 

@@ -4,7 +4,7 @@ test("home page shows the disclaimer and the ways in", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByRole("link", { name: "Find schemes for my family" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Sign in with email" })).toBeVisible();
+  await expect(page.getByRole("main").getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "See an example" })).toBeVisible();
   await expect(
     page.getByText(

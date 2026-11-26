@@ -104,7 +104,7 @@ test.describe("Sign out", () => {
     expect(api.sessions.has(family.token)).toBe(false); // the token is dead on the server too
 
     // The same email opens it again.
-    await page.getByRole("link", { name: "Sign in with email" }).click();
+    await page.getByRole("main").getByRole("link", { name: "Sign in", exact: true }).click();
     await page.getByLabel("Your email address").fill(family.email);
     await page.getByRole("button", { name: "Send me a code" }).click();
     await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();

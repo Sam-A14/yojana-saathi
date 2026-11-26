@@ -62,7 +62,8 @@ export const hi: typeof en = {
     intro:
       "अपने परिवार के बारे में एक बार बताइए। हम बताएँगे कि हर सदस्य किन सरकारी योजनाओं के लिए पात्र हो सकता है और कौन-से कागज़ अभी चाहिए।",
     start: "मेरे परिवार के लिए योजनाएँ खोजें",
-    signIn: "ईमेल से साइन इन करें",
+    // needs native review (changed in the Google sign-in change: no longer says "with email")
+    signIn: "साइन इन करें",
     example: "एक उदाहरण देखें",
     free: "मुफ़्त। बस अपने ईमेल से साइन इन करें।",
     photoAlt: "कई पीढ़ियों का एक मुस्कुराता परिवार, पार्क में साथ खड़ा हुआ",
@@ -345,6 +346,9 @@ export const hi: typeof en = {
   // needs native review
   signin: {
     title: "ईमेल से साइन इन करें",
+    // needs native review (new in the Google sign-in change): the heading when Google is shown too, "or", the Google lines below.
+    titleWithGoogle: "साइन इन करें",
+    or: "या",
     intro: "हम आपके ईमेल पर 6 अंकों का कोड भेजते हैं। पासवर्ड की ज़रूरत नहीं है।",
     emailLabel: "आपका ईमेल पता",
     emailHint: "जैसे name@example.com",
@@ -352,6 +356,8 @@ export const hi: typeof en = {
     sending: "भेजा जा रहा है…",
     privacy:
       "हम आपका ईमेल पता सिर्फ़ साइन इन कराने के लिए इस्तेमाल करते हैं। यह हमारी ईमेल सेवा Resend के पास सिर्फ़ आपको कोड भेजने के लिए जाता है। हम इसे बेचते नहीं हैं।",
+    googlePrivacy:
+      "अगर आप Google से साइन इन करते हैं, तो Google हमें आपका ईमेल पता बताता है। हम सिर्फ़ ईमेल रखते हैं, आपका नाम या फ़ोटो नहीं।",
     codeTitle: "अपना ईमेल देखें",
     codeIntro: "हमने {email} पर 6 अंकों का कोड भेजा है। यह 10 मिनट तक चलेगा।",
     spam: "नहीं मिला? अपना स्पैम फ़ोल्डर देखें।",
@@ -373,6 +379,8 @@ export const hi: typeof en = {
     too_many_codes: "इस ईमेल के लिए बहुत ज़्यादा कोड माँगे गए। कृपया एक घंटे बाद कोशिश करें।",
     busy: "आज साइन-इन पर भीड़ है। कृपया कल कोशिश करें।",
     email_failed: "हम ईमेल नहीं भेज पाए। कृपया एक मिनट बाद कोशिश करें।",
+    invalid_google_token: "हम आपका Google साइन-इन जाँच नहीं पाए। कृपया फिर कोशिश करें, या ईमेल से साइन इन करें।",
+    google_unavailable: "Google से साइन-इन अभी उपलब्ध नहीं है। कृपया ईमेल से साइन इन करें।",
   },
   // needs native review
   example: {
@@ -487,6 +495,9 @@ export const hi: typeof en = {
       title: "और कौन देखता है",
       sell: "हम आपकी जानकारी बेचते नहीं हैं और विज्ञापन के लिए इस्तेमाल नहीं करते।",
       email: "हमारी ईमेल सेवा, Resend, को आपका ईमेल पता और साइन-इन कोड मिलता है, ताकि वह आपको कोड भेज सके।",
+      // needs native review (new in the Google sign-in change): the two Google lines.
+      google: "अगर आप “Continue with Google” चुनते हैं, तो Google हमें आपका ईमेल पता बताता है। हम सिर्फ़ ईमेल रखते हैं, आपका Google नाम, फ़ोटो या और कुछ नहीं।",
+      googleScript: "“Continue with Google” बटन Google की तरफ़ से आता है। जब साइन-इन पेज उसे दिखाता है, तो Google देख सकता है कि पेज खोला गया।",
       hosting: "हमारी होस्टिंग और डेटाबेस सेवाएँ जानकारी हमारे लिए सँभालकर रखती हैं।",
       gov: "हम आपकी तरफ़ से सरकार को कुछ नहीं भेजते।",
     },
