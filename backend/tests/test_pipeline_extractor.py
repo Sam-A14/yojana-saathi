@@ -7,9 +7,18 @@ from app.db.seed import DEFAULT_DATA_DIR
 from app.llm import FakeLLM
 from app.llm.prompts import EXCEPTION_EXAMPLE_QUOTE, EXCEPTION_EXAMPLE_RULE
 from app.pipeline.extractor import EXTRACTION_TEMPERATURE, extract
+from app.pipeline.report import render_report
 from app.pipeline.source import MAX_SOURCE_CHARS, SourceDocument, SourceError, read_source
 from app.rules.engine import validate_rules
-from tests.pipeline_samples import SLUG, SOURCE_TEXT, SOURCE_URL, answer_text, good_answer
+from tests.pipeline_samples import (
+    BENEFIT_QUOTE,
+    SLUG,
+    SOURCE_TEXT,
+    SOURCE_URL,
+    answer_text,
+    answer_with_benefit,
+    good_answer,
+)
 
 SOURCE = SourceDocument(slug=SLUG, url=SOURCE_URL, text=SOURCE_TEXT.strip())
 
@@ -107,3 +116,25 @@ def test_the_prompt_example_is_a_valid_rule_with_the_exception_on_the_same_membe
     member_rule = EXCEPTION_EXAMPLE_RULE["not"]["any_member"]
     fields = {condition["field"] for condition in member_rule["all"]}
     assert fields == {"pension_band", "govt_employee"}
+
+
+# --- the benefit quote ----------------------------------------------------------------------
+
+
+def test_prompt_asks_for_a_benefit_quote_and_nulls_without_one() -> None:
+    fake = FakeLLM(response=answer_text(good_answer()))
+    extract(SOURCE, fake)
+
+    (call,) = fake.calls
+    system, prompt = str(call["system"]), str(call["prompt"])
+    assert "benefit_quote" in system and "must all be null" in system
+    assert '"benefit_quote": null or "words copied' in prompt
+
+
+def test_the_report_shows_the_benefit_quote_beside_the_rule_quotes() -> None:
+    extraction = extract(SOURCE, FakeLLM(response=answer_text(answer_with_benefit())))
+
+    report = render_report(extraction, "Saved as review item #1 (status: pending)", None)
+
+    assert extraction.validation.is_valid
+    assert f'"benefit_quote": "{BENEFIT_QUOTE}"' in report

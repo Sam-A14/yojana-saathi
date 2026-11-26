@@ -15,7 +15,17 @@ from app.pipeline import extract_cli
 from app.pipeline.extractor import extract
 from app.pipeline.proposals import save_proposal
 from app.pipeline.source import SourceDocument
-from tests.pipeline_samples import SLUG, SOURCE_TEXT, SOURCE_URL, answer_text, good_answer
+from tests.pipeline_samples import (
+    BENEFIT_QUOTE,
+    BENEFIT_TEXT,
+    QUOTES,
+    SLUG,
+    SOURCE_TEXT,
+    SOURCE_URL,
+    answer_text,
+    answer_with_benefit,
+    good_answer,
+)
 
 SOURCE = SourceDocument(slug=SLUG, url=SOURCE_URL, text=SOURCE_TEXT.strip())
 
@@ -33,6 +43,31 @@ def test_a_valid_proposal_is_saved_as_pending(db: Session) -> None:
     assert len(row.source_quotes) == 3
     assert row.scheme_id is None  # we do not have this scheme yet
     assert row.reviewed_by is None and row.reviewed_at is None
+
+
+def test_the_benefit_quote_is_stored_beside_the_rule_quotes(db: Session) -> None:
+    extraction = extract(SOURCE, FakeLLM(response=answer_text(answer_with_benefit())))
+    item = save_proposal(db, extraction)
+
+    row = db.get(ReviewItem, item.id)
+    assert row is not None and row.is_valid is True
+    assert len(row.source_quotes) == 4
+    assert row.source_quotes[:3] == [
+        {"index": i, "quote": q} for i, q in enumerate(QUOTES)
+    ]
+    assert row.source_quotes[3] == {"field": "benefit_text_en", "quote": BENEFIT_QUOTE}
+    assert row.proposed_rules_json["version"]["benefit_text_en"] == BENEFIT_TEXT
+
+
+def test_an_unquoted_benefit_text_is_saved_flagged(db: Session) -> None:
+    bad = answer_with_benefit()
+    del bad["benefit_quote"]
+    item = save_proposal(db, extract(SOURCE, FakeLLM(response=json.dumps(bad))))
+
+    row = db.get(ReviewItem, item.id)
+    assert row is not None and row.is_valid is False
+    assert [e["code"] for e in row.validation_errors] == ["benefit_unquoted"]
+    assert len(row.source_quotes) == 3  # no benefit quote to store
 
 
 def test_an_invalid_proposal_is_kept_and_flagged(db: Session) -> None:
@@ -121,12 +156,16 @@ def test_cli_reports_accuracy_with_missed_and_extra_conditions(
     lines = [
         f"Condition number {i} of the scheme applies to every family." for i in range(len(rules))
     ]
+    benefit_line = "The scheme pays money to every farming family."  # pm-kisan has a benefit text
     source = SourceDocument(
-        slug="pm-kisan", url=scheme["version"]["source_url"], text="\n".join(lines)
+        slug="pm-kisan",
+        url=scheme["version"]["source_url"],
+        text="\n".join([*lines, benefit_line]),
     )
     answer = {
         "scheme": scheme,
         "rule_quotes": [{"index": i, "quote": line} for i, line in enumerate(lines)],
+        "benefit_quote": benefit_line,
     }
 
     code = run_cli(monkeypatch, db, source, json.dumps(answer))

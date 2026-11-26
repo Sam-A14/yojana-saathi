@@ -18,6 +18,9 @@ categories can apply.
 A family where any member paid income tax last year is not eligible.
 """
 
+BENEFIT_TEXT = "The family gets a monthly pension of Rs.1,000."
+BENEFIT_QUOTE = "gives a pension to every person"
+
 QUOTES = [
     "aged 60 years or above",
     "belonging to SC or ST categories",
@@ -59,6 +62,14 @@ def good_answer() -> dict[str, Any]:
         },
         "rule_quotes": [{"index": i, "quote": q} for i, q in enumerate(QUOTES)],
     }
+
+
+def answer_with_benefit() -> dict[str, Any]:
+    """good_answer() plus a benefit text that the source text supports."""
+    answer = good_answer()
+    answer["scheme"]["version"]["benefit_text_en"] = BENEFIT_TEXT
+    answer["benefit_quote"] = BENEFIT_QUOTE
+    return answer
 
 
 def answer_text(answer: dict[str, Any]) -> str:

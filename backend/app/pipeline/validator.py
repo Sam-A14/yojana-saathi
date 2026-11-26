@@ -4,7 +4,8 @@ The rule here: invalid output is KEPT but FLAGGED, never dropped. A reviewer lea
 what the model got wrong, and a silent drop would hide a bad extraction behind "nothing came back".
 
 Checks, in order:  parseable JSON -> expected shape -> scheme.schema.json -> only allowed fields ->
-engine accepts the rules -> slug/URL/verified fields -> a real quote for every top-level rule.
+engine accepts the rules -> slug/URL/verified fields -> a real quote for every top-level rule ->
+a real quote for the benefit text (or no benefit text at all).
 """
 
 import json
@@ -35,11 +36,23 @@ class ValidationResult:
     problems: list[Problem] = field(default_factory=list)
     # What the model proposed, when it could be read. None if the text was not a JSON object.
     scheme: dict[str, Any] | None = None
-    quotes: list[Any] = field(default_factory=list)
+    quotes: list[Any] = field(default_factory=list)  # one per top-level rule
+    # Words from the source that state the benefit; the proof behind benefit_text_en.
+    benefit_quote: str | None = None
 
     @property
     def is_valid(self) -> bool:
         return not self.problems
+
+    def stored_quotes(self) -> list[Any]:
+        """What goes in review_items.source_quotes: the rule quotes, then the benefit quote.
+
+        The benefit entry says which text it supports ({"field": ..., "quote": ...}) and has no
+        index, so it can never be mistaken for a rule's quote. No new column or migration needed.
+        """
+        if not self.benefit_quote:
+            return list(self.quotes)
+        return [*self.quotes, {"field": "benefit_text_en", "quote": self.benefit_quote}]
 
 
 def validate_output(
@@ -68,6 +81,11 @@ def validate_output(
         result.quotes = quotes
     else:
         result.problems.append(Problem("bad_shape", "rule_quotes", "Missing or not a list."))
+    benefit_quote = parsed.get("benefit_quote")
+    if benefit_quote is None or isinstance(benefit_quote, str):
+        result.benefit_quote = benefit_quote
+    else:
+        result.problems.append(Problem("bad_shape", "benefit_quote", "Must be null or text."))
     if result.scheme is None:
         return result
 
@@ -77,6 +95,7 @@ def validate_output(
     _check_identity(result, slug, source_url)
     if isinstance(quotes, list):
         _check_quotes(result, source_text)
+    _check_benefit(result, source_text)
     return result
 
 
@@ -194,6 +213,31 @@ def _check_quotes(result: ValidationResult, source_text: str) -> None:
         if index not in quoted:
             where = f"scheme.version.rules.all[{index}]"
             result.problems.append(Problem("missing_quote", where, "No valid source quote."))
+
+
+def _check_benefit(result: ValidationResult, source_text: str) -> None:
+    """Benefit text is shown to families as fact, so it needs the same proof as a rule: words copied
+    from the source. No supporting text means no benefit text, in either language."""
+    version = _dict(_dict(result.scheme).get("version"))
+    text_en, text_hi = version.get("benefit_text_en"), version.get("benefit_text_hi")
+    if text_en is None:
+        if text_hi is not None:
+            where = "scheme.version.benefit_text_hi"
+            message = "benefit_text_hi must be null when benefit_text_en is null."
+            result.problems.append(Problem("benefit_hi_without_en", where, message))
+        return
+    where = "scheme.version.benefit_text_en"
+    quote = result.benefit_quote
+    squashed = _squash(quote) if quote else ""
+    if not squashed:
+        message = "benefit_text_en needs a benefit_quote from the source, or it must be null."
+        result.problems.append(Problem("benefit_unquoted", where, message))
+    elif len(squashed) < MIN_QUOTE_CHARS:
+        message = f"Benefit quote is shorter than {MIN_QUOTE_CHARS} characters."
+        result.problems.append(Problem("benefit_quote_too_short", where, message))
+    elif squashed not in _squash(source_text):
+        message = f"Benefit quote is not found word for word in the source text: {squashed[:80]!r}"
+        result.problems.append(Problem("benefit_quote_not_in_source", where, message))
 
 
 def _squash(text: str) -> str:
