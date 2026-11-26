@@ -1,5 +1,7 @@
 # 022 — Light by default, with a Light / Dark / Match device toggle
 
+> Colour values superseded in part by [026](026-portal-redesign.md). The toggle, the storage key and the light default are unchanged. On a phone the toggle now sits inside the Menu.
+
 ## Context
 Decision 018 let the phone decide: dark colours switched on whenever the device was set to dark, and
 a manual switch was "not asked for". Two things changed. The product is warm and light on purpose

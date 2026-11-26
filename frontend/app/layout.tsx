@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_Devanagari, Plus_Jakarta_Sans } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
-import { AppHeader } from "@/components/AppHeader";
+import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
 import { WakingBanner } from "@/components/WakingBanner";
 import { TEXT_SIZE_KEY } from "@/lib/text-size";
@@ -60,7 +60,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
-          <AppHeader />
+          <SiteHeader />
           <WakingBanner />
           <main className="flex-1">{children}</main>
           <Footer />

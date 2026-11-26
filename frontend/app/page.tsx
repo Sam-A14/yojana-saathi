@@ -1,18 +1,19 @@
-import { ChevronDown, ExternalLink, FileCheck, GraduationCap, HandHeart, KeyRound, ListChecks, ShieldCheck, Trash2, Users, Wheat } from "lucide-react";
+import { CalendarCheck, ChevronDown, ExternalLink, FileCheck, Link2, ListChecks, ShieldCheck, Users } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
-import { HeroPhone } from "@/components/landing/HeroPhone";
-import { SchemesWeCheck } from "@/components/landing/SchemesWeCheck";
-import { WarmUp } from "@/components/landing/WarmUp";
 import { buttonClass } from "@/components/button-styles";
+import { CategoryCards } from "@/components/landing/CategoryCards";
+import { WarmUp } from "@/components/landing/WarmUp";
 import { ButtonLink, Card } from "@/components/ui";
 import { GITHUB_URL } from "@/lib/links";
 
-function Section({ title, children, tone = "bg" }: { title: string; children: ReactNode; tone?: "bg" | "soft" }) {
+// id: the header's "How it works", "FAQ" and "About" links jump here. scroll-mt keeps the heading clear of the top edge.
+function Section({ id, title, children, tone = "bg" }: { id?: string; title: string; children: ReactNode; tone?: "bg" | "soft" }) {
   return (
-    <section aria-label={title} className={tone === "soft" ? "bg-soft" : ""}>
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-14 md:py-20">
+    <section id={id} aria-label={title} className={`scroll-mt-4 ${tone === "soft" ? "bg-soft" : ""}`}>
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-14 md:py-20">
         <h2 className="display text-3xl md:text-4xl">{title}</h2>
         {children}
       </div>
@@ -22,9 +23,7 @@ function Section({ title, children, tone = "bg" }: { title: string; children: Re
 
 function IconBubble({ children }: { children: ReactNode }) {
   return (
-    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary">
-      {children}
-    </span>
+    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-teal-soft text-teal">{children}</span>
   );
 }
 
@@ -37,15 +36,11 @@ export default async function Home() {
     { icon: <ListChecks size={30} />, title: l("step2Title"), body: l("step2Body") },
     { icon: <FileCheck size={30} />, title: l("step3Title"), body: l("step3Body") },
   ];
-  const people = [
-    { icon: <GraduationCap size={30} />, title: l("studentsTitle"), example: l("studentsExample") },
-    { icon: <Wheat size={30} />, title: l("farmersTitle"), example: l("farmersExample") },
-    { icon: <HandHeart size={30} />, title: l("eldersTitle"), example: l("eldersExample") },
-  ];
-  const promises = [
-    { icon: <ShieldCheck size={30} />, title: l("noAadhaarTitle"), body: l("noAadhaarBody") },
-    { icon: <KeyRound size={30} />, title: l("noPasswordTitle"), body: l("noPasswordBody") },
-    { icon: <Trash2 size={30} />, title: l("deleteTitle"), body: l("deleteBody") },
+  // Honest wording only. Each sentence describes something the app does today (decision 026).
+  const trust = [
+    { icon: <Link2 aria-hidden size={28} />, text: l("trust1") },
+    { icon: <CalendarCheck aria-hidden size={28} />, text: l("trust2") },
+    { icon: <ShieldCheck aria-hidden size={28} />, text: l("trust3") },
   ];
   const faq = [
     { q: l("faq1Q"), a: l("faq1A") },
@@ -54,43 +49,76 @@ export default async function Home() {
     { q: l("faq4Q"), a: l("faq4A") },
     { q: l("faq5Q"), a: l("faq5A") },
   ];
+  const textLink = "inline-flex min-h-12 items-center text-lg font-bold text-primary underline underline-offset-4";
 
   return (
     <>
       <WarmUp />
-      {/* The dramatic first screen: deep green, a marigold glow, a floating phone. Only this block is dark. */}
-      <section className="on-dark relative overflow-hidden bg-hero text-on-hero">
+      <section className="relative overflow-hidden bg-surface">
         <div
           aria-hidden="true"
-          className="glow pointer-events-none absolute -right-40 top-16 h-[32rem] w-[32rem] rounded-full"
-          style={{ background: "radial-gradient(circle, rgb(245 158 11 / 0.35), transparent 65%)" }}
+          className="pointer-events-none absolute inset-0"
+          style={{ background: "radial-gradient(circle at 88% 18%, var(--teal-soft), transparent 55%)" }}
         />
-        <div className="relative mx-auto grid w-full max-w-5xl items-center gap-12 px-4 pb-20 pt-10 md:grid-cols-[1.2fr_1fr] md:py-24">
-          <div className="rise flex flex-col gap-6">
-            <h1 className="display text-4xl sm:text-5xl md:text-6xl">{t("title")}</h1>
-            <p className="text-xl text-on-hero-muted">{t("intro")}</p>
-            <div className="flex flex-col gap-4">
-              <ButtonLink href="/setup/basics" variant="accent" className="w-full sm:w-auto sm:self-start">
+        <div className="relative mx-auto grid w-full max-w-6xl items-center gap-10 px-4 pb-24 pt-10 md:grid-cols-2 md:gap-12 md:pb-32 md:pt-16">
+          <div className="flex flex-col gap-6">
+            <h1 className="display text-4xl sm:text-5xl lg:text-6xl">{t("title")}</h1>
+            {/* A short gold bar: the one decorative use of the highlight colour in the hero. */}
+            <span aria-hidden="true" className="-mt-2 h-1.5 w-24 rounded-full bg-accent" />
+            <p className="text-xl text-muted">{t("intro")}</p>
+            <div className="flex flex-col gap-3">
+              <ButtonLink href="/setup/basics" className="w-full sm:w-auto sm:self-start">
                 {t("start")}
               </ButtonLink>
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <ButtonLink href="/example" variant="light" className="w-full sm:w-auto">
+              <p className="text-lg font-semibold text-accent-ink">{t("free")}</p>
+              <div className="flex flex-col sm:flex-row sm:gap-8">
+                <Link href="/example" className={textLink}>
                   {t("example")}
-                </ButtonLink>
-                <ButtonLink href="/signin" variant="light" className="w-full sm:w-auto">
+                </Link>
+                <Link href="/signin" className={textLink}>
                   {t("signIn")}
-                </ButtonLink>
+                </Link>
               </div>
             </div>
-            <p className="text-lg font-semibold text-accent">{t("free")}</p>
           </div>
-          <div className="rise" style={{ animationDelay: "0.15s" }}>
-            <HeroPhone />
+          {/* The photo: below the buttons on a phone, in the right half on a computer. 4:3 trims only the
+              sides, and every face stays inside the crop (checked at 360px). No caption: it must not read
+              as these people using or endorsing the app. loading="eager" without `priority`: on a phone it is below
+              the fold, and preloading it slowed the headline (Lighthouse LCP) by about 150 ms. */}
+          <div className="relative">
+            <span aria-hidden="true" className="absolute -bottom-3 -left-3 h-2/3 w-2/3 rounded-[2rem] bg-accent/70" />
+            <Image
+              src="/images/hero-family.jpg"
+              alt={t("photoAlt")}
+              width={2400}
+              height={1600}
+              loading="eager"
+              sizes="(min-width: 1296px) 600px, (min-width: 768px) 46vw, 100vw"
+              className="relative aspect-[4/3] w-full rounded-[2rem] object-cover shadow-lift"
+              style={{ objectPosition: "50% 30%" }}
+            />
           </div>
+        </div>
+        {/* The curve into the next section: the same colour as that section (--soft). */}
+        <svg aria-hidden="true" viewBox="0 0 1440 90" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 block h-12 w-full text-soft md:h-20">
+          <path fill="currentColor" d="M0 90V46C240 6 480 0 720 24c240 24 480 40 720 -4V90Z" />
+        </svg>
+      </section>
+
+      <section aria-label={l("categoriesTitle")} className="bg-soft">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pb-14 pt-4 md:pb-20">
+          <div className="flex flex-col gap-3">
+            <h2 className="display text-3xl md:text-4xl">{l("categoriesTitle")}</h2>
+            <p className="text-lg text-muted">{l("categoriesIntro")}</p>
+          </div>
+          <CategoryCards />
+          <ButtonLink href="/schemes" variant="secondary" className="w-full sm:w-auto sm:self-start">
+            {l("seeAllSchemes")}
+          </ButtonLink>
         </div>
       </section>
 
-      <Section title={l("howTitle")}>
+      <Section id="how" title={l("howTitle")}>
         <ol className="grid gap-6 md:grid-cols-3">
           {steps.map((step, index) => (
             <li key={step.title}>
@@ -109,51 +137,27 @@ export default async function Home() {
         </ol>
       </Section>
 
-      <Section title={l("whoTitle")} tone="soft">
-        <ul className="grid gap-6 md:grid-cols-3">
-          {people.map((person) => (
-            <li key={person.title}>
-              <Card className="flex h-full flex-col gap-4 transition duration-200 hover:-translate-y-1 hover:shadow-lift">
-                <div className="flex items-center gap-4">
-                  <IconBubble>{person.icon}</IconBubble>
-                  <h3 className="text-xl font-bold">{person.title}</h3>
-                </div>
-                <p className="text-lg">{person.example}</p>
-              </Card>
-            </li>
-          ))}
-        </ul>
-      </Section>
+      <section aria-label={l("trustTitle")} className="on-dark bg-hero text-on-hero">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-14">
+          <h2 className="display text-3xl">{l("trustTitle")}</h2>
+          <ul className="grid gap-6 md:grid-cols-3">
+            {trust.map((item) => (
+              <li key={item.text} className="flex items-start gap-4">
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-accent text-on-accent">{item.icon}</span>
+                <p className="text-lg font-semibold">{item.text}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="max-w-3xl text-lg text-on-hero-muted">{l("emailPromise")}</p>
+          <Link href="/privacy" className="inline-flex min-h-12 items-center text-lg font-bold underline underline-offset-4">
+            {l("privacyLink")}
+          </Link>
+        </div>
+      </section>
 
-      <Section title={l("schemesTitle")}>
-        <p className="-mt-4 text-lg text-muted">{l("schemesIntro")}</p>
-        <SchemesWeCheck />
-        <ButtonLink href="/schemes" variant="secondary" className="w-full sm:w-auto sm:self-start">
-          {l("seeAllSchemes")}
-        </ButtonLink>
-      </Section>
-
-      <Section title={l("privacyTitle")} tone="soft">
-        <ul className="grid gap-6 md:grid-cols-3">
-          {promises.map((item) => (
-            <li key={item.title} className="flex flex-col gap-3">
-              <div className="flex items-center gap-4">
-                <IconBubble>{item.icon}</IconBubble>
-                <h3 className="text-xl font-bold">{item.title}</h3>
-              </div>
-              <p className="text-lg">{item.body}</p>
-            </li>
-          ))}
-        </ul>
-        <p className="text-lg font-semibold">{l("emailPromise")}</p>
-        <Link href="/privacy" className="inline-flex min-h-12 items-center text-lg font-bold text-primary underline">
-          {l("privacyLink")}
-        </Link>
-      </Section>
-
-      <Section title={l("faqTitle")}>
+      <Section id="faq" title={l("faqTitle")}>
         {/* Plain <details>: opens and closes with no JavaScript, and works with a keyboard and screen reader. */}
-        <div className="flex flex-col gap-4">
+        <div className="flex max-w-3xl flex-col gap-4">
           {faq.map((item) => (
             <details key={item.q} className="group rounded-2xl border border-line-soft bg-surface shadow-card">
               <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-5 py-3 text-lg font-bold [&::-webkit-details-marker]:hidden">
@@ -166,12 +170,12 @@ export default async function Home() {
         </div>
       </Section>
 
-      <Section title={l("aboutTitle")} tone="soft">
+      <Section id="about" title={l("aboutTitle")} tone="soft">
         <div className="flex max-w-2xl flex-col items-start gap-6">
           <p className="text-lg">{l("aboutBody")}</p>
           <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className={buttonClass("secondary", "w-full sm:w-auto")}>
             {l("github")}
-            <ExternalLink size={20} />
+            <ExternalLink aria-hidden size={20} />
           </a>
         </div>
       </Section>
