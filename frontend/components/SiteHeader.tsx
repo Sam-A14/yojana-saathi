@@ -2,9 +2,11 @@
 
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
+import { clearSession, useSession } from "@/lib/session";
 import { buttonClass } from "./button-styles";
 import { LanguageToggle } from "./LanguageToggle";
 import { Logo } from "./Logo";
@@ -13,7 +15,7 @@ import { ThemeToggle } from "./ThemeToggle";
 
 // Two rows, like a public-service portal. The top strip always holds the two controls older readers
 // need most (A / A+ and language) so they are never hidden behind a menu; the theme choice joins
-// them from tablet width up. The main row holds the name, the tagline, the pages and Sign in.
+// them from tablet width up. The main row holds the name, the tagline, the pages and Sign in (or "My family" and "Sign out" once signed in).
 // Below the "xl" width the pages and Sign in move into a Menu (a button with a word, not just an icon).
 const LINKS = [
   { key: "home", href: "/" },
@@ -27,7 +29,19 @@ export function SiteHeader() {
   const t = useTranslations("nav");
   const tc = useTranslations("common");
   const pathname = usePathname();
+  const router = useRouter();
+  const { ready, session } = useSession();
   const [open, setOpen] = useState(false);
+
+  // Unlike the dashboard's "Sign out" (which explains first), this one acts at once: it is one tap
+  // from every page, and signing in again with the same email brings everything back.
+  async function signOut() {
+    setOpen(false);
+    // Best effort: if the server cannot be reached, this phone still forgets the session.
+    if (session) await api.signOut(session.token).catch(() => undefined);
+    clearSession();
+    router.push("/");
+  }
 
   // Escape closes the menu, as people expect.
   useEffect(() => {
@@ -71,9 +85,26 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <Link href="/signin" className={buttonClass("primary", "min-h-12! px-5! max-lg:hidden")}>
-          {t("signIn")}
-        </Link>
+        {/* Before the browser's storage has been read we do not know who is here. The invisible
+            "Sign in" keeps the row the same width, so nothing jumps and nobody sees a wrong button. */}
+        {!ready ? (
+          <span aria-hidden className={buttonClass("primary", "min-h-12! px-5! invisible max-lg:hidden")}>
+            {t("signIn")}
+          </span>
+        ) : session ? (
+          <div className="flex items-center gap-2 max-lg:hidden">
+            <Link href="/dashboard" className={buttonClass("primary", "min-h-12! px-5!")}>
+              {t("myFamily")}
+            </Link>
+            <button type="button" onClick={signOut} className={buttonClass("secondary", "min-h-12! px-5!")}>
+              {t("signOut")}
+            </button>
+          </div>
+        ) : (
+          <Link href="/signin" className={buttonClass("primary", "min-h-12! px-5! max-lg:hidden")}>
+            {t("signIn")}
+          </Link>
+        )}
 
         <button
           type="button"
@@ -104,9 +135,20 @@ export function SiteHeader() {
             <div className="mt-2 md:hidden">
               <ThemeToggle />
             </div>
-            <Link href="/signin" onClick={() => setOpen(false)} className={buttonClass("primary", "mt-3 w-full")}>
-              {t("signIn")}
-            </Link>
+            {session ? (
+              <>
+                <Link href="/dashboard" onClick={() => setOpen(false)} className={buttonClass("primary", "mt-3 w-full")}>
+                  {t("myFamily")}
+                </Link>
+                <button type="button" onClick={signOut} className={buttonClass("secondary", "w-full")}>
+                  {t("signOut")}
+                </button>
+              </>
+            ) : (
+              <Link href="/signin" onClick={() => setOpen(false)} className={buttonClass("primary", "mt-3 w-full")}>
+                {t("signIn")}
+              </Link>
+            )}
           </div>
         </nav>
       )}

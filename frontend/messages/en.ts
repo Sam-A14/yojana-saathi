@@ -32,6 +32,8 @@ export const en = {
     menu: "Menu",
     closeMenu: "Close menu",
     signIn: "Sign in",
+    myFamily: "My family",
+    signOut: "Sign out",
   },
   footer: {
     disclaimer: "Guidance only, not an official decision. Not a government app.",

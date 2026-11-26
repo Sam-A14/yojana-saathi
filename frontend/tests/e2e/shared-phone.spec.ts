@@ -13,7 +13,7 @@ async function signInByClicking(page: Page, api: FakeApi, email: string) {
 }
 
 async function signOutByClicking(page: Page) {
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.getByRole("main").getByRole("button", { name: "Sign out" }).click();
   await page.getByRole("button", { name: "Yes, sign out" }).click();
   await expect(page).toHaveURL(/\/$/); // the dashboard shows a similar link for a moment
 }
