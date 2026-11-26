@@ -60,8 +60,14 @@ test.describe("Header", () => {
     await page.setViewportSize({ width: 390, height: 800 });
     await page.goto("/");
 
-    await page.getByRole("button", { name: "Menu" }).click();
+    // A tap that lands before the page's scripts have run does nothing, because the button has no
+    // handler yet. Tap again until the menu is open; never tap an open menu, which would close it.
+    const menuButton = page.getByRole("button", { name: "Menu" });
     const menu = page.locator("#mobile-menu");
+    await expect(async () => {
+      if ((await menuButton.getAttribute("aria-expanded")) !== "true") await menuButton.click();
+      await expect(menu).toBeVisible({ timeout: 1000 });
+    }).toPass({ timeout: 10_000 });
     await expect(menu.getByRole("link", { name: "My family" })).toBeVisible();
     await menu.getByRole("button", { name: "Sign out" }).click();
     await expect(page).toHaveURL(/\/$/);
