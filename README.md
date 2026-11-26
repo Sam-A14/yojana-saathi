@@ -270,14 +270,18 @@ Then, each time:
    (the "Saved as review item #N" line).
 2. Actions > **Approve scheme proposal** > Run workflow, keep branch `main`, type the review item
    number and **your GitHub user name** (it is saved in the file as `approved_by`; the pull request
-   also records who ran the workflow).
+   also records who ran the workflow). Leave **bump_version** off for a new scheme.
 3. Open the pull request it creates. Read each rule next to its source quote, and the benefit text
    next to its quote. Merge it if they agree. Merging publishes nothing yet.
 4. After the merge, run **Seed database**. Only then does the scheme reach families.
 
 It refuses a proposal that did not pass validation, is no longer pending, or whose benefit text has
-no stored quote (extract again). If the file would be identical to the one already on `main`, it
-says so and opens nothing. Pull requests opened by a workflow do not start the normal CI checks:
+no stored quote (extract again). **If `data/schemes_seed/<slug>.json` already exists it refuses too**
+("seed exists; this would overwrite hand-labelled ground truth"): that file is what accuracy is
+scored against. To replace it on purpose, tick **bump_version** when you run the workflow; the pull
+request then says it replaces the file, the old file stays in git history, and Seed database adds a
+new version of the scheme. If the file would be identical to the one already on `main`, it says so
+and opens nothing. Pull requests opened by a workflow do not start the normal CI checks:
 close and reopen the pull request to run them (the frontend test that every rule can be shown in
 words runs there). The workflow itself already ran the seed-file and test-profile tests.
 

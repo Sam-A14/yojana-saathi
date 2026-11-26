@@ -21,6 +21,14 @@ on:
         description: "Your GitHub user name. It is saved in the file as approved_by."
         required: true
         type: string
+      bump_version:
+        description: >-
+          Only if data/schemes_seed/<slug>.json already exists: propose replacing it. Without this
+          the workflow refuses, because that file is hand-labelled ground truth. The old file stays
+          in git history; Seed database then adds a new scheme version.
+        required: false
+        default: false
+        type: boolean
 
 # contents: push the branch. pull-requests: open the pull request. Nothing else.
 permissions:
@@ -54,6 +62,7 @@ jobs:
         env:
           REVIEW_ITEM_ID: ${{ inputs.review_item_id }}
           APPROVER: ${{ inputs.approver }}
+          BUMP_VERSION: ${{ inputs.bump_version }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           if [ -z "$DATABASE_URL" ]; then
@@ -68,9 +77,14 @@ jobs:
             echo "::error::The approver must be a GitHub user name (letters, digits, single hyphens)."
             exit 1
           fi
+          extra=()
+          if [ "$BUMP_VERSION" = "true" ]; then
+            extra+=(--bump-version)
+          fi
           # The command prints only the slug on stdout; every refusal goes to stderr and exits 1.
+          # An existing seed file is refused unless --bump-version is given.
           slug=$(python -m app.pipeline.approve "$REVIEW_ITEM_ID" --approver "$APPROVER" \
-            --body-file "$RUNNER_TEMP/pr-body.md")
+            --body-file "$RUNNER_TEMP/pr-body.md" "${extra[@]}")
           if ! [[ "$slug" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
             echo "::error::The command did not return a valid slug."
             exit 1
@@ -91,6 +105,7 @@ jobs:
           SLUG: ${{ steps.approve.outputs.slug }}
           REVIEW_ITEM_ID: ${{ inputs.review_item_id }}
           APPROVER: ${{ inputs.approver }}
+          BUMP_VERSION: ${{ inputs.bump_version }}
         run: |
           if [ -z "$(git status --porcelain -- data/schemes_seed)" ]; then
             echo "Nothing to approve: data/schemes_seed/$SLUG.json already matches this proposal." \
@@ -104,6 +119,10 @@ jobs:
           git add "data/schemes_seed/${SLUG}.json"
           git commit -m "Add scheme ${SLUG} (review item ${REVIEW_ITEM_ID}, approved by ${APPROVER})"
           git push origin "$branch"
+          title="Approve scheme: ${SLUG}"
+          if [ "$BUMP_VERSION" = "true" ]; then
+            title="Approve scheme: ${SLUG} (new version, replaces the existing file)"
+          fi
           url=$(gh pr create --base main --head "$branch" \
-            --title "Approve scheme: ${SLUG}" --body-file "$RUNNER_TEMP/pr-body.md")
+            --title "$title" --body-file "$RUNNER_TEMP/pr-body.md")
           echo "Pull request opened: $url" | tee -a "$GITHUB_STEP_SUMMARY"
