@@ -111,6 +111,9 @@ export const api = {
     }),
   verifyCode: (email: string, code: string) =>
     request<SessionToken>("/auth/verify", { method: "POST", body: { email, code } }),
+  // The ID token Google's button gave the page. The server checks it (decision 027).
+  signInWithGoogle: (credential: string, language: "en" | "hi") =>
+    request<SessionToken>("/auth/google", { method: "POST", body: { credential, language } }),
   getMe: (token: string) => request<Me>("/me", { token }),
   signOut: (token: string) => request<void>("/auth/sign-out", { method: "POST", token }),
   // Delete my data: the user, their email, and everything under them.

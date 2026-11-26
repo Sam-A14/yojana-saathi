@@ -7,7 +7,7 @@ import { GITHUB_URL } from "@/lib/links";
 // Public. Every sentence here is about what the app does today, checked against the backend code
 // (see docs/decisions/025-privacy-page.md). No promise about anything not built, such as alerts.
 const COLLECT = ["email", "language", "home", "people", "papers", "phone"] as const;
-const SHARE = ["sell", "email", "hosting", "gov"] as const;
+const SHARE = ["sell", "email", "google", "googleScript", "hosting", "gov"] as const;
 const KEEP = ["until", "code", "signedIn"] as const;
 const STEPS = ["step1", "step2", "step3"] as const;
 

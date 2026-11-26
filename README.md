@@ -183,6 +183,7 @@ Without `TEST_DATABASE_URL`, the database tests are skipped (CI refuses to skip 
 | backend | `EMAIL_DAILY_LIMIT` | Optional. Most sign-in codes sent per UTC day. Default 80 (Resend's free plan is about 100 a day). |
 | backend | `GOOGLE_CLIENT_ID` | Optional. The OAuth client ID for "Continue with Google". Public, not a secret. Unset or empty turns Google sign-in off (`POST /auth/google` answers `503`). See "Sign in with Google". |
 | backend | `APP_VERSION` | Optional. Version shown by `/health`. |
+| frontend | `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Optional. The same Google OAuth client ID as the backend's `GOOGLE_CLIENT_ID`. Public, not a secret. Missing or empty hides "Continue with Google". Baked in at build time, so redeploy after changing it. Set it for **Production only**: see "Sign in with Google". |
 | frontend | `NEXT_PUBLIC_API_URL` | Where the backend lives. Visible to anyone using the site, so never put secrets in it. |
 
 ## Deploy
@@ -275,13 +276,14 @@ reach your own address.
 2. Under **Authorized JavaScript origins** add exactly these (no paths, no trailing slash):
    `http://localhost:3000` and `https://yojana-saathi-hazel.vercel.app`. No redirect URIs are needed.
 3. Copy the client ID (`...apps.googleusercontent.com`). On Render set `GOOGLE_CLIENT_ID` to it and
-   redeploy. (The frontend's `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, added with the sign-in button, is the
-   same value.)
+   redeploy. On Vercel set `NEXT_PUBLIC_GOOGLE_CLIENT_ID` to the same value and redeploy (it is
+   baked in when the site is built). Without it the "Continue with Google" button is hidden.
 
 **Google sign-in only works on `yojana-saathi-hazel.vercel.app` and `localhost`.** Google does not
 allow wildcards in Authorized JavaScript origins, so Vercel preview URLs (one new address per
-deployment) can never be listed. On a preview, use the email option, or leave
-`NEXT_PUBLIC_GOOGLE_CLIENT_ID` unset there so the button is hidden. If you buy a domain, add it to
+deployment) can never be listed. On a preview the button still appears if the variable is set
+there, but Google refuses it ("Error 400: origin_mismatch"); use the email option, or set the
+variable for Production only so previews hide the button. If you buy a domain, add it to
 the origins too.
 
 While the OAuth consent screen is in "Testing", only the test users you list can sign in. Press

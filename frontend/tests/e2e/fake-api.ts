@@ -68,6 +68,31 @@ function eligibilityFor(fixture: Fixture, householdId: string, household: Stored
   return { ...fixture, household_id: householdId, members };
 }
 
+// What Google's script (accounts.google.com/gsi/client) does, reduced to a plain button. The test
+// never talks to Google. Tapping the button hands the page the credential in window.__fakeCredential
+// (default: a token for person@example.com), like Google's real button hands over an ID token. The
+// options the page asked for are kept in window.__gsiButtonOptions so a test can look at them.
+export const GOOGLE_SCRIPT_URL = "https://accounts.google.com/gsi/client";
+const FAKE_GOOGLE_SCRIPT = `
+window.google = { accounts: { id: {
+  initialize(config) { window.__gsiConfig = config; },
+  renderButton(parent, options) {
+    window.__gsiButtonOptions = options;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = options.locale === "hi" ? "Google के साथ जारी रखें" : "Continue with Google";
+    button.style.cssText = "width:" + options.width + "px;height:40px;font-size:14px";
+    button.onclick = () => window.__gsiConfig.callback({
+      credential: window.__fakeCredential || "fake-google:person@example.com",
+    });
+    parent.appendChild(button);
+  },
+} } };
+`;
+
+/** The credential a test puts in window.__fakeCredential to be "signed in as" this address. */
+export const googleCredentialFor = (email: string) => `fake-google:${email}`;
+
 export class FakeApi {
   households = new Map<string, StoredHousehold>();
   /** Signed-up people, by email. */
@@ -76,6 +101,8 @@ export class FakeApi {
   sessions = new Map<string, string>();
   /** The code last "emailed" to each address, and how many wrong guesses it has had. */
   codes = new Map<string, { code: string; wrong: number }>();
+  /** Make POST /auth/google answer 503 google_unavailable, like a backend with no GOOGLE_CLIENT_ID. */
+  googleUnavailable = false;
   /** Make request-code fail like the real API (429 too_many_codes, 503 busy...). */
   requestCodeFailure: { status: number; code: string } | null = null;
   private counter = 0;
@@ -92,6 +119,9 @@ export class FakeApi {
 
   async install(page: Page) {
     await page.route(`${API}/**`, (route) => this.handle(route));
+    await page.route(GOOGLE_SCRIPT_URL, (route) =>
+      route.fulfill({ contentType: "application/javascript", body: FAKE_GOOGLE_SCRIPT }),
+    );
   }
 
   /** Someone who is signed in but has not set up a household yet. Returns their session token. */
@@ -192,6 +222,18 @@ export class FakeApi {
       }
       this.codes.delete(email);
       const { token } = this.seedSession(email);
+      return reply(200, { access_token: token, expires_at: "2026-12-10T00:00:00Z" });
+    }
+
+    if (path === "/auth/google") {
+      if (this.googleUnavailable) {
+        return reply(503, { detail: { code: "google_unavailable", message: "no" } });
+      }
+      const credential = String((body as Json).credential);
+      if (!credential.startsWith("fake-google:")) {
+        return reply(401, { detail: { code: "invalid_google_token", message: "no" } });
+      }
+      const { token } = this.seedSession(credential.slice("fake-google:".length).toLowerCase());
       return reply(200, { access_token: token, expires_at: "2026-12-10T00:00:00Z" });
     }
 
