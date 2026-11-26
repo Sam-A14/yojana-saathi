@@ -6,6 +6,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { Footer } from "@/components/Footer";
 import { WakingBanner } from "@/components/WakingBanner";
 import { TEXT_SIZE_KEY } from "@/lib/text-size";
+import { THEME_KEY } from "@/lib/theme";
 import "./globals.css";
 
 // One variable file each (all weights in a single download). Headings use 700 and 800.
@@ -38,17 +39,24 @@ export async function generateMetadata(): Promise<Metadata> {
 // localStorage can be blocked (private mode), hence the try/catch.
 const applyTextSize = `try{if(localStorage.getItem("${TEXT_SIZE_KEY}")==="large")document.documentElement.dataset.textSize="large"}catch(e){}`;
 
+// Same idea for the colour theme. Anything but a saved "dark" or "device" (nothing saved, or storage
+// blocked) leaves the default: light, even if the phone itself is set to dark. Keep the list of
+// names in step with lib/theme.ts.
+const applyTheme = `try{var t=localStorage.getItem("${THEME_KEY}");document.documentElement.dataset.theme=t==="dark"||t==="device"?t:"light"}catch(e){}`;
+
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();
   return (
-    // suppressHydrationWarning: the script above sets data-text-size on <html> before React runs.
+    // suppressHydrationWarning: the scripts above set data-text-size and data-theme on <html> before React runs.
     <html
       lang={locale}
       className={`${jakarta.variable} ${devanagari.variable} h-full antialiased`}
+      // Light until the script below says otherwise, so a visit without JavaScript is light too.
+      data-theme="light"
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: applyTextSize }} />
+        <script dangerouslySetInnerHTML={{ __html: applyTextSize + applyTheme }} />
       </head>
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>

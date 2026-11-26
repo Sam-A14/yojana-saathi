@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { LanguageToggle } from "./LanguageToggle";
 import { Logo } from "./Logo";
 import { TextSizeToggle } from "./TextSizeToggle";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function AppHeader() {
   const t = useTranslations("common");
@@ -22,9 +23,13 @@ export function AppHeader() {
           <Logo />
           {t("appName")}
         </Link>
-        <div className="flex items-center gap-2">
+        {/* On a phone the theme choice (three words) takes the full width of its own row. */}
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <TextSizeToggle onDark={onDark} />
           <LanguageToggle onDark={onDark} />
+          <div className="w-full sm:w-auto">
+            <ThemeToggle onDark={onDark} />
+          </div>
         </div>
       </div>
     </header>

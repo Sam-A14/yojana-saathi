@@ -330,6 +330,9 @@ export const hi: typeof en = {
     verify: "साइन इन करें",
     verifying: "जाँच हो रही है…",
     resend: "मुझे नया कोड भेजें",
+    // needs native review (new in PR 2): the two resend-wait sentences below.
+    resendWait: "आप {seconds} सेकंड में नया कोड माँग सकते हैं।",
+    resendReady: "अब आप नया कोड माँग सकते हैं।",
     resent: "नया कोड भेजा जा रहा है।",
     otherEmail: "दूसरा ईमेल इस्तेमाल करें",
     invalidEmail: "कृपया अपना पूरा ईमेल पता लिखें, जैसे name@example.com।",
@@ -424,6 +427,8 @@ export const hi: typeof en = {
   },
   // needs native review: textSize, categories and landing are first drafts, read them aloud.
   textSize: { label: "अक्षर का आकार", normal: "सामान्य अक्षर", large: "बड़े अक्षर" },
+  // needs native review: new in PR 2. "Match device" is meant as "same as the phone's own setting".
+  theme: { label: "रंग-रूप", light: "हल्का", dark: "गहरा", device: "फ़ोन जैसा" },
   categories: {
     farmer: "किसान",
     widow_pension: "विधवा पेंशन",

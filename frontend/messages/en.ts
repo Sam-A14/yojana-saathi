@@ -311,6 +311,8 @@ export const en = {
     verify: "Sign in",
     verifying: "Checking…",
     resend: "Send me a new code",
+    resendWait: "You can ask for a new code in {seconds, plural, one {# second} other {# seconds}}.",
+    resendReady: "You can ask for a new code now.",
     resent: "A new code is on its way.",
     otherEmail: "Use a different email",
     invalidEmail: "Please enter your full email address, like name@example.com.",
@@ -402,6 +404,7 @@ export const en = {
     },
   },
   textSize: { label: "Text size", normal: "normal text", large: "larger text" },
+  theme: { label: "Colour theme", light: "Light", dark: "Dark", device: "Match device" },
   categories: {
     farmer: "Farmers",
     widow_pension: "Widow pension",
