@@ -42,6 +42,15 @@ on:
         required: false
         default: ""
         type: string
+      bump_version:
+        description: >-
+          Only if the slug is already a scheme (data/schemes_seed/<slug>.json exists): propose
+          replacing it. Without this the run refuses before the model is called, because that file
+          is hand-labelled ground truth. The old files stay in git history; Seed database then adds
+          a new scheme version.
+        required: false
+        default: false
+        type: boolean
 
 # contents: push the branch. pull-requests: open the pull request. issues: report problems.
 permissions:
@@ -141,11 +150,17 @@ jobs:
           SLUG: ${{ inputs.slug }}
           SOURCE_TEXT: ${{ inputs.source_text }}
           FETCHED: ${{ steps.mode.outputs.fetch }}
+          BUMP_VERSION: ${{ inputs.bump_version }}
         run: |
+          extra=()
+          if [ "$BUMP_VERSION" = "true" ]; then
+            extra+=(--bump-version)
+          fi
+          # An existing scheme is refused here, before the model is called, unless bump_version.
           if [ "$FETCHED" = "true" ]; then
-            python -m app.pipeline.add_scheme write-source "$SLUG" --from-file "$RUNNER_TEMP/fetched.txt"
+            python -m app.pipeline.add_scheme write-source "$SLUG" --from-file "$RUNNER_TEMP/fetched.txt" "${extra[@]}"
           else
-            python -m app.pipeline.add_scheme write-source "$SLUG"
+            python -m app.pipeline.add_scheme write-source "$SLUG" "${extra[@]}"
           fi
 
       - name: Extract and validate the rules
@@ -214,19 +229,24 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           FETCHED: ${{ steps.mode.outputs.fetch }}
           SOURCE_URL: ${{ inputs.source_url }}
+          BUMP_VERSION: ${{ inputs.bump_version }}
         run: |
+          extra=()
+          if [ "$BUMP_VERSION" = "true" ]; then
+            extra+=(--bump-version)
+          fi
           slug=$(python -m app.pipeline.approve "$REVIEW_ITEM_ID" --approver "$APPROVER" \
-            --body-file "$RUNNER_TEMP/approve-body.md")
+            --body-file "$RUNNER_TEMP/approve-body.md" "${extra[@]}")
           if [ "$slug" != "$SLUG" ]; then
             echo "::error::The approved scheme is '$slug', not '$SLUG'."
             exit 1
           fi
           if [ "$FETCHED" = "true" ]; then
             python -m app.pipeline.add_scheme pr-notice --actor "$APPROVER" --slug "$SLUG" \
-              --fetched-from "$SOURCE_URL" > "$RUNNER_TEMP/pr-body.md"
+              --fetched-from "$SOURCE_URL" "${extra[@]}" > "$RUNNER_TEMP/pr-body.md"
           else
             python -m app.pipeline.add_scheme pr-notice --actor "$APPROVER" --slug "$SLUG" \
-              > "$RUNNER_TEMP/pr-body.md"
+              "${extra[@]}" > "$RUNNER_TEMP/pr-body.md"
           fi
           cat "$RUNNER_TEMP/approve-body.md" >> "$RUNNER_TEMP/pr-body.md"
 

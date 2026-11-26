@@ -15,6 +15,14 @@ families without a person reading it.
   set but has no stored quote (an item from before decision 030); or the finished file fails the
   schema, the document list check or the rules engine. `is_valid` is not trusted alone: the checks
   run again on the file about to be written.
+- **An existing seed file is never overwritten silently.** `data/schemes_seed/<slug>.json` is
+  hand-labelled ground truth (it is what extraction accuracy is scored against). If it exists the
+  command refuses with "seed exists; this would overwrite hand-labelled ground truth", unless the
+  workflow input `bump_version` is true. Then the pull request replaces the file, says so at the top,
+  and warns that its hand-written `labeller_notes` are replaced too; the old file stays in git
+  history. The seed file has no version number: "bump" means that **Seed database** adds
+  version N+1 when the rules, benefit text, deadlines, source or documents differ (decision 004),
+  and only updates `verified_at` / `approved_by` in place when they do not.
 - **`verified_at` is today and `approved_by` is the typed name,** set only here. The extractor
   insists both are null, so a model cannot verify its own work. The pull request also records the
   GitHub user who ran the workflow, because the typed name is a claim, not a login.
@@ -44,8 +52,11 @@ families without a person reading it.
 - A personal access token so CI starts by itself: removes one click, adds a secret that can push code.
 
 ## Consequences
-- Anyone who can run workflows on `main` can open pull requests from database content; the review
-  and the merge are the real gate, and branch protection should require them.
+- Anyone who can run workflows on `main` can open pull requests from database content; the merge is
+  the real gate. This project has one maintainer, so a required review would only block the owner;
+  required status checks (CI must pass) are the useful protection and can be added later.
+- The review item is not marked approved when the file is merged or loaded. Doing that after
+  **Seed database** has run is a later step (see the pull request's suggestions).
 - Proposals for a scheme that already has a seed file overwrite it in the pull request. The diff shows
   exactly what changes, and the loader adds a new version (decision 004).
 - A new scheme has no test profile (`data/test_profiles/`) until someone writes one; the pull

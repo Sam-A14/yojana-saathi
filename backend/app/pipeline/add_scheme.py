@@ -28,20 +28,37 @@ class AddSchemeError(Exception):
     """This request cannot be started. The message says why, in one line."""
 
 
-def write_source(slug: str, text: str, data_dir: Path = DEFAULT_DATA_DIR) -> Path:
+def write_source(
+    slug: str, text: str, data_dir: Path = DEFAULT_DATA_DIR, bump_version: bool = False
+) -> Path:
     """Save the pasted page as data/scheme_sources/<slug>.txt, exactly as given (line breaks made
-    uniform, one newline at the end). Refuses a slug that is already a scheme: this flow adds, it
-    never overwrites a source or a seed file a person has reviewed."""
+    uniform, one newline at the end).
+
+    Refuses a slug that is already a scheme: data/schemes_seed/<slug>.json is hand-labelled ground
+    truth and this flow adds, it does not overwrite. The one way to replace it is `bump_version`
+    (the workflow's tick box), the same guard as the Approve workflow: the old files stay in git
+    history and Seed database adds a new version of the scheme. `bump_version` for a slug that does
+    not exist is refused too, so a typo cannot start a "replacement" of nothing."""
     if not SLUG_PATTERN.fullmatch(slug):
         raise AddSchemeError(f"'{slug}' is not a valid slug (lowercase words joined by '-').")
     if len(text) > MAX_INPUT_CHARS:
         raise AddSchemeError(f"The text is longer than {MAX_INPUT_CHARS} characters.")
     source = data_dir / "scheme_sources" / f"{slug}.txt"
     seed = data_dir / "schemes_seed" / f"{slug}.json"
-    if source.exists() or seed.exists():
+    if bump_version and not seed.exists():
         raise AddSchemeError(
-            f"'{slug}' already exists in data/. Use a new slug, or change the existing scheme by "
-            "hand in a pull request."
+            f"bump_version is set but '{slug}' is not a scheme yet, so there is nothing to "
+            "replace. Run again with bump_version off."
+        )
+    if seed.exists() and not bump_version:
+        raise AddSchemeError(
+            f"'{slug}' already exists in data/ (data/schemes_seed/{slug}.json is hand-labelled "
+            "ground truth). Use a new slug, or tick bump_version to propose replacing it."
+        )
+    if source.exists() and not seed.exists():
+        raise AddSchemeError(
+            f"'{slug}' already exists in data/ (a source file is there). Use a new slug, or change "
+            "it by hand in a pull request."
         )
     clean = text.replace("\r\n", "\n").replace("\r", "\n").strip("\n") + "\n"
     source.parent.mkdir(parents=True, exist_ok=True)
@@ -134,6 +151,7 @@ def pr_notice(
     run_url: str | None,
     fetched_from: str | None = None,
     source_text: str | None = None,
+    replaces: bool = False,
 ) -> str:
     """The paragraph that starts a pull request opened by the "Add scheme" workflow. When the page
     was fetched by the workflow (not pasted), it also shows the fetched text."""
@@ -152,6 +170,17 @@ def pr_notice(
             f"- This pull request contains the source file `data/scheme_sources/{slug}.txt` as "
             "well as the seed file, so it is the only merge needed.",
             "- When you merge, **Seed database** runs by itself and families see the scheme.",
+            *(
+                [
+                    f"- **bump_version was set: this REPLACES the existing "
+                    f"`data/schemes_seed/{slug}.json` and `data/scheme_sources/{slug}.txt`.** The "
+                    "old files stay in git history, their hand-written `labeller_notes` are "
+                    "replaced too, and Seed database adds a new version of the scheme. Read the "
+                    "diff for what changed."
+                ]
+                if replaces
+                else []
+            ),
             "",
             "---",
             "",
@@ -173,12 +202,16 @@ def main(argv: list[str] | None = None) -> int:
     write = commands.add_parser("write-source")
     write.add_argument("slug")
     write.add_argument("--from-file", type=Path, help="read the page text from this file")
+    write.add_argument(
+        "--bump-version", action="store_true", help="replace an existing scheme on purpose"
+    )
     issue = commands.add_parser("issue-body")
     issue.add_argument("result_file", type=Path)
     notice = commands.add_parser("pr-notice")
     notice.add_argument("--actor", required=True)
     notice.add_argument("--slug", required=True)
     notice.add_argument("--fetched-from", help="the page address, when the workflow fetched it")
+    notice.add_argument("--bump-version", action="store_true", help="the run replaces a scheme")
     args = parser.parse_args(argv)
 
     try:
@@ -188,7 +221,8 @@ def main(argv: list[str] | None = None) -> int:
                 if args.from_file
                 else os.environ.get("SOURCE_TEXT", "")
             )
-            write_source(args.slug, text)
+            # Only passed when set, so the common call stays exactly write_source(slug, text).
+            write_source(args.slug, text, **({"bump_version": True} if args.bump_version else {}))
         elif args.command == "issue-body":
             result = json.loads(args.result_file.read_text(encoding="utf-8"))
             sys.stdout.write(issue_body(result, _run_url()))
@@ -198,7 +232,14 @@ def main(argv: list[str] | None = None) -> int:
                 path = DEFAULT_DATA_DIR / "scheme_sources" / f"{args.slug}.txt"
                 source = path.read_text(encoding="utf-8")
             sys.stdout.write(
-                pr_notice(args.actor, args.slug, _run_url(), args.fetched_from, source)
+                pr_notice(
+                    args.actor,
+                    args.slug,
+                    _run_url(),
+                    args.fetched_from,
+                    source,
+                    replaces=args.bump_version,
+                )
             )
     except (AddSchemeError, OSError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)
