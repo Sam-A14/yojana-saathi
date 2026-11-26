@@ -30,7 +30,7 @@ export function SchemeView() {
   if (!family) {
     return (
       <div className="flex flex-col gap-5">
-        <h1 className="display text-3xl">{td("none")}</h1>
+        <h1 className="page-title">{td("none")}</h1>
         <ButtonLink href="/signin">{td("toSignIn")}</ButtonLink>
       </div>
     );
@@ -98,7 +98,7 @@ export function SchemeDetail({
   if (!member || (!found && !excluded)) {
     return (
       <div className="flex flex-col gap-5">
-        <h1 className="display text-3xl">{memberId ? t("notFound") : t("chooseMember")}</h1>
+        <h1 className="page-title">{memberId ? t("notFound") : t("chooseMember")}</h1>
         {back}
       </div>
     );
@@ -119,7 +119,7 @@ export function SchemeDetail({
           <Avatar name={member.nickname} />
           <p className="text-lg font-bold text-muted">{t("forName", { name: member.nickname })}</p>
         </div>
-        <h1 className="display text-3xl">{schemeName(scheme, locale)}</h1>
+        <h1 className="page-title">{schemeName(scheme, locale)}</h1>
         <div className="flex flex-wrap items-center gap-3">
           <StatusBadge kind={kind} />
           <VerificationLabel scheme={scheme} />

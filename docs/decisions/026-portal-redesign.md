@@ -48,9 +48,9 @@ later work may fix bugs and add content, not change the look.
   `backend/app/db/seed.py`, so it is never in the database, on `/schemes` or in a count. Tests now
   cover this three ways: a valid template next to a real scheme in the loader, the committed categories
   (no `replace_with_category`), and the `/schemes` API answer.
-- **Trust strip uses only true sentences:** every scheme links to its official source; each result shows
-  when it was last checked (or "Not yet verified" while no person has checked it, today's state of both
-  seeded schemes); we never ask for Aadhaar numbers and a person can delete their data. We do not claim
+- **Trust strip uses only true sentences:** every scheme links to its official source; each scheme shows
+  whether and when it was last checked (the date, or "Not yet verified" while no person has checked it,
+  today's state of both seeded schemes; reworded in PR 2 so it no longer implies a date is always there); we never ask for Aadhaar numbers and a person can delete their data. We do not claim
   "verified", "always up to date" or "never shared". A test fails if banned phrases appear on the page.
 - **Footer on every page:** "an independent student project, not a government website", links to
   `/privacy` and GitHub, and the photo credit. No emblem, no Digital India mark, no official-looking logo.

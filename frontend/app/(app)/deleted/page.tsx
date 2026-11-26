@@ -10,7 +10,7 @@ export default async function DeletedPage() {
   const tp = await getTranslations("privacyPage");
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="text-2xl font-bold">{t("deletedTitle")}</h1>
+      <h1 className="page-title">{t("deletedTitle")}</h1>
       <p>{t("deletedBody")}</p>
       <p className="text-base text-muted">{t("deletedNote")}</p>
       <Link href="/privacy" className="inline-flex min-h-12 items-center font-bold text-primary underline">

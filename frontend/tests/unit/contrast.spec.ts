@@ -36,6 +36,7 @@ const PAIRS: [string, string, number][] = [
   ["line", "bg", 3], ["line", "surface", 3],
   ["primary", "bg", 7], ["primary", "surface", 7], ["primary", "soft", 7], ["primary", "primary-soft", 7],
   ["on-primary", "primary", 7], ["on-primary", "primary-hover", 7],
+  ["ink", "band", 7], ["muted", "band", 7], ["primary", "band", 7],
   ["teal", "bg", 7], ["teal", "surface", 7], ["teal", "teal-soft", 4.5],
   ["on-accent", "accent", 7], ["on-accent", "accent-hover", 7],
   ["accent-ink", "bg", 7], ["accent-ink", "surface", 7],

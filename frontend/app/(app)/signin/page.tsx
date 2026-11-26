@@ -145,7 +145,7 @@ export default function SignInPage() {
     return (
       <form onSubmit={verify} className="flex flex-col gap-6" noValidate>
         <IconTile><KeyRound size={30} /></IconTile>
-        <h1 className="display text-3xl">{t("codeTitle")}</h1>
+        <h1 className="page-title">{t("codeTitle")}</h1>
         <p className="text-lg">{t("codeIntro", { email })}</p>
         <p className="text-base text-muted">{t("spam")}</p>
         <Card className="flex flex-col gap-6">
@@ -188,7 +188,7 @@ export default function SignInPage() {
   return (
     <form onSubmit={sendCode} className="flex flex-col gap-6" noValidate>
       <IconTile><Mail size={30} /></IconTile>
-      <h1 className="display text-3xl">{t("title")}</h1>
+      <h1 className="page-title">{t("title")}</h1>
       <p className="text-lg">{t("intro")}</p>
       {/* Sign-in options live in this one block. A future "Continue with Google" button and an "or"
           divider go ABOVE this card, so nothing below has to be moved. Not built yet, so nothing is

@@ -26,7 +26,7 @@ export default async function PrivacyPage() {
   const tl = await getTranslations("landing");
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="display text-3xl">{t("title")}</h1>
+      <h1 className="page-title">{t("title")}</h1>
       <p className="text-lg">{t("intro")}</p>
 
       <IconSection title={t("collect.title")} icon={Database}>

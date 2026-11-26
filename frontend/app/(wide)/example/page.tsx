@@ -15,16 +15,18 @@ export default function ExamplePage() {
   return (
     <div className="flex flex-col gap-6">
       <ExampleBanner />
-      <h1 className="display text-3xl">{t("title")}</h1>
+      <h1 className="page-title">{t("title")}</h1>
       <FamilySummary counts={{ fit: of("eligible"), close: of("near_miss"), unsure: of("unknown") }} />
-      {EXAMPLE_ELIGIBILITY.members.map((member) => (
-        <MemberResults
-          key={member.member_id}
-          member={member}
-          documents={EXAMPLE_DOCUMENTS}
-          schemeHref={exampleSchemeHref}
-        />
-      ))}
+      <div className="grid items-start gap-6 md:grid-cols-2">
+        {EXAMPLE_ELIGIBILITY.members.map((member) => (
+          <MemberResults
+            key={member.member_id}
+            member={member}
+            documents={EXAMPLE_DOCUMENTS}
+            schemeHref={exampleSchemeHref}
+          />
+        ))}
+      </div>
     </div>
   );
 }

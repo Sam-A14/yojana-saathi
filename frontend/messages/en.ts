@@ -529,7 +529,7 @@ export const en = {
     countsFailed: "We could not load the scheme numbers just now. You can still see all schemes.",
     trustTitle: "How we keep this honest",
     trust1: "Every scheme links to its official source",
-    trust2: "Each result shows when it was last checked",
+    trust2: "Each scheme shows whether and when it was last checked",
     trust3: "We never ask for Aadhaar numbers. Delete your data anytime.",
     howTitle: "How it works",
     step1Title: "Tell us about your family",

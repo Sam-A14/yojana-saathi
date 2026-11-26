@@ -97,7 +97,7 @@ export default function ExclusionsPage() {
 
   return (
     <SetupFrame step={4}>
-      <h1 className="display text-3xl">{t("title")}</h1>
+      <h1 className="page-title">{t("title")}</h1>
       <p className="text-lg">{t("intro")}</p>
       {data.adults.length === 0 && <p>{t("noAdults")}</p>}
 

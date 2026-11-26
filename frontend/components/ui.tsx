@@ -15,7 +15,7 @@ export { buttonClass };
 export function Card({ className = "", ...props }: ComponentProps<"div">) {
   return (
     <div
-      className={`rounded-2xl border border-line-soft bg-surface p-5 shadow-card ${className}`}
+      className={`rounded-3xl border border-line-soft bg-surface p-6 shadow-card ${className}`}
       {...props}
     />
   );

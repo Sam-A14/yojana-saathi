@@ -46,7 +46,7 @@ export default function DashboardPage() {
   if (!family || !session) {
     return (
       <div className="flex flex-col gap-5">
-        <h1 className="display text-3xl">{t("none")}</h1>
+        <h1 className="page-title">{t("none")}</h1>
         <ButtonLink href="/signin">{t("toSignIn")}</ButtonLink>
         <ButtonLink href="/" variant="secondary">
           {t("toStart")}
@@ -65,7 +65,7 @@ function DashboardScreen({ family, session }: { family: Family; session: Session
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="display text-3xl">{t("title")}</h1>
+      <h1 className="page-title">{t("title")}</h1>
 
       {results.state === "loading" && <Skeleton label={t("loading")} />}
 
@@ -98,13 +98,17 @@ function DashboardScreen({ family, session }: { family: Family; session: Session
           {results.eligibility.skipped_schemes.length > 0 && (
             <ErrorNote>{t("skipped", { count: results.eligibility.skipped_schemes.length })}</ErrorNote>
           )}
-          {results.eligibility.members.map((member) => (
-            <MemberResults key={member.member_id} member={member} documents={results.documents} />
-          ))}
+          <div className="grid items-start gap-6 md:grid-cols-2">
+            {results.eligibility.members.map((member) => (
+              <MemberResults key={member.member_id} member={member} documents={results.documents} />
+            ))}
+          </div>
         </>
       )}
 
-      <MyData session={session} />
+      {/* Not while the results load: it sat under the grey placeholder and was pushed down when they
+          arrived (a 0.247 layout shift). On an error it is shown, so a person can still sign out. */}
+      {results.state !== "loading" && <MyData session={session} />}
     </div>
   );
 }
