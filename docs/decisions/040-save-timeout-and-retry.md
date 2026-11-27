@@ -1,11 +1,12 @@
 # 040 – A save gives up after 15 seconds; PATCH and PUT are tried once more
 
 ## Context
-Clicking Save could leave "Saving…" on the screen for a very long time while the server log showed no request
-at all. `fetch` has no time limit of its own: a request that is neither answered nor refused (for example on a
-connection that went stale while the page sat open) never ends, and the screen waits with it. The page,
-the token and the cross-origin rules were all fine (the form had just loaded with the same ones), so the
-request was stalling between the browser and the server.
+`fetch` has no time limit of its own: a request that is neither answered nor refused (for example on a
+connection that went stale while the page sat open) never ends, and a screen that shows "Saving…" waits with
+it. We first suspected that for a report of an endless "Saving…" with no request in the server log. **That
+was not the cause of that report** (decision 041: the page was stuck by its own leftover state, and no request
+was ever sent). The missing time limit is still a real gap, so the limit and retry below are kept as
+a safety net for the stall that can happen on a phone.
 
 ## Decision
 - **Every request that changes something** (`PATCH`, `PUT`, `POST`, `DELETE`) is cut off after **15 seconds**
