@@ -1,5 +1,5 @@
 {
-  "description": "Nobody in the household has answered the BPL card question, and Rekha's marital status is unanswered: unknown for both.",
+  "description": "The household has not answered the BPL question (and nobody the BPL card question), and Rekha's marital status is unanswered: unknown for both.",
   "household": {
     "state": "UP",
     "district": "Sitapur",

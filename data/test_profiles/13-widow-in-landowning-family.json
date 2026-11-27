@@ -1,11 +1,12 @@
 {
-  "description": "A BPL widow aged 62 qualifies for IGNWPS; her son's land makes the family PM-KISAN eligible.",
+  "description": "A widow aged 62 in a family that says it is BPL (and has the card) qualifies for IGNWPS; her son's land makes the family PM-KISAN eligible.",
   "household": {
     "state": "UP",
     "district": "Sitapur",
     "area_type": "rural",
     "income_band_max": 100000,
-    "category": "OBC"
+    "category": "OBC",
+    "is_bpl": true
   },
   "members": [
     {

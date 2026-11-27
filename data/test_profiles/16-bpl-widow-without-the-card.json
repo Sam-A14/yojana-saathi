@@ -1,0 +1,35 @@
+{
+  "description": "A widow aged 62 in a family that says it is BPL but has no BPL card still qualifies for IGNWPS; the card is shown as a missing paper. No one owns land, so PM-KISAN is out.",
+  "household": {
+    "state": "UP",
+    "district": "Sitapur",
+    "area_type": "rural",
+    "income_band_max": 100000,
+    "category": "OBC",
+    "is_bpl": true
+  },
+  "members": [
+    {
+      "nickname": "Kamla",
+      "age": 62,
+      "gender": "female",
+      "marital_status": "widow",
+      "owns_cultivable_land": false,
+      "paid_income_tax_last_year": false,
+      "govt_employee": "none",
+      "pension_band": "none",
+      "is_registered_professional": false,
+      "holds_constitutional_post": false,
+      "is_remarried": false,
+      "has_bpl_card": false
+    }
+  ],
+  "expected": {
+    "pm-kisan": {
+      "Kamla": "not_eligible"
+    },
+    "ignwps": {
+      "Kamla": "eligible"
+    }
+  }
+}

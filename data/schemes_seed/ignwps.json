@@ -6,7 +6,7 @@
     "notes": [
       "EXAMPLE, VERIFY BEFORE USE. Written from memory of public information, NOT from the official page: nsap.nic.in could not be reached when this file was written.",
       "Check the age limit and the pension amounts against https://nsap.nic.in/ before trusting anything here.",
-      "The scheme asks for a below-poverty-line family. A BPL card is used here as a stand-in; states keep their own BPL lists, so this is only an approximation.",
+      "The scheme asks for a below-poverty-line family. The rule uses the household's own yes / no answer (is_bpl); 'Not sure' leaves it unknown. States keep their own BPL lists, so we trust the family's answer. The BPL card stays a required document, so a BPL family without the card is told it is missing.",
       "This is the Centre's scheme. States add their own amount and may have their own widow pension with different rules."
     ],
     "not_encoded": [
@@ -29,7 +29,7 @@
         {"field": "gender", "op": "eq", "value": "female"},
         {"field": "marital_status", "op": "eq", "value": "widow"},
         {"field": "age", "op": "gte", "value": 40},
-        {"field": "has_bpl_card", "op": "is_true"}
+        {"field": "is_bpl", "op": "is_true"}
       ],
       "fixable": []
     },

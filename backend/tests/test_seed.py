@@ -93,6 +93,36 @@ def test_changed_rules_add_a_new_version_and_keep_the_old(db: Session, data_dir:
     assert summary.count("version", "unchanged") == 1  # pm-kisan untouched
 
 
+def test_switching_ignwps_from_the_bpl_card_to_is_bpl_adds_version_2_and_keeps_the_paper(
+    db: Session, data_dir: Path
+) -> None:
+    """The committed file reads BPL from the household answer. Production already holds version 1
+    (the card as a stand-in): Seed database must add version 2 and keep version 1 unchanged."""
+
+    def as_it_was(content: dict[str, Any]) -> None:
+        rules = content["version"]["rules"]["all"]
+        rules[3] = {"field": "has_bpl_card", "op": "is_true"}  # the old stand-in
+
+    current = json.loads((data_dir / "schemes_seed" / "ignwps.json").read_text("utf-8"))
+    edit_scheme(data_dir, "ignwps", as_it_was)
+    load(db, data_dir)  # production as it is today
+    (data_dir / "schemes_seed" / "ignwps.json").write_text(
+        json.dumps(current, ensure_ascii=False), encoding="utf-8"
+    )
+
+    summary = load(db, data_dir)  # the committed file
+    db.expire_all()
+
+    widow = scheme(db, "ignwps")
+    assert [v.version_no for v in widow.versions] == [1, 2]
+    assert widow.versions[0].rules_json["all"][3] == {"field": "has_bpl_card", "op": "is_true"}
+    assert widow.current_version.rules_json["all"][3] == {"field": "is_bpl", "op": "is_true"}
+    assert summary.count("version", "created") == 1
+    # The card is still a required paper, so a BPL family without it is shown it as missing.
+    required = {d.document_code: d.required for d in widow.current_version.documents}
+    assert required["bpl_card"] is True
+
+
 def test_changed_document_list_adds_a_new_version(db: Session, data_dir: Path) -> None:
     load(db, data_dir)
 

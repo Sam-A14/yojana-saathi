@@ -1,11 +1,12 @@
 {
-  "description": "No one in the household has a BPL card; Pooja is also under 40.",
+  "description": "The household says it is not BPL (and no one has a BPL card); Pooja is also under 40.",
   "household": {
     "state": "UP",
     "district": "Sitapur",
     "area_type": "rural",
     "income_band_max": 100000,
-    "category": "OBC"
+    "category": "OBC",
+    "is_bpl": false
   },
   "members": [
     {
