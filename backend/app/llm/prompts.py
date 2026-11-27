@@ -105,6 +105,17 @@ every rule in that list.
 """
 
 
+# version.documents is the list of papers a family must bring. The codes are the exact spellings
+# above; a paper the source asks for that is not on the list is not invented a code, it goes in
+# labeller_notes.not_encoded instead (a person adds it to documents.json first).
+DOCUMENT_RULES = """\
+version.documents lists the papers the source text says an applicant must submit. In each entry
+"code" must be one of the codes above, spelled exactly (for example aadhaar_card, not aadhaar).
+If the text asks for a paper that is not on the list, do not make up a code: leave it out of
+documents and mention it in scheme.labeller_notes.not_encoded.
+"""
+
+
 def _describe_field(name: str) -> str:
     notes = []
     if name in FIELD_HINTS:
@@ -115,14 +126,22 @@ def _describe_field(name: str) -> str:
 
 
 def build_user_prompt(
-    *, slug: str, source_url: str, source_text: str, fields: list[str], schema: dict[str, Any]
+    *,
+    slug: str,
+    source_url: str,
+    source_text: str,
+    fields: list[str],
+    documents: list[tuple[str, str]],
+    schema: dict[str, Any],
 ) -> str:
     compact_schema = json.dumps(schema, separators=(",", ":"))
     field_lines = "\n".join(_describe_field(name) for name in fields)
+    document_lines = "\n".join(f"- {code} ({name})" for code, name in documents)
     return (
         f"SLUG: {slug}\n"
         f"SOURCE URL: {source_url}\n\n"
         f"ALLOWED FIELDS\n{field_lines}\n\n"
+        f"ALLOWED DOCUMENT CODES\n{document_lines}\n{DOCUMENT_RULES}\n"
         f"RULE FORMAT\n{RULE_FORMAT}\n"
         f"OUTPUT SHAPE\n{OUTPUT_SHAPE}\n"
         f"The scheme object must be valid against this JSON Schema:\n{compact_schema}\n\n"

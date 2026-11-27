@@ -138,3 +138,30 @@ def test_the_report_shows_the_benefit_quote_beside_the_rule_quotes() -> None:
 
     assert extraction.validation.is_valid
     assert f'"benefit_quote": "{BENEFIT_QUOTE}"' in report
+
+
+# --- the allowed document codes ---------------------------------------------------------------
+
+
+def test_prompt_lists_every_document_code_with_its_name_and_says_to_spell_it_exactly() -> None:
+    documents = json.loads((DEFAULT_DATA_DIR / "documents.json").read_text("utf-8"))["documents"]
+    fake = FakeLLM(response=answer_text(good_answer()))
+    extract(SOURCE, fake)
+
+    (call,) = fake.calls
+    prompt = str(call["prompt"])
+    section = prompt.split("ALLOWED DOCUMENT CODES\n", 1)[1].split("RULE FORMAT", 1)[0]
+    for document in documents:
+        assert f"- {document['code']} ({document['name_en']})" in section
+    assert "aadhaar_card, not aadhaar" in section
+    assert "do not make up a code" in section and "not_encoded" in section
+
+
+def test_the_codes_in_the_prompt_and_the_allowed_rule_fields_come_from_one_file() -> None:
+    from app.pipeline.allowed_fields import allowed_documents, allowed_fields
+
+    prompt_codes = {code for code, _ in allowed_documents(DEFAULT_DATA_DIR)}
+    field_codes = {
+        f.removeprefix("has_") for f in allowed_fields(DEFAULT_DATA_DIR) if f.startswith("has_")
+    }
+    assert prompt_codes == field_codes

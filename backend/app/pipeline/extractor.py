@@ -8,7 +8,7 @@ from typing import Any
 from app.db.seed import DEFAULT_DATA_DIR, _validator
 from app.llm.base import LLMClient
 from app.llm.prompts import SYSTEM_PROMPT, build_user_prompt
-from app.pipeline.allowed_fields import allowed_fields
+from app.pipeline.allowed_fields import allowed_documents, allowed_fields
 from app.pipeline.source import SourceDocument
 from app.pipeline.validator import ValidationResult, validate_output
 
@@ -36,6 +36,7 @@ def extract(
         source_url=source.url,
         source_text=source.text,
         fields=fields,
+        documents=allowed_documents(data_dir),
         schema=schema,
     )
     raw = client.complete_json(
