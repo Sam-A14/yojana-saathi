@@ -44,15 +44,22 @@ def scheme(db: Session, slug: str) -> Scheme:
     return db.scalars(select(Scheme).where(Scheme.slug == slug)).one()
 
 
+def committed_schemes(data_dir: Path) -> list[dict[str, Any]]:
+    """The schemes in the data folder. Counted, not hard-coded: approved schemes are added to
+    data/schemes_seed by pull request, so the number grows."""
+    return seed.read_seed_files(data_dir).schemes
+
+
 def test_first_load_creates_everything(db: Session, data_dir: Path) -> None:
+    schemes = committed_schemes(data_dir)
     summary = load(db, data_dir)
 
     assert count(db, Document) == 15
-    assert count(db, Scheme) == 2
-    assert count(db, SchemeVersion) == 2
-    assert count(db, SchemeDocument) == 3 + 4
+    assert count(db, Scheme) == len(schemes)
+    assert count(db, SchemeVersion) == len(schemes)
+    assert count(db, SchemeDocument) == sum(len(s["version"]["documents"]) for s in schemes)
     assert summary.count("document", "created") == 15
-    assert summary.count("scheme", "created") == 2
+    assert summary.count("scheme", "created") == len(schemes)
     kisan = scheme(db, "pm-kisan")
     assert kisan.current_version is not None
     assert kisan.current_version.version_no == 1
@@ -90,7 +97,8 @@ def test_changed_rules_add_a_new_version_and_keep_the_old(db: Session, data_dir:
     assert widow.versions[0].rules_json == old_rules  # history is never rewritten
     assert widow.current_version.rules_json["all"][2]["value"] == 60
     assert summary.count("version", "created") == 1
-    assert summary.count("version", "unchanged") == 1  # pm-kisan untouched
+    # every other scheme is untouched
+    assert summary.count("version", "unchanged") == len(committed_schemes(data_dir)) - 1
 
 
 def test_switching_ignwps_from_the_bpl_card_to_is_bpl_adds_version_2_and_keeps_the_paper(
@@ -169,7 +177,7 @@ def test_scheme_and_document_text_updates_in_place(db: Session, data_dir: Path) 
     summary = load(db, data_dir)
 
     assert scheme(db, "pm-kisan").name_en == "PM-KISAN renamed"
-    assert count(db, SchemeVersion) == 2  # still one version per scheme
+    assert count(db, SchemeVersion) == len(committed_schemes(data_dir))  # one version per scheme
     assert db.scalars(select(Document).where(Document.code == "aadhaar_card")).one().how_to_get_en
     assert summary.count("scheme", "updated") == 1
     assert summary.count("document", "updated") == 1
@@ -235,11 +243,12 @@ def test_command_commits_and_is_repeatable(
 ) -> None:
     assert seed.main([]) == 0
     first = capsys.readouterr().out
-    assert "Documents: 15 created" in first and "Schemes: 2 created" in first
+    schemes = len(seed.read_seed_files().schemes)
+    assert "Documents: 15 created" in first and f"Schemes: {schemes} created" in first
 
     assert seed.main([]) == 0
     second = capsys.readouterr().out
     assert "Documents: 0 created, 0 updated, 15 unchanged" in second
     assert "Nothing changed" in second
     with engine.connect() as connection:  # a fresh connection sees only committed rows
-        assert connection.scalar(text("SELECT count(*) FROM scheme_versions")) == 2
+        assert connection.scalar(text("SELECT count(*) FROM scheme_versions")) == schemes
