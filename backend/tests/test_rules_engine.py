@@ -88,6 +88,16 @@ def test_household_facts_are_read_from_the_household_not_the_member() -> None:
     assert status_of(rule, person(state="BR"), state="UP") == "eligible"
 
 
+def test_is_bpl_is_a_household_yes_no_that_missing_leaves_unknown() -> None:
+    rule = condition("is_bpl", "is_true")
+
+    assert status_of(rule, person(), is_bpl=True) == "eligible"
+    assert status_of(rule, person(), is_bpl=False) == "not_eligible"
+    assert status_of(rule, person()) == "unknown"  # never answered
+    # A member fact with the same name is not read: it is a household fact.
+    assert status_of(rule, person(is_bpl=True)) == "unknown"
+
+
 def test_non_numeric_fact_for_a_numeric_operator_is_an_error() -> None:
     with pytest.raises(RuleError, match="should be a number"):
         status_of(condition("age", "gte", 18), person(age="old"))

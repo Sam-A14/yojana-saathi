@@ -48,6 +48,8 @@ FIELD_HINTS = {
     "state": "state code such as UP",
     "gender": "female / male / other",
     "area_type": "rural / urban",
+    "is_bpl": "the whole family is on the Below Poverty Line list; a yes/no about the household. "
+    "The BPL card is a different thing (has_bpl_card, a document)",
 }
 
 _RULE_FORMAT_START = """\

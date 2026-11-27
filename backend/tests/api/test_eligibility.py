@@ -250,6 +250,56 @@ def test_no_income_band_answered_is_unknown_without_a_range_reason(
     assert (result["status"], result["reasons"]) == ("unknown", [])
 
 
+# --- the household's BPL status ---
+
+
+BPL_RULE = {"all": [{"field": "is_bpl", "op": "is_true"}]}
+
+
+def test_is_bpl_unanswered_is_unknown_not_no(
+    client: TestClient, db: Session, seeded, today, make_family
+) -> None:
+    add_scheme(db, "bpl-test", BPL_RULE)
+    family = make_family()  # is_bpl never answered
+    add_member(client, family, "Asha")
+
+    result = schemes_of(eligibility(client, family), "Asha")["bpl-test"]
+
+    assert result["status"] == "unknown"
+    assert [r["rule"] for r in result["unknown_rules"]] == [BPL_RULE["all"][0]]
+
+
+@pytest.mark.parametrize(("answer", "listed"), [(True, "eligible"), (False, None)])
+def test_is_bpl_answers_decide_the_rule(
+    client: TestClient, db: Session, seeded, today, make_family, answer: bool, listed: str | None
+) -> None:
+    add_scheme(db, "bpl-test", BPL_RULE)
+    family = make_family(is_bpl=answer)
+    add_member(client, family, "Asha")
+
+    body = eligibility(client, family)
+    results = schemes_of(body, "Asha")
+
+    if listed is None:  # a definite "no": counted, not listed
+        assert "bpl-test" not in results
+    else:
+        assert results["bpl-test"]["status"] == listed
+
+
+def test_is_bpl_is_independent_of_holding_the_bpl_card(
+    client: TestClient, db: Session, seeded, today, make_family
+) -> None:
+    """BPL status and the card are two facts: a BPL family without the card is still BPL."""
+    add_scheme(db, "bpl-test", BPL_RULE)
+    family = make_family(is_bpl=True)
+    asha = add_member(client, family, "Asha")
+    put_documents(client, family, asha, {"bpl_card": False})
+
+    result = schemes_of(eligibility(client, family), "Asha")["bpl-test"]
+
+    assert result["status"] == "eligible"
+
+
 # --- missing documents ---
 
 

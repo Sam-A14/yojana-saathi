@@ -132,9 +132,11 @@ CLOSED_VALUES: dict[str, tuple[str, ...]] = {
 
 # Yes/no facts. For these (and only these) "eq true" and "is_true" give the same answer for every
 # fact the app can hold: missing is unknown for both, true/false are the same. They differ only for
-# a non-yes/no value, which is bad data. A test checks this list against the Member table.
+# a non-yes/no value, which is bad data. A test checks this list against the yes/no columns of the
+# Member and Household tables.
 BOOLEAN_FIELDS = frozenset(
     {
+        "is_bpl",
         "is_student",
         "disability",
         "owns_cultivable_land",

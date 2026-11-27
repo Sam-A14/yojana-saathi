@@ -5,7 +5,7 @@ from typing import Any
 
 import pytest
 
-from app.db.models.family import Member
+from app.db.models.family import Household, Member
 from app.pipeline.accuracy import (
     BOOLEAN_FIELDS,
     CLOSED_VALUES,
@@ -190,10 +190,11 @@ def test_eq_false_and_eq_true_on_other_fields_are_left_alone(node: dict[str, Any
     assert out["all"] == [node] and not any("is_true" in f for f in fired)
 
 
-def test_the_boolean_list_matches_the_yes_no_columns_of_the_member_table() -> None:
+def test_the_boolean_list_matches_the_yes_no_columns_of_the_member_and_household_tables() -> None:
     columns = {
         c.name
-        for c in Member.__table__.columns
+        for table in (Member.__table__, Household.__table__)
+        for c in table.columns
         if c.type.python_type is bool  # type: ignore[attr-defined]
     }
     assert BOOLEAN_FIELDS == columns & ATTRIBUTE_FIELDS
