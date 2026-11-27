@@ -36,7 +36,7 @@ MEMBER_FACT_COLUMNS = (
     "holds_constitutional_post",
     "is_remarried",
 )
-HOUSEHOLD_FACT_COLUMNS = ("state", "district", "area_type", "category")
+HOUSEHOLD_FACT_COLUMNS = ("state", "district", "area_type", "category", "is_bpl")
 
 
 def age_range(birth_year: int, today: date) -> tuple[int, int]:

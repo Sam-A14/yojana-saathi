@@ -20,6 +20,46 @@ def test_update_with_null_clears_an_answer(client: TestClient, make_family) -> N
     assert response.json()["category"] is None
 
 
+def test_is_bpl_starts_unanswered_and_is_set_cleared_and_kept_apart_from_no(
+    client: TestClient, make_family
+) -> None:
+    family = make_family()
+    assert family.body["is_bpl"] is None  # not asked yet: unknown, not "no"
+
+    for value in (True, False):
+        response = client.patch(family.url, json={"is_bpl": value}, headers=family.headers)
+        assert response.json()["is_bpl"] is value  # False is an answer, not "missing"
+
+    response = client.patch(family.url, json={"is_bpl": None}, headers=family.headers)
+    assert response.json()["is_bpl"] is None
+    assert client.get(family.url, headers=family.headers).json()["is_bpl"] is None
+
+
+def test_is_bpl_can_be_given_when_the_household_is_created(client: TestClient, make_family) -> None:
+    assert make_family(is_bpl=True).body["is_bpl"] is True
+    assert make_family(is_bpl=False).body["is_bpl"] is False
+
+
+def test_other_answers_do_not_touch_is_bpl(client: TestClient, make_family) -> None:
+    family = make_family(is_bpl=True, state="UP")
+
+    response = client.patch(family.url, json={"category": "OBC"}, headers=family.headers)
+
+    assert response.json()["is_bpl"] is True
+
+
+@pytest.mark.parametrize("value", ["yes", "true", 1, 0, "", []])
+def test_is_bpl_only_takes_true_false_or_null(
+    client: TestClient, make_family, value: object
+) -> None:
+    family = make_family(is_bpl=True)
+
+    response = client.patch(family.url, json={"is_bpl": value}, headers=family.headers)
+
+    assert response.status_code == 422
+    assert client.get(family.url, headers=family.headers).json()["is_bpl"] is True
+
+
 @pytest.mark.parametrize(
     "body",
     [

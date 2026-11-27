@@ -32,6 +32,7 @@ ATTRIBUTE_FIELDS = {
     "area_type",
     "income_band_max",
     "category",
+    "is_bpl",
     "owns_cultivable_land",
     "paid_income_tax_last_year",
     "govt_employee",
