@@ -281,6 +281,24 @@ says so and opens nothing. Pull requests opened by a workflow do not start the n
 close and reopen the pull request to run them (the frontend test that every rule can be shown in
 words runs there). The workflow itself already ran the seed-file and test-profile tests.
 
+### Why is the live site slow? Read the timing
+
+Every request prints one line in the Render logs, and sends the same numbers in a `Server-Timing`
+header (browser dev tools > Network > the request > Timing):
+
+```
+timing PATCH /households/{household_id} 200 total=921ms db=575ms queries=5 connects=0
+```
+
+`total` is the whole request; `db` is the time inside statements; `queries` is how many; `connects` is
+how many new database connections it needed (a new one is slow, and happens after the database
+slept). Requests over 2 seconds are logged as warnings. Nothing identifying is logged.
+
+`GET /health/db` measures one database round trip from the server right now (`round_trip_ms`) and the
+first connection (`first_ms`). A request costs about 10 round trips, so `round_trip_ms` x 10 is roughly
+the floor for a save. **Do not use `/health/db` as the uptime ping**: unlike `/health` it wakes the
+database and keeps it awake, which uses up the free plan's compute hours.
+
 ### 3. Frontend: Vercel
 
 1. On <https://vercel.com>, choose Add New > Project and import this repository.
