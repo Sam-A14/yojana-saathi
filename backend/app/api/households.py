@@ -117,8 +117,12 @@ def update_member(
     member = _own_member(db, household, member_id)
     for name, value in sent_fields(data).items():
         setattr(member, name, value)
+    # Read the documents BEFORE the commit, in the same transaction. After a commit the connection
+    # goes back to the pool, and reading afterwards would check one out again (pre-ping, BEGIN,
+    # SELECT, ROLLBACK): three more database round trips for the same answer (decision 039).
+    documents = documents_of(db, [member.id])[member.id]
     db.commit()
-    return _member_out(member, documents_of(db, [member.id])[member.id])
+    return _member_out(member, documents)
 
 
 @router.delete("/{household_id}/members/{member_id}", status_code=204)
