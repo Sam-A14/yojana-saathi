@@ -43,18 +43,31 @@ test("the home page wakes the server in the background, without a banner", async
   await expect(page.getByText(/Waking up the server/)).toHaveCount(0);
 });
 
-test("a request that takes over 3 seconds shows the waking-up message, then removes it", async ({ page, api }) => {
+test("a request that takes over 4 seconds shows the waking-up message, then removes it", async ({ page, api }) => {
   await page.goto("/signin");
   await page.getByLabel("Your email address").fill("asha@example.com");
 
-  api.latency = 4500;
+  api.latency = 6500;
+  const sent = Date.now();
   await page.getByRole("button", { name: "Send me a code" }).click();
 
   const banner = page.getByRole("status").filter({ hasText: "Waking up the server. This can take up to a minute the first time." });
-  await expect(banner).toHaveCount(0); // not yet: under 3 seconds there is no banner
+  await expect(banner).toHaveCount(0); // not yet: nothing shows in the first seconds
   await expect(banner).toBeVisible({ timeout: 6000 });
-  await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible({ timeout: 6000 });
+  expect(Date.now() - sent).toBeGreaterThanOrEqual(3900); // and not before about 4 seconds
+  await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible({ timeout: 8000 });
   await expect(banner).toHaveCount(0);
+});
+
+test("a request that takes 3.5 seconds is slow but shows no waking-up message", async ({ page, api }) => {
+  await page.goto("/signin");
+  await page.getByLabel("Your email address").fill("asha@example.com");
+
+  api.latency = 3500;
+  await page.getByRole("button", { name: "Send me a code" }).click();
+
+  await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible({ timeout: 6000 });
+  await expect(page.getByText(/Waking up the server/)).toHaveCount(0);
 });
 
 test("a quick answer never shows the waking-up message", async ({ page, api }) => {

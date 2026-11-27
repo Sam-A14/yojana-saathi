@@ -4,7 +4,7 @@ import { Hourglass } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useServerWaking } from "@/lib/slow-requests";
 
-/** Shown while a request has been waiting for more than 3 seconds: the free host sleeps when idle
+/** Shown while a request has been waiting for more than 4 seconds: the free host sleeps when idle
  * and takes up to a minute to wake. The live region is always there (empty), so a screen reader
  * announces the message when it appears. */
 export function WakingBanner() {
