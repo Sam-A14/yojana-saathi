@@ -39,6 +39,10 @@ class User(Base):
 
 class Household(Base):
     __tablename__ = "households"
+    # updated_at is set by the database on every UPDATE. Without this, saving expires it and the
+    # response reads it back in a SECOND database visit (4 round trips). With it, the UPDATE itself
+    # returns the new value (UPDATE ... RETURNING), at no extra cost.
+    __mapper_args__ = {"eager_defaults": True}
     __table_args__ = (
         CheckConstraint(in_list_check("area_type", AREA_TYPES), name="area_type_valid"),
     )
@@ -65,6 +69,9 @@ class Household(Base):
 
 class Member(Base):
     __tablename__ = "members"
+    __mapper_args__ = {
+        "eager_defaults": True
+    }  # same reason as Household: no read-back after UPDATE
     __table_args__ = (
         CheckConstraint(in_list_check("gender", GENDERS), name="gender_valid"),
         CheckConstraint("birth_year BETWEEN 1900 AND 2100", name="birth_year_range"),

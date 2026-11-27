@@ -75,15 +75,27 @@ def get_email_client() -> EmailClient:
 Mailer = Annotated[EmailClient, Depends(get_email_client)]
 
 
-def current_session(
-    db: DbSession,
-    now: Now,
+def bearer_token(
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
-) -> UserSession:
+) -> str:
+    """The session token from the Authorization header, or 401. No database: a request with no token
+    is turned away before anything else is read."""
     # HTTPBearer already returns None for a missing header, a non-Bearer scheme or an empty token.
     token = credentials.credentials.strip() if credentials else ""
     if not token:
         raise _not_signed_in()
+    return token
+
+
+Token = Annotated[str, Depends(bearer_token)]
+
+# Every request that needs to know who is calling used to read the session, then the user, then
+# (for a household URL) the household: three round trips to the database before any work started.
+# Each lookup below is ONE query. A round trip is the expensive part of a request when the
+# database is a network away (docs/decisions/038).
+
+
+def current_session(db: DbSession, now: Now, token: Token) -> UserSession:
     session = db.scalar(
         select(UserSession).where(
             UserSession.token_hash == hash_token(token), UserSession.expires_at > now
@@ -94,9 +106,14 @@ def current_session(
     return session
 
 
-def current_user(session: Annotated[UserSession, Depends(current_session)], db: DbSession) -> User:
-    user = db.get(User, session.user_id)
-    if user is None:  # cannot happen (sessions are deleted with their user), but fail closed
+def current_user(db: DbSession, now: Now, token: Token) -> User:
+    """The signed-in user: the session and the user are found by one join."""
+    user = db.scalar(
+        select(User)
+        .join(UserSession, UserSession.user_id == User.id)
+        .where(UserSession.token_hash == hash_token(token), UserSession.expires_at > now)
+    )
+    if user is None:
         raise _not_signed_in()
     return user
 
@@ -105,10 +122,26 @@ CurrentSession = Annotated[UserSession, Depends(current_session)]
 CurrentUser = Annotated[User, Depends(current_user)]
 
 
-def current_household(household_id: uuid.UUID, user: CurrentUser, db: DbSession) -> Household:
-    """The household in the URL, but only if it belongs to the signed-in user (else 403)."""
-    household = db.get(Household, household_id)
-    if household is None or household.user_id != user.id:
+def current_household(household_id: uuid.UUID, db: DbSession, now: Now, token: Token) -> Household:
+    """The household in the URL, but only if it belongs to the signed-in user (else 403).
+
+    One query answers all of it: is the session valid (no row: 401), and does this household
+    belong to that session's user (row with no household: 403). The household is joined on BOTH its
+    id and its owner, so someone else's household comes back as "none", exactly like one that does
+    not exist.
+    """
+    row = db.execute(
+        select(UserSession.id, Household)
+        .outerjoin(
+            Household,
+            (Household.id == household_id) & (Household.user_id == UserSession.user_id),
+        )
+        .where(UserSession.token_hash == hash_token(token), UserSession.expires_at > now)
+    ).first()
+    if row is None:
+        raise _not_signed_in()
+    household = row[1]
+    if household is None:
         raise _denied()
     return household
 
