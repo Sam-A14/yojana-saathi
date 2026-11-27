@@ -30,4 +30,8 @@ a false negative, the harm this product exists to prevent.
 ## Consequences
 - A scheme that needs BPL can say so honestly, and a family that has not answered is asked, not rejected.
 - States keep their own BPL lists; the question text must say "your state's BPL list", because we cannot check it.
-- IGNWPS still uses `has_bpl_card` until its own PR switches it to `is_bpl` (keeping `bpl_card` as a required document).
+- IGNWPS now reads BPL from `is_bpl` (it stood in with `has_bpl_card` before) and keeps `bpl_card` as a
+  required document, so a BPL family without the card qualifies and is shown the card as missing. When
+  **Seed database** runs, the loader adds version 2 of IGNWPS and keeps version 1 (decision 004). Families
+  that had answered the card question but not the BPL question are asked the BPL question (their result
+  is "unknown" until they answer).

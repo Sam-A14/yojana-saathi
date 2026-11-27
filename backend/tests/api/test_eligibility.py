@@ -60,6 +60,7 @@ def load_profile(client: TestClient, make_family, today, path: Path) -> tuple[Fa
         area_type=household["area_type"],
         category=household["category"],
         income_band=band_for(household["income_band_max"]),
+        is_bpl=household.get("is_bpl"),  # absent in a profile = never answered = unknown
     )
     for person in profile["members"]:
         facts = {k: person[k] for k in MEMBER_FACT_COLUMNS if k in person}
@@ -103,7 +104,7 @@ def test_widow_in_a_landowning_family_end_to_end(
         "gender",
         "marital_status",
         "age",
-        "has_bpl_card",
+        "is_bpl",
     }
     assert ignwps["failed_rules"] == [] and ignwps["unknown_rules"] == []
     assert ignwps["scheme"]["official_url"] == "https://nsap.nic.in/"
@@ -192,7 +193,7 @@ def test_exclusion_that_can_be_fixed_is_a_near_miss_naming_the_member(
 def test_age_limit_uses_the_range_from_birth_year(
     client: TestClient, seeded, today, make_family, birth_year, status, reasons
 ) -> None:
-    family = make_family(state="UP")
+    family = make_family(state="UP", is_bpl=True)
     member_id = add_member(
         client, family, "Kamla", birth_year=birth_year, gender="female", marital_status="widow"
     )
@@ -342,40 +343,97 @@ def widow_and_husbands_family(client: TestClient, make_family, father_docs, moth
     return family
 
 
+# IGNWPS asks for BPL through the household's is_bpl answer, so these tests of how documents are
+# shared use a small scheme whose rule needs the card itself.
+CARD_RULE = {"all": [{"field": "has_bpl_card", "op": "is_true"}]}
+
+
 def test_only_the_father_has_the_bpl_card_and_the_mothers_result_is_not_unknown_for_it(
-    client: TestClient, seeded, today, make_family
+    client: TestClient, db: Session, seeded, today, make_family
 ) -> None:
+    add_scheme(db, "card-test", CARD_RULE)
     family = widow_and_husbands_family(client, make_family, {"bpl_card": True}, None)
 
-    ignwps = schemes_of(eligibility(client, family), "Kamla")["ignwps"]
+    results = schemes_of(eligibility(client, family), "Kamla")
 
     # The mother was never asked about the card, but the household has one: not unknown.
-    assert ignwps["status"] == "eligible"
-    assert "has_bpl_card" in {r["rule"]["field"] for r in ignwps["passed_rules"]}
-    assert ignwps["unknown_rules"] == []
-    # The same rule drives the missing list: the card is not missing for her.
-    assert "bpl_card" not in {d["code"] for d in ignwps["missing_documents"]}
+    card = results["card-test"]
+    assert card["status"] == "eligible"
+    assert "has_bpl_card" in {r["rule"]["field"] for r in card["passed_rules"]}
+    assert card["unknown_rules"] == []
+    # The same sharing drives the missing list: the card is not missing for her under IGNWPS either.
+    assert "bpl_card" not in {d["code"] for d in results["ignwps"]["missing_documents"]}
 
 
 def test_one_members_yes_beats_anothers_no_for_a_household_document(
-    client: TestClient, seeded, today, make_family
+    client: TestClient, db: Session, seeded, today, make_family
 ) -> None:
+    add_scheme(db, "card-test", CARD_RULE)
     family = widow_and_husbands_family(client, make_family, {"bpl_card": True}, {"bpl_card": False})
 
-    assert schemes_of(eligibility(client, family), "Kamla")["ignwps"]["status"] == "eligible"
+    assert schemes_of(eligibility(client, family), "Kamla")["card-test"]["status"] == "eligible"
 
 
 def test_when_nobody_has_the_bpl_card_the_mother_is_still_asked(
+    client: TestClient, db: Session, seeded, today, make_family
+) -> None:
+    add_scheme(db, "card-test", CARD_RULE)
+    family = widow_and_husbands_family(client, make_family, None, None)
+
+    results = schemes_of(eligibility(client, family), "Kamla")
+
+    assert results["card-test"]["status"] == "unknown"
+    assert [r["rule"]["field"] for r in results["card-test"]["unknown_rules"]] == ["has_bpl_card"]
+    missing = {d["code"]: d["state"] for d in results["ignwps"]["missing_documents"]}
+    assert missing["bpl_card"] == "not_answered"  # still a required paper for IGNWPS
+
+
+# --- IGNWPS: BPL status is the household's answer, the card is a paper ---------------------------
+
+
+def test_a_bpl_family_without_the_card_qualifies_and_is_told_the_card_is_missing(
     client: TestClient, seeded, today, make_family
 ) -> None:
-    family = widow_and_husbands_family(client, make_family, None, None)
+    family, _ = load_profile(
+        client,
+        make_family,
+        today,
+        DEFAULT_DATA_DIR / "test_profiles/16-bpl-widow-without-the-card.json",
+    )
+
+    ignwps = schemes_of(eligibility(client, family), "Kamla")["ignwps"]
+
+    assert ignwps["status"] == "eligible"  # BPL is the family's own answer, not the card
+    assert "is_bpl" in {r["rule"]["field"] for r in ignwps["passed_rules"]}
+    missing = {d["code"]: d["state"] for d in ignwps["missing_documents"]}
+    assert missing["bpl_card"] == "no"  # the required paper is shown as missing
+
+
+def test_a_widow_whose_family_has_not_answered_the_bpl_question_is_asked_not_rejected(
+    client: TestClient, seeded, today, make_family
+) -> None:
+    family = make_family(state="UP")  # is_bpl never answered
+    member_id = add_member(
+        client, family, "Kamla", birth_year=1964, gender="female", marital_status="widow"
+    )
+    put_documents(client, family, member_id, {"bpl_card": True})  # a card does not answer it
 
     ignwps = schemes_of(eligibility(client, family), "Kamla")["ignwps"]
 
     assert ignwps["status"] == "unknown"
-    assert [r["rule"]["field"] for r in ignwps["unknown_rules"]] == ["has_bpl_card"]
-    missing = {d["code"]: d["state"] for d in ignwps["missing_documents"]}
-    assert missing["bpl_card"] == "not_answered"
+    assert [r["rule"]["field"] for r in ignwps["unknown_rules"]] == ["is_bpl"]
+
+
+def test_a_family_that_says_it_is_not_bpl_is_not_offered_ignwps(
+    client: TestClient, seeded, today, make_family
+) -> None:
+    family = make_family(state="UP", is_bpl=False)
+    member_id = add_member(
+        client, family, "Kamla", birth_year=1964, gender="female", marital_status="widow"
+    )
+    put_documents(client, family, member_id, {"bpl_card": True})  # even with a card on file
+
+    assert "ignwps" not in schemes_of(eligibility(client, family), "Kamla")
 
 
 def test_personal_documents_are_not_shared_between_members(
