@@ -37,7 +37,7 @@ test("saving sends only the household, with the token, and the dashboard asks ag
   await page.getByRole("link", { name: "Edit household details" }).click();
 
   await page.getByLabel("District (optional)").fill("Kanpur");
-  await page.getByLabel("Not sure", { exact: true }).check(); // area: "not sure" clears the answer
+  await page.getByRole("group", { name: "Where do you live?" }).getByLabel("Not sure").check(); // area: "not sure" clears the answer
   await page.getByLabel("Yearly income of the whole family").selectOption("2_to_2_5_lakh");
   await page.getByLabel("Social category").selectOption({ label: "Prefer not to say" });
   await page.getByRole("button", { name: "Save changes" }).click();
@@ -49,7 +49,7 @@ test("saving sends only the household, with the token, and the dashboard asks ag
       path: `/households/${family.id}`,
       authorization: `Bearer ${family.token}`,
       // Everything on the form is sent; null means "no answer" (the API clears it).
-      body: { state: "UP", district: "Kanpur", area_type: null, income_band: "2_to_2_5_lakh", category: null },
+      body: { state: "UP", district: "Kanpur", area_type: null, income_band: "2_to_2_5_lakh", category: null, is_bpl: null },
     }),
   ]);
   expect(api.households.get(family.id)!.fields).toMatchObject({

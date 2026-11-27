@@ -12,6 +12,7 @@ export type HouseholdFields = {
   state: string | null;
   district: string | null;
   area_type: string | null;
+  is_bpl: boolean | null; // null = not answered (unknown), never "no"
   income_band: string | null;
   category: string | null;
 };

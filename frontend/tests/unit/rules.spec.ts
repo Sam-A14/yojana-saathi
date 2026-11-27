@@ -171,3 +171,26 @@ test.describe("what a family can answer to settle an unknown result", () => {
     expect(answers.reasons).toEqual([]);
   });
 });
+
+test.describe("the BPL question", () => {
+  const rule = { field: "is_bpl", op: "is_true" };
+  const unknown = { rule, fields: ["is_bpl"], matched_members: [], fixable: false, reasons: [] };
+
+  test("an unanswered BPL rule is asked on the household screen, for the whole family, once", () => {
+    const needs = neededAnswers({ reasons: [], unknown_rules: [unknown, unknown] });
+    expect(needs.needs).toEqual([{ field: "is_bpl", familyWide: false, link: "/household/edit" }]);
+  });
+
+  test("the rule reads as a plain sentence in both languages", () => {
+    expect(words("en")(rule)).toBe("Family is on the BPL list");
+    expect(words("hi")(rule)).toBe("परिवार गरीबी रेखा से नीचे (BPL) की सूची में है");
+  });
+
+  test("the question text is the owner's wording, with the Hindi using the owner's phrase", () => {
+    expect(en.basics.bpl).toBe("Is your family on the BPL (Below Poverty Line) list?");
+    expect(en.basics.bplHint).toBe("A BPL ration card is one sign.");
+    expect(en.questions.is_bpl).toBe("We need to know if your family is BPL");
+    expect(hi.basics.bpl).toContain("गरीबी रेखा से नीचे (BPL)");
+    expect(hi.questions.is_bpl).toContain("गरीबी रेखा से नीचे (BPL)");
+  });
+});

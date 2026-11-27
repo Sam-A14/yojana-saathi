@@ -100,6 +100,7 @@ function HouseholdEditor({ family }: { family: Family }) {
           area: household.area_type,
           income: household.income_band,
           category: household.category,
+          bpl: household.is_bpl ?? null, // an older server may not send it yet
         }}
         submitLabel={t("save")}
         savingLabel={t("saving")}
