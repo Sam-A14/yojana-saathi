@@ -1,9 +1,11 @@
 import { useSyncExternalStore } from "react";
 
-// Render's free tier sleeps when idle, and the first request after a break can take up to a
-// minute. A request that is still unanswered after 3 seconds counts as "slow", and the app shows a
-// friendly "waking up the server" message instead of a frozen screen.
-const SLOW_AFTER_MS = 3000;
+// Render's free tier sleeps when idle, and the free database (Neon) suspends after a few quiet
+// minutes, so the first request after a break can take a while. A request that is still unanswered
+// after 4 seconds counts as "slow", and the app shows a friendly "waking up the server" message
+// instead of a frozen screen. Four, not fewer: an ordinary save on a slow phone connection can take
+// two or three seconds, and a banner on every save would cry wolf.
+export const SLOW_AFTER_MS = 4000;
 
 let slowCount = 0;
 const listeners = new Set<() => void>();
@@ -31,7 +33,7 @@ const subscribe = (listener: () => void) => {
   return () => void listeners.delete(listener);
 };
 
-/** True while at least one request has been waiting for more than 3 seconds. */
+/** True while at least one request has been waiting for more than 4 seconds. */
 export function useServerWaking(): boolean {
   return useSyncExternalStore(
     subscribe,

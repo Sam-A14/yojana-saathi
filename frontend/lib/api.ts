@@ -65,7 +65,7 @@ async function request<T>(path: string, { method = "GET", token, body }: Options
   if (body !== undefined) headers["Content-Type"] = "application/json";
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const finished = trackRequest(); // shows "waking up the server" if this takes over 3 seconds
+  const finished = trackRequest(); // shows "waking up the server" if this takes over 4 seconds
   try {
     let response: Response;
     try {
