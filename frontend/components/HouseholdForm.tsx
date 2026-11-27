@@ -5,7 +5,7 @@ import { type FormEvent, useState } from "react";
 import { AREA_TYPES, CATEGORIES, INCOME_BANDS } from "@/lib/options";
 import { STATES } from "@/lib/states";
 import type { HouseholdFields } from "@/lib/types";
-import { Button, ChoiceGroup, ErrorNote, SelectField, TextField } from "./ui";
+import { Button, ChoiceGroup, ErrorNote, SelectField, TextField, YesNoGroup } from "./ui";
 
 export type HouseholdValues = {
   state: string | null;
@@ -13,10 +13,11 @@ export type HouseholdValues = {
   area: string | null;
   income: string | null;
   category: string | null;
+  bpl: boolean | null; // null = "Not sure": saved as null, which means unknown, never "no"
 };
 
 /**
- * The five questions about a home. Used twice: to set up a new family (Basics) and to change the
+ * The six questions about a home. Used twice: to set up a new family (Basics) and to change the
  * answers later (Edit household details). It only collects answers; the caller saves them.
  */
 export function HouseholdForm({
@@ -37,6 +38,7 @@ export function HouseholdForm({
   const t = useTranslations("basics");
   const to = useTranslations("options");
   const tc = useTranslations("common");
+  const yesNo = { yes: tc("yes"), no: tc("no"), notSure: tc("notSure") };
   const locale = useLocale();
 
   const [state, setState] = useState(initial.state);
@@ -44,6 +46,7 @@ export function HouseholdForm({
   const [area, setArea] = useState(initial.area);
   const [income, setIncome] = useState(initial.income);
   const [category, setCategory] = useState(initial.category);
+  const [bpl, setBpl] = useState(initial.bpl);
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -53,6 +56,7 @@ export function HouseholdForm({
       area_type: area,
       income_band: income,
       category,
+      is_bpl: bpl,
     });
   }
 
@@ -81,6 +85,7 @@ export function HouseholdForm({
         options={INCOME_BANDS.map((v) => ({ value: v, label: to(`income.${v}`) }))}
         emptyLabel={tc("notSure")}
       />
+      <YesNoGroup legend={t("bpl")} hint={t("bplHint")} value={bpl} onChange={setBpl} labels={yesNo} />
       <SelectField
         label={t("category")}
         hint={t("categoryHint")}

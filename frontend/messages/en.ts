@@ -79,6 +79,8 @@ export const en = {
     category: "Social category",
     categoryHint: "Some schemes are for SC, ST or OBC families. You can choose not to say.",
     categoryNone: "Prefer not to say",
+    bpl: "Is your family on the BPL (Below Poverty Line) list?",
+    bplHint: "A BPL ration card is one sign.",
     saving: "Saving…",
   },
   members: {
@@ -210,6 +212,7 @@ export const en = {
     disability: "Does {name} have a disability?",
     owns_cultivable_land: "Does {name} own farmland?",
     is_remarried: "Has {name} married again?",
+    is_bpl: "We need to know if your family is BPL",
     paid_income_tax_last_year: "Did {name} pay income tax last year?",
     govt_employee: "Does {name} work, or did they work, in a government job?",
     pension_band: "Does {name} get a government pension?",
@@ -274,6 +277,7 @@ export const en = {
       area_type: "Where the family lives",
       income_band_max: "Family income in a year",
       category: "Social category",
+      is_bpl: "Family is on the BPL list",
     },
     hasDocument: "Has {document}",
     value: {
@@ -446,7 +450,7 @@ export const en = {
       intro: "Only what you tell us:",
       email: "Your email address, to sign you in.",
       language: "Your language: English or Hindi.",
-      home: "About your home: state, district if you type it, village or town, a yearly income range, and social category if you choose to say.",
+      home: "About your home: state, district if you type it, village or town, a yearly income range, social category if you choose to say, and whether your family is on the BPL list (a yes or no, also only if you choose to say).",
       people: "About each person: a first name or nickname, how they are related to you, year of birth, and the answers you give, such as work, education or farm land.",
       papers: "Which papers each person has: yes, no or not sure. Never the number on a paper.",
       phone: "On your phone: a sign-in key, your language, your text size and your colour choice. These stay on your phone.",
