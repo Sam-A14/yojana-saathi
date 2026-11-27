@@ -43,7 +43,15 @@ def codes(result: ValidationResult) -> list[str]:
     return [p.code for p in result.problems]
 
 
-# --- review item 4, the failing fixture -------------------------------------------------------
+# --- review item 4, the failing fixture (its exact Proposal block) -----------------------------
+
+
+def test_item_4_passed_every_other_check_so_only_the_two_new_ones_flag_it() -> None:
+    """Schema, fields, engine, documents, identity, quotes and benefit all accept item 4, as the old
+    validator did. Only the two new checks reject it."""
+    result = check(item4.proposal())
+
+    assert {p.code for p in result.problems} == {"invalid_value_type", "document_as_rule"}
 
 
 def test_item_4_is_no_longer_valid_and_each_defect_is_named_with_its_position() -> None:
@@ -51,18 +59,16 @@ def test_item_4_is_no_longer_valid_and_each_defect_is_named_with_its_position() 
 
     assert not result.is_valid
     assert [(p.code, p.where) for p in result.problems] == [
-        ("invalid_value_type", "scheme.version.rules.all[1]"),
-        ("document_as_rule", "scheme.version.rules.all[2]"),
-        ("document_as_rule", "scheme.version.rules.all[3]"),
-        ("document_as_rule", "scheme.version.rules.all[4]"),
-        ("document_as_rule", "scheme.version.rules.all[5]"),
+        ("invalid_value_type", "scheme.version.rules.all[0]"),
+        *[("document_as_rule", f"scheme.version.rules.all[{i}]") for i in range(2, 8)],
     ]
     type_problem = result.problems[0].message
     assert "is_bpl is a yes/no field" in type_problem and '"yes"' in type_problem
     assert "is_true" in type_problem and "would match nobody" in type_problem
-    paper_problem = result.problems[1].message
-    assert "domicile_certificate" in paper_problem and "only in version.documents" in paper_problem
-    assert "Eligibility section" in paper_problem
+    for problem, paper in zip(result.problems[1:], item4.PAPER_RULES, strict=True):
+        assert paper in problem.message
+        assert "only in version.documents" in problem.message
+        assert "Eligibility section" in problem.message
 
 
 def test_the_corrected_item_4_passes_so_nothing_else_is_flagged() -> None:
@@ -70,11 +76,32 @@ def test_the_corrected_item_4_passes_so_nothing_else_is_flagged() -> None:
     assert result.problems == [], [p.as_dict() for p in result.problems]
 
 
-def test_the_source_text_really_has_the_two_sections_the_fixture_relies_on() -> None:
+def test_the_corrected_item_4_keeps_its_papers_and_notes_the_alternatives() -> None:
+    version = item4.corrected()["scheme"]["version"]
+    required = {d["code"]: d["required"] for d in version["documents"]}
+    assert required["voter_id"] is False and required["aadhaar_card"] is False
+    assert required["domicile_certificate"] is True  # not an alternative: still required
+    assert item4.corrected()["scheme"]["labeller_notes"]["notes"]  # the note is there
+
+
+def test_the_quotes_of_item_4_sit_in_the_sections_the_check_relies_on() -> None:
+    """Rules 0 and 1 quote the Eligibility section; every paper rule quotes Documents Required."""
     sections = split_sections(item4.SOURCE_TEXT)
-    assert "The applicant should be at least 60 years of age." in sections["eligibility"]
-    assert "Domicile Certificate" in sections["documents required"]
-    assert "Domicile Certificate" not in sections["eligibility"]
+    quotes = {q["index"]: q["quote"] for q in item4.proposal()["rule_quotes"]}
+    for index in (0, 1):
+        assert quotes[index] in sections["eligibility"]
+    for index in range(2, 8):
+        assert quotes[index] in sections["documents required"]
+        assert quotes[index] not in sections["eligibility"]
+
+
+def test_the_fixture_is_the_run_summary_block_unedited() -> None:
+    """Guards the swap: eight rules, six of them papers, all six also under fixable."""
+    scheme = item4.proposal()["scheme"]["version"]
+    assert len(scheme["rules"]["all"]) == 8
+    assert scheme["rules"]["all"][0] == {"field": "is_bpl", "op": "eq", "value": "yes"}
+    assert len(scheme["rules"]["fixable"]) == 6
+    assert all(d["required"] for d in scheme["documents"])
 
 
 # --- 1. a value must fit its field ------------------------------------------------------------
@@ -193,9 +220,7 @@ def test_every_rule_field_has_a_type_so_a_new_field_forces_a_decision() -> None:
 
 
 def one_rule(field: str, quote: str) -> dict[str, Any]:
-    return item4.build(
-        [(cond(field, "is_true"), quote)], benefit=False, alternatives_required=False
-    )
+    return item4.build([(cond(field, "is_true"), quote)], benefit=False)
 
 
 def test_a_paper_rule_quoted_from_documents_required_is_refused() -> None:
@@ -235,8 +260,7 @@ def test_a_paper_inside_a_bigger_rule_is_found_too() -> None:
                 {"any": [cond("age", "gte", 60), cond("has_ration_card", "is_true")]},
                 "Ration Card",
             )
-        ],
-        alternatives_required=False,
+        ]
     )
     result = check(answer)
     assert codes(result) == ["document_as_rule"]
