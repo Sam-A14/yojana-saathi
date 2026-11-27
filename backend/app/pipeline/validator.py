@@ -4,8 +4,11 @@ The rule here: invalid output is KEPT but FLAGGED, never dropped. A reviewer lea
 what the model got wrong, and a silent drop would hide a bad extraction behind "nothing came back".
 
 Checks, in order:  parseable JSON -> expected shape -> scheme.schema.json -> only allowed fields ->
-engine accepts the rules -> slug/URL/verified fields -> a real quote for every top-level rule ->
-a real quote for the benefit text (or no benefit text at all).
+engine accepts the rules -> every document code exists -> slug/URL/verified fields -> a real quote
+for every top-level rule -> a real quote for the benefit text (or no benefit text at all).
+
+A proposal this validator calls valid must be one the approval step can write: whatever the seed
+loader would refuse (decision 004) is refused here first, with the reason, instead of at approval.
 """
 
 import json
@@ -92,6 +95,7 @@ def validate_output(
     _check_schema(result, schema_validator)
     _check_fields(result, set(allowed))
     _check_engine(result)
+    _check_documents(result, _document_codes(allowed))
     _check_identity(result, slug, source_url)
     if isinstance(quotes, list):
         _check_quotes(result, source_text)
@@ -163,6 +167,32 @@ def _check_engine(result: ValidationResult) -> None:
         validate_rules(rules)  # type: ignore[arg-type]
     except RuleError as error:
         result.problems.append(Problem("engine_rejects", "scheme.version.rules", str(error)))
+
+
+def _document_codes(allowed: list[str]) -> set[str]:
+    """The document codes in documents.json, read back from the allowed fields (one has_<code> each,
+    made from that same file), so there is a single source of truth."""
+    return {name.removeprefix("has_") for name in allowed if name.startswith("has_")}
+
+
+def _check_documents(result: ValidationResult, known: set[str]) -> None:
+    """version.documents may only name papers that exist in documents.json, each once. The seed
+    loader refuses anything else, so the proposal is flagged now rather than when approved."""
+    documents = _dict(_dict(result.scheme).get("version")).get("documents")
+    seen: set[str] = set()
+    for index, entry in enumerate(documents if isinstance(documents, list) else []):
+        code = _dict(entry).get("code")
+        where = f"scheme.version.documents[{index}].code"
+        if not isinstance(code, str):
+            continue  # the schema check reports a missing or non-text code
+        if code not in known:
+            message = f"'{code}' is not in documents.json; use one of the allowed document codes."
+            result.problems.append(Problem("unknown_document", where, message))
+        elif code in seen:
+            result.problems.append(
+                Problem("duplicate_document", where, f"'{code}' is listed twice.")
+            )
+        seen.add(code)
 
 
 def _check_identity(result: ValidationResult, slug: str, source_url: str) -> None:

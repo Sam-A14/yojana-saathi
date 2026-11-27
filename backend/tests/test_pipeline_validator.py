@@ -242,3 +242,50 @@ def test_benefit_quote_of_the_wrong_type_is_a_shape_problem() -> None:
     bad = answer_with_benefit()
     bad["benefit_quote"] = ["gives a pension"]
     assert "bad_shape" in codes(check(bad))
+
+
+# --- document codes must exist: the approval step would refuse them -------------------------------
+
+
+def with_documents(*codes: str) -> dict[str, Any]:
+    bad = answer()
+    bad["scheme"]["version"]["documents"] = [
+        {"code": code, "required": True, "applies_to": "applicant"} for code in codes
+    ]
+    return bad
+
+
+def test_a_real_document_code_passes() -> None:
+    assert check(with_documents("aadhaar_card", "bpl_card")).is_valid
+
+
+def test_a_made_up_document_code_is_flagged_with_where_and_a_hint() -> None:
+    """The proposal that failed approval: the model wrote "aadhaar" for aadhaar_card."""
+    result = check(with_documents("aadhaar_card", "aadhaar"))
+
+    assert codes(result) == ["unknown_document"]
+    assert result.problems[0].where == "scheme.version.documents[1].code"
+    assert "'aadhaar' is not in documents.json" in result.problems[0].message
+    assert result.scheme is not None  # kept and flagged, never dropped
+
+
+def test_a_document_listed_twice_is_flagged() -> None:
+    result = check(with_documents("ration_card", "ration_card"))
+    assert codes(result) == ["duplicate_document"]
+    assert result.problems[0].where == "scheme.version.documents[1].code"
+
+
+def test_every_unknown_document_is_reported_not_just_the_first() -> None:
+    assert codes(check(with_documents("aadhaar", "pan", "bpl_card"))) == ["unknown_document"] * 2
+
+
+def test_a_scheme_with_no_documents_is_fine() -> None:
+    assert check(with_documents()).is_valid
+
+
+def test_malformed_document_entries_do_not_crash_this_check() -> None:
+    bad = answer()
+    bad["scheme"]["version"]["documents"] = ["oops", {"required": True}, {"code": 7}]
+    result = check(bad)
+    assert "unknown_document" not in codes(result)  # the schema check reports the real problems
+    assert "schema" in codes(result)
