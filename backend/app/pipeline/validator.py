@@ -4,8 +4,9 @@ The rule here: invalid output is KEPT but FLAGGED, never dropped. A reviewer lea
 what the model got wrong, and a silent drop would hide a bad extraction behind "nothing came back".
 
 Checks, in order:  parseable JSON -> expected shape -> scheme.schema.json -> only allowed fields ->
-engine accepts the rules -> every document code exists -> slug/URL/verified fields -> a real quote
-for every top-level rule -> a real quote for the benefit text (or no benefit text at all).
+engine accepts the rules -> every value has the right type for its field -> every document code
+exists -> slug/URL/verified fields -> a real quote for every top-level rule -> no rule about a paper
+unless the Eligibility section says so -> a real quote for the benefit text.
 
 A proposal this validator calls valid must be one the approval step can write: whatever the seed
 loader would refuse (decision 004) is refused here first, with the reason, instead of at approval.
@@ -18,6 +19,8 @@ from typing import Any
 from jsonschema import Draft202012Validator
 
 from app.db.seed import schema_problems
+from app.pipeline.field_types import value_problem
+from app.pipeline.sections import eligibility_text
 from app.rules.engine import RuleError, validate_rules
 
 # A quote shorter than this proves nothing ("age", "farmer" appear everywhere in the source).
@@ -95,10 +98,12 @@ def validate_output(
     _check_schema(result, schema_validator)
     _check_fields(result, set(allowed))
     _check_engine(result)
+    _check_value_types(result)
     _check_documents(result, _document_codes(allowed))
     _check_identity(result, slug, source_url)
     if isinstance(quotes, list):
         _check_quotes(result, source_text)
+        _check_papers_are_not_eligibility(result, source_text)
     _check_benefit(result, source_text)
     return result
 
@@ -155,6 +160,69 @@ def _field_names(node: Any, where: str) -> list[tuple[Any, str]]:
             if key != "field":
                 found += _field_names(child, f"{where}.{key}")
     return found
+
+
+def _conditions(node: Any, where: str) -> list[tuple[dict[str, Any], str]]:
+    """Every condition ({"field": ..., "op": ...}) anywhere in a rule tree, with where it is.
+    The tree may be badly shaped (it is a model's output), so anything unexpected is skipped."""
+    found: list[tuple[dict[str, Any], str]] = []
+    if isinstance(node, list):
+        for index, child in enumerate(node):
+            found += _conditions(child, f"{where}[{index}]")
+    elif isinstance(node, dict):
+        if "field" in node:
+            found.append((node, where))
+        else:
+            for key, child in node.items():
+                found += _conditions(child, f"{where}.{key}")
+    return found
+
+
+def _check_value_types(result: ValidationResult) -> None:
+    """A rule value must be the kind of thing its field holds (field_types.py). The engine compares
+    exactly, so is_bpl eq "yes" is a valid rule that nobody can ever meet: nobody is eligible."""
+    rules = _dict(_dict(_dict(result.scheme).get("version")).get("rules"))
+    for condition, where in _conditions(rules.get("all"), "scheme.version.rules.all"):
+        problem = value_problem(condition)
+        if problem:
+            result.problems.append(Problem("invalid_value_type", where, problem))
+
+
+def _check_papers_are_not_eligibility(result: ValidationResult, source_text: str) -> None:
+    """Papers a family must bring belong in version.documents. A rule on a has_<document> field is
+    allowed only when its source quote is inside the Eligibility section of the source, because
+    then the source itself states "you must hold this" as a condition. A quote from "Documents
+    Required" (or from a source with no Eligibility section) is not that."""
+    rules = _dict(_dict(_dict(result.scheme).get("version")).get("rules"))
+    top_level = rules.get("all")
+    if not isinstance(top_level, list):
+        return
+    quotes = {
+        entry["index"]: entry["quote"]
+        for entry in map(_dict, result.quotes)
+        if isinstance(entry.get("index"), int) and isinstance(entry.get("quote"), str)
+    }
+    eligibility = _squash(eligibility_text(source_text))
+    for index, rule in enumerate(top_level):
+        where = f"scheme.version.rules.all[{index}]"
+        papers = sorted(
+            {
+                str(c["field"]).removeprefix("has_")
+                for c, _ in _conditions(rule, where)
+                if isinstance(c.get("field"), str) and c["field"].startswith("has_")
+            }
+        )
+        if not papers:
+            continue
+        quote = quotes.get(index)
+        if quote is not None and eligibility and _squash(quote) in eligibility:
+            continue
+        message = (
+            f"Rule {index} is about the paper {', '.join(papers)}. Papers the source asks for go "
+            "only in version.documents; a rule about a paper needs a quote from the source's "
+            "Eligibility section, and this quote is not from there."
+        )
+        result.problems.append(Problem("document_as_rule", where, message))
 
 
 def _check_engine(result: ValidationResult) -> None:

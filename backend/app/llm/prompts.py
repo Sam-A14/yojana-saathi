@@ -12,6 +12,7 @@ You do NOT decide who is eligible. You only copy the conditions the text states 
 - Use only the fields in ALLOWED FIELDS. Never invent a field, an operator or a value.
 - Add only conditions the text actually states. Do not guess and do not fill gaps.
 - Every top-level rule needs a short quote copied word for word from the SOURCE TEXT.
+- Papers listed under documents go ONLY in version.documents, never in rules.
 - If a rule's quote contains an exception ("excluding", "except", "other than"), encode the
   exception too, on the same member: put it in an all[...] inside any_member, next to the main
   condition. Never encode only the main condition and never move the exception to a separate rule.
@@ -74,8 +75,14 @@ Wrong: a rule with only the pension condition, which would wrongly exclude Group
 """
 
 _RULE_FORMAT_END = """
-"fixable" lists fields whose failure a family can fix, usually has_<document> fields. Add a
-document field to rules only when the text makes holding that document a condition of eligibility.
+"fixable" lists fields whose failure a family can fix. Papers listed under documents go ONLY in
+version.documents, never in rules: do not write a has_<document> rule for a paper that the source
+lists among the documents to submit. A has_<document> rule is allowed only when the Eligibility
+section itself says the applicant must hold that paper as a condition, and then its quote must come
+from that section.
+Values must fit their field: a yes/no field (such as is_bpl or any has_<document>) takes
+{"op": "is_true"} or eq / neq with true or false, never the text "yes"; a field with a list of
+allowed answers takes only those answers; age and income are numbers.
 """
 
 RULE_FORMAT = _RULE_FORMAT_START + _EXCEPTION_EXAMPLE_TEXT + _RULE_FORMAT_END
@@ -113,6 +120,9 @@ version.documents lists the papers the source text says an applicant must submit
 "code" must be one of the codes above, spelled exactly (for example aadhaar_card, not aadhaar).
 If the text asks for a paper that is not on the list, do not make up a code: leave it out of
 documents and mention it in scheme.labeller_notes.not_encoded.
+When the source gives alternatives ("X/ Y/ Z" or "X or Y"), the applicant needs only one of them:
+mark none of them required ("required": false) and say so in scheme.labeller_notes.notes, for
+example "Residential proof: any one of voter card, electricity bill, Aadhaar card".
 """
 
 

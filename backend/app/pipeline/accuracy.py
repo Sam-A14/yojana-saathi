@@ -37,15 +37,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from app.db.models.family import AREA_TYPES, GENDERS
 from app.db.seed import DEFAULT_DATA_DIR
-from app.rules.fields import ALLOWED_VALUES
-from app.rules.values import (
-    CATEGORY_VALUES,
-    EDUCATION_VALUES,
-    MARITAL_STATUS_VALUES,
-    OCCUPATION_VALUES,
-)
+
+# Re-exported under the same names: the tests and callers import them from here.
+from app.pipeline.field_types import BOOLEAN_FIELDS as BOOLEAN_FIELDS
+from app.pipeline.field_types import CLOSED_VALUES, is_boolean_field
 
 # (wrappers from the top down, field, operator, value as canonical JSON text)
 Leaf = tuple[tuple[str, ...], str, str, str]
@@ -117,40 +113,11 @@ def describe(leaf: Leaf) -> str:
 
 # --- normalising: one canonical spelling for conditions that mean the same ---------------------
 
-# Fields whose answer is always one of a fixed list (the API and the database both refuse anything
-# else). For these, "not group_d" and "none or other" are the same condition. A field that is not
-# here (state, district, age...) has no closed list, so it is never rewritten this way.
-CLOSED_VALUES: dict[str, tuple[str, ...]] = {
-    "gender": GENDERS,
-    "area_type": AREA_TYPES,
-    "marital_status": MARITAL_STATUS_VALUES,
-    "category": CATEGORY_VALUES,
-    "education": EDUCATION_VALUES,
-    "occupation": OCCUPATION_VALUES,
-    **ALLOWED_VALUES,  # govt_employee, pension_band
-}
+# CLOSED_VALUES (fields with a fixed list of answers) and BOOLEAN_FIELDS (yes/no facts) live in
+# field_types.py, shared with the extraction validator. For a closed field "not group_d" and
+# "none or other" are the same condition; for a yes/no field "eq true" and "is_true" are.
 
-# Yes/no facts. For these (and only these) "eq true" and "is_true" give the same answer for every
-# fact the app can hold: missing is unknown for both, true/false are the same. They differ only for
-# a non-yes/no value, which is bad data. A test checks this list against the yes/no columns of the
-# Member and Household tables.
-BOOLEAN_FIELDS = frozenset(
-    {
-        "is_bpl",
-        "is_student",
-        "disability",
-        "owns_cultivable_land",
-        "paid_income_tax_last_year",
-        "is_registered_professional",
-        "holds_constitutional_post",
-        "is_remarried",
-    }
-)
 _SET_OPERATORS = ("eq", "neq", "in", "not_in")
-
-
-def is_boolean_field(name: str) -> bool:
-    return name in BOOLEAN_FIELDS or name.startswith("has_")
 
 
 def normalise(rules: Any) -> tuple[dict[str, Any], list[str]]:
