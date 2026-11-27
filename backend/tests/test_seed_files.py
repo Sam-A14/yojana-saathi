@@ -15,6 +15,7 @@ from app.db.seed import (
     schema_problems,
     scheme_file_problems,
 )
+from app.pipeline.source import read_source
 
 SCHEMA_PATH = DEFAULT_DATA_DIR / "scheme.schema.json"
 # Member and household attributes a rule may use. Changing this list is a deliberate act: update
@@ -128,6 +129,34 @@ def test_a_category_outside_the_list_is_rejected(category: str) -> None:
     scheme = load("schemes_seed/pm-kisan.json") | {"category": category}
 
     assert schema_problems(_validator(SCHEMA_PATH), scheme) != []
+
+
+def test_benefit_quotes_noted_in_a_seed_file_are_word_for_word_in_its_source_text() -> None:
+    """A seed file has no field for source quotes (they live in the review item and the pull
+    request), so an approved scheme records the ones behind benefit_text_en in labeller_notes as
+    'Source quote (benefit_text_en): <words>'. This keeps them honest: each must appear word for
+    word (whitespace aside) in data/scheme_sources/<slug>.txt, as the extractor requires."""
+    prefix = "Source quote (benefit_text_en): "
+    checked = 0
+    for scheme in read_seed_files().schemes:
+        quotes = (
+            [
+                n.removeprefix(prefix)
+                for n in scheme["labeller_notes"]["notes"]
+                if n.startswith(prefix)
+            ]
+            if "labeller_notes" in scheme
+            else []
+        )
+        if not quotes:
+            continue
+        source = " ".join(read_source(scheme["slug"]).text.split())
+        for quote in quotes:
+            assert (
+                " ".join(quote.split()) in source
+            ), f"{scheme['slug']}: {quote!r} is not in the source"
+            checked += 1
+    assert checked >= 1  # ignoaps records its benefit quotes
 
 
 def test_examples_are_marked_unverified() -> None:

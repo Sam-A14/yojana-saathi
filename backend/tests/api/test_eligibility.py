@@ -96,7 +96,8 @@ def test_widow_in_a_landowning_family_end_to_end(
     assert raju["pm-kisan"]["status"] == "eligible"
     assert "ignwps" not in raju  # a man does not qualify for the widow pension: counted, not listed
     raju_member = next(m for m in body["members"] if m["nickname"] == "Raju")
-    assert raju_member["not_eligible_count"] == 1
+    # Counted, not listed: IGNWPS (he is a man) and IGNOAPS (he is 35, under 60).
+    assert raju_member["not_eligible_count"] == 2
     assert raju_member["excluded"] == []  # nobody else's facts excluded him
     # The reasons are there for the screen: which rules passed, with the scheme's own wording.
     ignwps = kamla["ignwps"]

@@ -1,0 +1,82 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": false,
+    "notes": [
+      "Proposed by the LLM extractor (review item 5, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-27. Every rule has a word-for-word source quote, shown in that pull request.",
+      "Papers: the source lists 'Aadhar Number' as its own line, so aadhaar_card is required. 'Residential Proof (Voter card/ Electricity Bill/Aadhar Card)' and the age proof are alternatives, so voter_id and birth_certificate are not required. 'Bank Passbook' is bank_account_aadhaar_linked.",
+      "Source quote (benefit_text_en): A monthly pension of ₹ 200 up to 79 years and ₹ 500 thereafter.",
+      "Source quote (benefit_text_en): from 80 year onwards",
+      "Source quote (benefit_text_en): the State Governments may contribute over and above to this amount",
+      "NEEDS NATIVE REVIEW (owner): name_hi and benefit_text_hi."
+    ],
+    "not_encoded": [
+      "The applicant should be a citizen of India.",
+      "Application Form (proforma given in the annexures)",
+      "Electricity Bill as residential proof",
+      "Affidavit that the applicant is not in receipt of any pension/financial assistance from any other source"
+    ]
+  },
+  "slug": "ignoaps",
+  "name_en": "Indira Gandhi National Old Age Pension Scheme",
+  "name_hi": "इंदिरा गांधी राष्ट्रीय वृद्धावस्था पेंशन योजना",
+  "level": "central",
+  "state": null,
+  "category": "pension",
+  "official_url": "https://www.myscheme.gov.in/schemes/nsap-ignoaps",
+  "version": {
+    "rules": {
+      "all": [
+        {
+          "field": "is_bpl",
+          "op": "is_true"
+        },
+        {
+          "field": "age",
+          "op": "gte",
+          "value": 60
+        }
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "₹200 a month from the Centre up to age 79, ₹500 from age 80. The State Government may add more on top.",
+    "benefit_text_hi": "केंद्र सरकार की ओर से हर महीने 79 वर्ष की आयु तक ₹200 और 80 वर्ष की आयु से ₹500। राज्य सरकार इसके ऊपर और राशि जोड़ सकती है।",
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://www.myscheme.gov.in/schemes/nsap-ignoaps",
+    "verified_at": "2026-11-27",
+    "approved_by": "Sam-A14",
+    "documents": [
+      {
+        "code": "domicile_certificate",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "voter_id",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "aadhaar_card",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "birth_certificate",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "bank_account_aadhaar_linked",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "ration_card",
+        "required": true,
+        "applies_to": "applicant"
+      }
+    ]
+  }
+}
