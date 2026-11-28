@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, GraduationCap, HandHeart, HeartPulse, House, Armchair, Wheat, type LucideIcon } from "lucide-react";
+import { ArrowRight, BadgeIndianRupee, GraduationCap, HandHeart, HeartPulse, House, Wheat, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -21,7 +21,7 @@ const CARDS: {
   { key: "Agriculture", Icon: Wheat, tone: 2 },
   { key: "Healthcare", Icon: HeartPulse, tone: 3 },
   { key: "Women", Icon: HandHeart, tone: 4 },
-  { key: "Seniors", Icon: Armchair, tone: 5 },
+  { key: "Seniors", Icon: BadgeIndianRupee, tone: 5 },
   { key: "Families", Icon: House, tone: 6 },
 ];
 
