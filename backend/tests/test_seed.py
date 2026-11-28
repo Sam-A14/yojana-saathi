@@ -137,7 +137,7 @@ def test_not_checked_lines_are_stored_and_a_change_adds_a_version(
     load(db, data_dir)
     first = scheme(db, "ignoaps").current_version
     assert first is not None and len(first.not_checked_en) == 2
-    for slug, lines in (("pm-kisan", 4), ("ignwps", 3)):
+    for slug, lines in (("pm-kisan", 3), ("ignwps", 2)):
         version = scheme(db, slug).current_version
         assert version is not None and len(version.not_checked_en) == lines
         assert version.not_checked_hi is not None and len(version.not_checked_hi) == lines
