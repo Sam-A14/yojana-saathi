@@ -126,6 +126,8 @@ export const hi: typeof en = {
     occupation: "मुख्य काम",
     education: "कितनी पढ़ाई पूरी की",
     student: "क्या यह व्यक्ति अभी पढ़ाई कर रहा है?",
+    // needs native review (owner): the study-level question and its answers
+    studyLevel: "अभी किस कक्षा में पढ़ रहे हैं?",
     disability: "क्या इस व्यक्ति को कोई विकलांगता है?",
     land: "क्या इस व्यक्ति के नाम खेती की ज़मीन है?",
     remarried: "क्या इस व्यक्ति ने दोबारा शादी की है?",
@@ -239,6 +241,8 @@ export const hi: typeof en = {
     occupation: "{name} का मुख्य काम क्या है?",
     education: "{name} ने कितनी पढ़ाई पूरी की?",
     is_student: "क्या {name} अभी पढ़ाई कर रहे हैं?",
+    // needs native review (owner): study level
+    current_study_level: "{name} अभी किस कक्षा में पढ़ रहे हैं?",
     disability: "क्या {name} को कोई विकलांगता है?",
     owns_cultivable_land: "क्या {name} के नाम खेती की ज़मीन है?",
     is_remarried: "क्या {name} ने दोबारा शादी की है?",
@@ -297,6 +301,7 @@ export const hi: typeof en = {
       occupation: "मुख्य काम",
       education: "पढ़ाई",
       is_student: "अभी पढ़ाई कर रहे हैं",
+      current_study_level: "अभी की कक्षा",
       disability: "विकलांगता है",
       owns_cultivable_land: "खेती की ज़मीन है",
       paid_income_tax_last_year: "पिछले साल आयकर दिया",
@@ -469,6 +474,15 @@ export const hi: typeof en = {
       senior_secondary: "कक्षा 12 तक",
       graduate: "स्नातक",
       postgraduate: "स्नातकोत्तर",
+    },
+    // needs native review (owner): the study-level answers
+    studyLevel: {
+      class_1_8: "कक्षा 1 से 8",
+      class_9_10: "कक्षा 9 या 10",
+      class_11_12: "कक्षा 11 या 12",
+      undergraduate: "कॉलेज (स्नातक)",
+      postgraduate: "स्नातकोत्तर",
+      other: "कुछ और",
     },
     govt: {
       none: "नहीं",
