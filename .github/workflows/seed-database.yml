@@ -1,10 +1,19 @@
 name: Seed database
 
-# Manual only. Loads data/documents.json and data/schemes_seed/*.json into the production
-# database. Render's free tier has no shell, so this is how the data gets in.
-# Safe to run twice: unchanged data is left alone (see data/README.md).
+# Loads data/documents.json and data/schemes_seed/*.json into the production database. Render's
+# free tier has no shell, so this is how the data gets in. It runs by itself when a merge to main
+# changes one of those files (merging a scheme pull request is the approval), and by hand from the
+# Actions tab. Safe to run twice: unchanged data is left alone (see data/README.md).
+# Before it writes, it waits for the backend deploy to finish its database migrations, because a
+# merge starts the deploy and this workflow at the same moment.
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "data/schemes_seed/**"
+      - "!data/schemes_seed/TEMPLATE.json"
+      - "data/documents.json"
 
 permissions:
   contents: read
@@ -30,6 +39,18 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements.txt
       - run: pip install -r requirements.txt
+      - name: Wait for the database migrations
+        shell: bash
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::The DATABASE_URL secret is not set. See 'Seed the database' in README.md."
+            exit 1
+          fi
+          # Up to 15 minutes, checking every 20 seconds; exits 1 with the reason if it never gets
+          # there, so a deploy that failed shows up here and not as a confusing SQL error.
+          python -m app.db.migration_status --timeout 900 --interval 20
       - name: Load documents and schemes
         # explicit shell: gives "pipefail", so a failing loader fails the step even through tee
         shell: bash
