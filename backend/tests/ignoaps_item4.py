@@ -39,6 +39,12 @@ RULES_AND_QUOTES: list[tuple[dict[str, Any], str]] = [
 
 BENEFIT_TEXT = "A monthly pension of ₹200 up to 79 years and ₹500 from 80 years."
 BENEFIT_QUOTE = "A monthly pension of ₹ 200 up to 79 years and ₹ 500 thereafter."
+# Item 4's text says "from 80 years", but its quote has no 80: the figure came from the FAQ line. A
+# quote that shows every figure in the text is this sentence from the FAQ.
+CORRECTED_BENEFIT_QUOTE = (
+    "is Rs. 200/- per month per beneficiary up to 79 years and Rs.500/- per month per beneficiary "
+    "from 80 year onwards"
+)
 
 
 def documents(*, alternatives_required: bool) -> list[dict[str, Any]]:
@@ -53,7 +59,11 @@ def documents(*, alternatives_required: bool) -> list[dict[str, Any]]:
 
 
 def build(
-    rules_and_quotes: list[tuple[dict[str, Any], str]], *, benefit: bool = True, **doc_options: Any
+    rules_and_quotes: list[tuple[dict[str, Any], str]],
+    *,
+    benefit: bool = True,
+    benefit_quote: str = BENEFIT_QUOTE,
+    **doc_options: Any,
 ) -> dict[str, Any]:
     return {
         "scheme": {
@@ -74,7 +84,7 @@ def build(
             },
         },
         "rule_quotes": [{"index": i, "quote": q} for i, (_, q) in enumerate(rules_and_quotes)],
-        "benefit_quote": BENEFIT_QUOTE if benefit else None,
+        "benefit_quote": benefit_quote if benefit else None,
     }
 
 
@@ -93,4 +103,4 @@ def corrected() -> dict[str, Any]:
             "The applicant should be living Below Poverty Line.",
         ),
     ]
-    return build(rules, alternatives_required=False)
+    return build(rules, alternatives_required=False, benefit_quote=CORRECTED_BENEFIT_QUOTE)

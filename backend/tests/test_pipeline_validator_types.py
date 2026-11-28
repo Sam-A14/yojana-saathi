@@ -62,6 +62,9 @@ def test_item_4_is_no_longer_valid_and_each_defect_is_named_with_its_position() 
         ("document_as_rule", "scheme.version.rules.all[3]"),
         ("document_as_rule", "scheme.version.rules.all[4]"),
         ("document_as_rule", "scheme.version.rules.all[5]"),
+        # Found later, by the benefit-number check: the text says "from 80 years" but the quote
+        # has no 80.
+        ("benefit_number_not_in_quote", "scheme.version.benefit_text_en"),
     ]
     type_problem = result.problems[0].message
     assert "is_bpl is a yes/no field" in type_problem and '"yes"' in type_problem
@@ -244,6 +247,7 @@ def test_a_paper_inside_a_bigger_rule_is_found_too() -> None:
             )
         ],
         alternatives_required=False,
+        benefit=False,
     )
     result = check(answer)
     assert codes(result) == ["quote_wrong_section", "document_as_rule"]

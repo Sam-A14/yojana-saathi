@@ -220,6 +220,7 @@ def test_a_too_short_benefit_quote_is_flagged() -> None:
 
 def test_a_benefit_quote_may_span_a_line_break_in_the_source() -> None:
     ok = answer_with_benefit()
+    ok["scheme"]["version"]["benefit_text_en"] = "A pension for persons belonging to SC or ST."
     ok["benefit_quote"] = "persons belonging to SC or ST categories"  # the source breaks after "ST"
     assert check(ok).is_valid
 
