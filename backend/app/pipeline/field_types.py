@@ -22,6 +22,7 @@ from app.rules.values import (
     EDUCATION_VALUES,
     MARITAL_STATUS_VALUES,
     OCCUPATION_VALUES,
+    STUDY_LEVEL_VALUES,
 )
 
 # Fields whose answer is always one of a fixed list. For these, "not group_d" and "none or other"
@@ -33,6 +34,7 @@ CLOSED_VALUES: dict[str, tuple[str, ...]] = {
     "category": CATEGORY_VALUES,
     "education": EDUCATION_VALUES,
     "occupation": OCCUPATION_VALUES,
+    "current_study_level": STUDY_LEVEL_VALUES,
     **ALLOWED_VALUES,  # govt_employee, pension_band
 }
 

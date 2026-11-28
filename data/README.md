@@ -43,7 +43,7 @@ Hand-made data files. The database is loaded from these files, so a mistake here
 - `fixable`: fields whose failure the family can fix (usually a missing document). A person who
   fails only these is a "near miss".
 - `field` must come from a fixed list in `scheme.schema.json`: the member and household attributes
-  (`age`, `gender`, `marital_status`, `occupation`, `education`, `is_student`, `disability`,
+  (`age`, `gender`, `marital_status`, `occupation`, `education`, `is_student`, `current_study_level`, `disability`,
   `state`, `district`, `area_type`, `income_band_max`, `category`, `is_bpl`) and one `has_<code>` field per
   document in `documents.json`. A typo fails the check instead of silently meaning "unknown".
 - **Keep this list in sync with `backend/app/rules/fields.py`** when that file is added. A test

@@ -302,6 +302,43 @@ def test_is_bpl_is_independent_of_holding_the_bpl_card(
     assert result["status"] == "eligible"
 
 
+# --- what the person is studying now ---
+
+
+STUDY_RULE = {"all": [{"field": "current_study_level", "op": "eq", "value": "class_9_10"}]}
+
+
+def test_study_level_unanswered_is_unknown_not_no(
+    client: TestClient, db: Session, seeded, today, make_family
+) -> None:
+    add_scheme(db, "study-test", STUDY_RULE)
+    family = make_family()
+    add_member(client, family, "Ravi", is_student=True)  # level never answered
+
+    result = schemes_of(eligibility(client, family), "Ravi")["study-test"]
+
+    assert result["status"] == "unknown"
+    assert [r["rule"] for r in result["unknown_rules"]] == [STUDY_RULE["all"][0]]
+
+
+@pytest.mark.parametrize(
+    ("level", "listed"), [("class_9_10", "eligible"), ("class_11_12", None), ("class_1_8", None)]
+)
+def test_study_level_answers_decide_the_rule(
+    client: TestClient, db: Session, seeded, today, make_family, level: str, listed: str | None
+) -> None:
+    add_scheme(db, "study-test", STUDY_RULE)
+    family = make_family()
+    add_member(client, family, "Ravi", is_student=True, current_study_level=level)
+
+    results = schemes_of(eligibility(client, family), "Ravi")
+
+    if listed is None:  # a definite "no": counted, not listed
+        assert "study-test" not in results
+    else:
+        assert results["study-test"]["status"] == listed
+
+
 # --- missing documents ---
 
 

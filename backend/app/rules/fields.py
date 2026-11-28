@@ -17,6 +17,7 @@ MEMBER_FIELDS = frozenset(
         "occupation",
         "education",
         "is_student",
+        "current_study_level",
         "disability",
         "owns_cultivable_land",
         "paid_income_tax_last_year",

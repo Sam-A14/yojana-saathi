@@ -27,6 +27,7 @@ ATTRIBUTE_FIELDS = {
     "occupation",
     "education",
     "is_student",
+    "current_study_level",
     "disability",
     "state",
     "district",

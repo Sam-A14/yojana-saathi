@@ -111,6 +111,14 @@ def test_non_boolean_fact_for_is_true_is_an_error() -> None:
 # ---------------------------------------------------------------- combinators
 
 
+def test_study_level_is_a_member_fact_and_missing_is_unknown() -> None:
+    rule = condition("current_study_level", "eq", "class_9_10")
+
+    assert status_of(rule, person(current_study_level="class_9_10")) == "eligible"
+    assert status_of(rule, person(current_study_level="undergraduate")) == "not_eligible"
+    assert status_of(rule, person()) == "unknown"
+
+
 YES = condition("is_student", "is_true")
 NO = condition("disability", "is_true")
 ME = person(is_student=True, disability=False)

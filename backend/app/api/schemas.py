@@ -30,6 +30,7 @@ from app.rules.values import (
     INCOME_BAND_VALUES,
     MARITAL_STATUS_VALUES,
     OCCUPATION_VALUES,
+    STUDY_LEVEL_VALUES,
 )
 
 MAX_MEMBERS_PER_HOUSEHOLD = 20
@@ -148,6 +149,7 @@ class MemberFields(Strict):
     occupation: Literal[*OCCUPATION_VALUES] | None = None  # type: ignore[valid-type]
     education: Literal[*EDUCATION_VALUES] | None = None  # type: ignore[valid-type]
     is_student: StrictBool | None = None
+    current_study_level: Literal[*STUDY_LEVEL_VALUES] | None = None  # type: ignore[valid-type]
     disability: StrictBool | None = None
     owns_cultivable_land: StrictBool | None = None
     paid_income_tax_last_year: StrictBool | None = None
