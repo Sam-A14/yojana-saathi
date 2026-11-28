@@ -1,6 +1,8 @@
 import { clearSession } from "./session";
 import { trackRequest } from "./slow-requests";
 import type {
+  AlertItem,
+  Alerts,
   DocumentInfo,
   Eligibility,
   Family,
@@ -179,6 +181,14 @@ export const api = {
     request<Household>(household(family), { method: "PATCH", token: family.token, body: data }),
   getEligibility: (family: Family) =>
     request<Eligibility>(`${household(family)}/eligibility`, { token: family.token }),
+
+  // "What's new for your family": made by the daily job, read and marked read here.
+  getAlerts: (family: Family) =>
+    request<Alerts>(`${household(family)}/alerts`, { token: family.token }),
+  markAlertRead: (family: Family, alertId: number) =>
+    request<AlertItem>(`${household(family)}/alerts/${alertId}/read`, { method: "POST", token: family.token }),
+  markAllAlertsRead: (family: Family) =>
+    request<Alerts>(`${household(family)}/alerts/read-all`, { method: "POST", token: family.token }),
 
   listMembers: (family: Family) =>
     request<Member[]>(`${household(family)}/members`, { token: family.token }),

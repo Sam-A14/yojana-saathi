@@ -192,6 +192,8 @@ export class FakeApi {
   latency = 0;
   /** Which sample family's results the eligibility route returns. */
   fixture: Fixture = eligibility;
+  /** The family's "What's new" list, newest first. Empty unless a test fills it. */
+  alerts: { id: number; type: string; payload: Json; created_at: string; read: boolean }[] = [];
   /** While true, every request fails as if the phone had no internet. */
   offline = false;
   /** Milliseconds the eligibility answer is held back (a slow server waking up). */
@@ -343,6 +345,21 @@ export class FakeApi {
       this.households.set(id, { fields: { ...HOME_DEFAULTS, ...body }, owner: email, members: [] });
       user.householdId = id;
       return reply(201, { id, ...HOME_DEFAULTS, ...body });
+    }
+
+    // The "What's new" list (backend/app/api/alerts.py): a test fills `api.alerts` first.
+    const alertsRoute = /^\/households\/([^/]+)\/alerts(?:\/(read-all)|\/(\d+)\/read)?$/.exec(path);
+    if (alertsRoute) {
+      const owner = this.households.get(alertsRoute[1]);
+      if (!owner || owner.owner !== email) return reply(403, { detail: "No such household for your account." });
+      if (alertsRoute[2]) this.alerts.forEach((a) => (a.read = true));
+      if (alertsRoute[3]) {
+        const one = this.alerts.find((a) => a.id === Number(alertsRoute[3]));
+        if (!one) return reply(404, { detail: "No such alert." });
+        one.read = true;
+        return reply(200, one);
+      }
+      return reply(200, { unread: this.alerts.filter((a) => !a.read).length, alerts: this.alerts });
     }
 
     const match = /^\/households\/([^/]+)(?:\/members(?:\/([^/]+))?(\/documents)?|\/eligibility)?$/.exec(path);

@@ -448,6 +448,21 @@ export const hi: typeof en = {
     google_unavailable: "Google से साइन-इन अभी उपलब्ध नहीं है। कृपया ईमेल से साइन इन करें।",
   },
   // needs native review
+  // needs native review (owner): the whole "What's new" list
+  alerts: {
+    title: "आपके परिवार के लिए नया क्या है",
+    unread: "{count} नए",
+    new: "नया",
+    empty: "अभी कुछ नया नहीं है। हम दिन में एक बार जाँचते हैं, और कुछ बदलने पर आपको यहाँ बताते हैं।",
+    markRead: "पढ़ा हुआ मानें",
+    markAllRead: "सब पढ़ा हुआ मानें",
+    text: {
+      newScheme: "{member} अब {scheme} के लिए पात्र हो सकते हैं।",
+      ageThreshold:
+        "{member} {year} में {age} साल के होंगे। हमें सिर्फ़ जन्म का साल पता है, इसलिए यह उस साल में कभी भी हो सकता है। तब ये योजनाएँ बैठ सकती हैं: {schemes}।",
+      ruleChange: "{scheme} के नियम बदल गए हैं। आपके परिवार का नतीजा अब अलग हो सकता है। कृपया फिर से देखें।",
+    },
+  },
   example: {
     label: "डेमो, असली परिवार नहीं",
     title: "एक डेमो परिवार",
