@@ -1,0 +1,44 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": false,
+    "notes": [
+      "Proposed by the LLM extractor (review item 16, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request."
+    ]
+  },
+  "slug": "pmsby",
+  "name_en": "Pradhan Mantri Suraksha Bima Yojana",
+  "name_hi": null,
+  "level": "central",
+  "state": null,
+  "category": "health",
+  "official_url": "https://www.myscheme.gov.in/schemes/pmsby",
+  "version": {
+    "rules": {
+      "all": [
+        {
+          "field": "age",
+          "op": "between",
+          "value": [
+            18,
+            70
+          ]
+        }
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "In case of accidental death or total irrecoverable loss of both eyes, hands, or feet, the benefit is Rs. 2 Lakhs. In case of irrecoverable loss of sight of one eye or loss of use of one hand or foot, the benefit is Rs. 1 Lakh.",
+    "benefit_text_hi": null,
+    "not_checked_en": [
+      "Must be an individual bank account holder of a participating bank.",
+      "Must give consent to join and enable auto-debit for premium payment."
+    ],
+    "not_checked_hi": null,
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://www.myscheme.gov.in/schemes/pmsby",
+    "verified_at": "2026-11-28",
+    "approved_by": "Sam-A14",
+    "documents": []
+  }
+}
