@@ -1,0 +1,110 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": false,
+    "notes": [
+      "Proposed by the LLM extractor (review item 10, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request.",
+      "ADDED IN REVIEW (owner): the rule current_study_level in [undergraduate, postgraduate, other]. The page names study levels only in the Benefits table, which a rule quote may not come from, so the extractor could not propose it. Quote, under Details: \"post matric scholarship scheme is being operated in online mode\". class_11_12 is deliberately NOT included: the page never says Class 11 or 12 students can apply (see not_checked_en).",
+      "Also changed in review: the four not_checked lines replaced (papers removed, class 11-12 and budget lines added); document bank_account_aadhaar_linked added (source: \"Student bank passbook\"); name_en reworded; benefit_text_en rewritten.",
+      "Source quote (benefit_text_en): 1 Group -1 Degree and Master Degree Courses, M. Fil.-Ph.D., Courses of all medical therapies, Technology, Engineering, Planning, Architecture, Design, Fashion Technology, Agriculture, Animal Husbandry, Allied Sciences, Business Finance, Management Administration, Computer Science etc, C.P.L. Courses, Post Graduate Diploma in Medical Management, C.A., I.C.W.A., C.S., I.C.F.A., LL.M. , D. Lit, D.S.C. etc. 1,200/- 550/-",
+      "Source quote (benefit_text_en): 4 Group -4 All non-degree level courses, where-in the minimum entrance qualification is High School, like I.T.I. and three year’s diploma courses (Polytechnic) etc. 380/- 230/-",
+      "NEEDS NATIVE REVIEW (owner): name_hi, benefit_text_hi and not_checked_hi."
+    ]
+  },
+  "slug": "up-obc-post-matric",
+  "name_en": "OBC Post-Matric Scholarship – Uttar Pradesh",
+  "name_hi": "अन्य पिछड़ा वर्ग दशमोत्तर छात्रवृत्ति – उत्तर प्रदेश",
+  "level": "state",
+  "state": "UP",
+  "category": "education",
+  "official_url": "https://www.myscheme.gov.in/schemes/mpss",
+  "version": {
+    "rules": {
+      "all": [
+        {
+          "field": "state",
+          "op": "eq",
+          "value": "UP"
+        },
+        {
+          "field": "income_band_max",
+          "op": "lte",
+          "value": 200000
+        },
+        {
+          "field": "category",
+          "op": "eq",
+          "value": "OBC"
+        },
+        {
+          "field": "is_student",
+          "op": "is_true"
+        },
+        {
+          "field": "current_study_level",
+          "op": "in",
+          "value": [
+            "undergraduate",
+            "postgraduate",
+            "other"
+          ]
+        }
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "A monthly scholarship. Group 1 courses (engineering, medicine, degree and master's courses): ₹1,200 a month in a hostel or ₹550 a month for day scholars. Other course groups get less, down to ₹380 / ₹230 a month for ITI and polytechnic courses.",
+    "benefit_text_hi": "हर महीने की छात्रवृत्ति। समूह 1 के कोर्स (इंजीनियरिंग, मेडिकल, डिग्री और मास्टर्स कोर्स): छात्रावास में ₹1,200 प्रति माह, या घर से आने-जाने वाले (डे स्कॉलर) छात्रों के लिए ₹550 प्रति माह। बाकी कोर्स समूहों में इससे कम मिलता है, आईटीआई और पॉलिटेक्निक कोर्स के लिए घटकर ₹380 / ₹230 प्रति माह।",
+    "not_checked_en": [
+      "Class 11 and 12 students: this page does not say if you can apply. Ask the office.",
+      "You must be studying at a government, government-aided or recognised institute in Uttar Pradesh. This app does not check it.",
+      "Payment depends on the government's budget each year."
+    ],
+    "not_checked_hi": [
+      "कक्षा 11 और 12 के छात्र: इस पन्ने पर नहीं लिखा है कि आप आवेदन कर सकते हैं या नहीं। दफ़्तर से पूछें।",
+      "आपको उत्तर प्रदेश के किसी सरकारी, सरकारी सहायता प्राप्त या मान्यता प्राप्त संस्थान में पढ़ना होगा। यह ऐप इसकी जाँच नहीं करता।",
+      "भुगतान हर साल सरकार के बजट पर निर्भर करता है।"
+    ],
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://www.myscheme.gov.in/schemes/mpss",
+    "verified_at": "2026-11-28",
+    "approved_by": "Sam-A14",
+    "documents": [
+      {
+        "code": "caste_certificate",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "income_certificate",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "marksheet",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "ration_card",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "aadhaar_card",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "voter_id",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "bank_account_aadhaar_linked",
+        "required": true,
+        "applies_to": "applicant"
+      }
+    ]
+  }
+}
