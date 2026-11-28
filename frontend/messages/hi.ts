@@ -236,6 +236,27 @@ export const hi: typeof en = {
     checkOfficial: "सही सीमा सरकारी वेबसाइट पर मिलेगी।",
     everyone: "आपके परिवार के हर व्यक्ति",
   },
+  // needs native review (owner): the questions about the whole family. "anyone" for yes/no facts,
+  // "everyone" for the others. See lib/question-text.ts.
+  familyQuestions: {
+    age: "आपके परिवार के हर व्यक्ति का जन्म किस वर्ष हुआ?",
+    gender: "आपके परिवार के हर व्यक्ति पुरुष हैं, महिला हैं या अन्य?",
+    marital_status: "आपके परिवार के हर व्यक्ति की वैवाहिक स्थिति क्या है?",
+    occupation: "आपके परिवार के हर व्यक्ति का मुख्य काम क्या है?",
+    education: "आपके परिवार के हर व्यक्ति ने कितनी पढ़ाई पूरी की?",
+    is_student: "क्या आपके परिवार में कोई अभी पढ़ाई कर रहा है?",
+    current_study_level: "आपके परिवार का हर विद्यार्थी अभी किस कक्षा में पढ़ रहा है?",
+    disability: "क्या आपके परिवार में किसी को कोई विकलांगता है?",
+    owns_cultivable_land: "क्या आपके परिवार में किसी के नाम खेती की ज़मीन है?",
+    is_remarried: "क्या आपके परिवार में किसी ने दोबारा शादी की है?",
+    paid_income_tax_last_year: "क्या आपके परिवार में किसी ने पिछले साल आयकर दिया?",
+    govt_employee: "क्या आपके परिवार में कोई सरकारी नौकरी करता है या करता था?",
+    pension_band: "क्या आपके परिवार में किसी को सरकारी पेंशन मिलती है?",
+    is_registered_professional:
+      "क्या आपके परिवार में कोई पंजीकृत डॉक्टर, इंजीनियर, वकील, चार्टर्ड अकाउंटेंट या आर्किटेक्ट है?",
+    holds_constitutional_post: "क्या आपके परिवार में किसी के पास कोई ऊँचा सार्वजनिक पद है या रहा है?",
+    document: "क्या आपके परिवार में किसी के पास यह कागज़ है: {document}?",
+  },
   // needs native review
   questions: {
     age: "{name} का जन्म किस वर्ष हुआ?",
