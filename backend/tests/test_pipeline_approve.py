@@ -253,7 +253,8 @@ def test_the_description_shows_every_rule_next_to_its_quote_and_the_benefit_quot
         assert f"**Rule {index}**" in body and quote in body
     assert BENEFIT_QUOTE in body and BENEFIT_TEXT in body
     assert "`octocat`" in body and "`reviewer-1`" in body  # who was named, and who ran it
-    assert "does not publish anything" in body and "Seed database" in body
+    assert "Merging this publishes the scheme" in body and "Seed database" in body
+    assert "Nothing here has touched the database yet" in body
     assert "Close and reopen" in body  # how to get the normal CI checks
     assert "+++ b/data/schemes_seed/test-scheme.json" in body  # the diff
     assert "All 4 quotes are still found word for word" in body

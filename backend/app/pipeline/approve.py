@@ -5,9 +5,9 @@ Run it with:  python -m app.pipeline.approve <review_item_id> --approver <github
 
 This is the "Approve scheme proposal" workflow's engine. It only READS the database. It writes
 `data/schemes_seed/<slug>.json` in the working copy; the workflow then opens a pull request, and a
-person merges it. Nothing reaches the database from here: the existing "Seed database" workflow
-loads the file after the merge (decision 004). Prints the slug on stdout; every refusal goes to
-stderr and exits 1, with nothing written.
+person merges it. Nothing reaches the database from here: the "Seed database" workflow loads the
+file after the merge, by itself (decisions 004 and 046). Prints the slug on stdout; every refusal
+goes to stderr and exits 1, with nothing written.
 """
 
 import argparse
@@ -263,8 +263,8 @@ def render_body(
         lines.append(f"- Workflow run: {run_url}")
     lines += [
         "",
-        "**Merging this does not publish anything.** After the merge, run the **Seed database** "
-        "workflow to load the file. Nothing here has touched the database.",
+        "**Merging this publishes the scheme.** The **Seed database** workflow runs by itself on "
+        "the push to `main` and loads the file. Nothing here has touched the database yet.",
         "",
         "Pull requests opened by a workflow do not start the normal CI checks. Close and reopen "
         "this pull request to run them. The job already ran the seed-file and rule tests.",

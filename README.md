@@ -248,6 +248,19 @@ reach production), and it shows up in the Actions list only after the file is on
 fails with "DATABASE_URL secret is not set", redo the setup above. The tables must exist first:
 Render creates them when the backend starts, so deploy the backend before seeding.
 
+### Add a scheme in one step
+
+Actions > **Add scheme** > Run workflow (branch `main`): type the slug and paste the page text (the
+page URL on line 1, then the text exactly as pasted). It writes `data/scheme_sources/<slug>.txt`,
+extracts and validates the rules, and then either opens **one pull request** containing the source
+file and the seed file, or, if the proposal failed validation, opens (or adds to) a GitHub issue
+that lists the problems. There is no automatic retry. Same one-time setup as the two workflows below
+(the `LLM_API_KEY` and `DATABASE_URL` secrets, and "Allow GitHub Actions to create and approve pull
+requests"). Read the pull request against `docs/scheme-review-checklist.md`, and **merging it is
+the verification**: `approved_by` is whoever started the run, set before anyone read it. The merge
+starts **Seed database** by itself. It refuses a slug that already has a source or seed file. The
+two workflows below still work for a source file that is already in `data/`.
+
 ### Extract scheme rules with the LLM (optional, after seeding)
 
 Paste a scheme's text into `data/scheme_sources/<slug>.txt` (source URL on line 1; see
