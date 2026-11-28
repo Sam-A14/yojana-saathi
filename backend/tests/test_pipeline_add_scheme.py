@@ -177,3 +177,132 @@ def test_an_invalid_proposal_still_exits_0_and_lists_its_problems(
     assert result["is_valid"] is False and result["review_item_id"] is not None
     assert [p["code"] for p in result["problems"]] == ["invalid_value_type"]
     assert set(result["problems"][0]) == {"code", "where", "message"}
+
+
+# --- a page fetched by the workflow --------------------------------------------------------------
+
+
+def test_the_page_text_can_come_from_a_file_the_fetcher_wrote(
+    data_dir: Path, tmp_path: Path
+) -> None:
+    fetched = tmp_path / "fetched.txt"
+    fetched.write_text(f"{SOURCE_URL}\n\nA title\n\nDetails\nText.\n", encoding="utf-8")
+
+    real = add_scheme.write_source
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(add_scheme, "write_source", lambda slug, text: real(slug, text, data_dir))
+        patch.delenv("SOURCE_TEXT", raising=False)
+        assert add_scheme.main(["write-source", "new-scheme", "--from-file", str(fetched)]) == 0
+
+    document = read_source("new-scheme", data_dir)
+    assert document.url == SOURCE_URL and "Text." in document.text
+
+
+def test_a_fetched_page_is_shown_in_the_pull_request_to_compare_with_the_page() -> None:
+    text = f"{SOURCE_URL}\n\nTitle\n\nEligibility\nAdult women only.\n"
+
+    notice = add_scheme.pr_notice("octocat", "new-scheme", None, SOURCE_URL, text)
+
+    assert notice.index("## Added by the Add scheme workflow") < notice.index(
+        "## The fetched source text"
+    )
+    assert f"read from {SOURCE_URL} by a program" in notice
+    assert "compare it with the page before merging" in notice
+    assert (
+        "<details>" in notice and "</details>" in notice
+    )  # collapsible: it does not push the review down
+    assert "Adult women only." in notice
+
+
+def test_a_pasted_page_has_no_fetched_section() -> None:
+    notice = add_scheme.pr_notice("octocat", "new-scheme", None)
+
+    assert "fetched source text" not in notice and "<details>" not in notice
+
+
+def test_page_text_cannot_break_out_of_its_code_block() -> None:
+    notice = add_scheme.pr_notice("o", "s", None, SOURCE_URL, "line\n```\n# A fake heading\n```\n")
+
+    assert (
+        "````\nline\n```\n# A fake heading\n```\n````" in notice
+    )  # a longer fence than any inside
+
+
+def test_a_very_long_page_is_cut_with_a_note_so_the_description_still_fits() -> None:
+    text = "x" * (add_scheme.MAX_SHOWN_SOURCE_CHARS + 5_000)
+
+    notice = add_scheme.pr_notice("o", "s", None, SOURCE_URL, text)
+
+    assert "Cut after 40,000 characters" in notice
+    assert len(notice) < 50_000  # far below GitHub's 65,536 limit
+
+
+def test_the_command_shows_exactly_the_file_that_was_saved(
+    data_dir: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    add_scheme.write_source("new-scheme", PAGE, data_dir)
+    monkeypatch.setattr(add_scheme, "DEFAULT_DATA_DIR", data_dir)
+
+    code = add_scheme.main(
+        ["pr-notice", "--actor", "octocat", "--slug", "new-scheme", "--fetched-from", SOURCE_URL]
+    )
+
+    out = capsys.readouterr().out
+    assert (
+        code == 0 and "aged 60 years or above" in out and "Added by the Add scheme workflow" in out
+    )
+
+
+# --- the workflow file ---------------------------------------------------------------------------
+
+WORKFLOW = Path(__file__).resolve().parents[2] / ".github" / "workflows" / "add-scheme.yml"
+
+
+def workflow() -> dict:
+    import yaml
+
+    return yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+
+
+def test_the_workflow_takes_text_or_an_address_and_only_the_slug_is_required() -> None:
+    inputs = workflow()[True]["workflow_dispatch"]["inputs"]
+
+    assert inputs["slug"]["required"] is True
+    assert inputs["source_text"]["required"] is False and inputs["source_url"]["required"] is False
+    assert inputs["source_text"]["default"] == "" and inputs["source_url"]["default"] == ""
+
+
+def test_the_browser_is_installed_and_the_page_fetched_only_when_an_address_was_given() -> None:
+    steps = {s.get("name"): s for s in workflow()["jobs"]["add"]["steps"]}
+
+    for name in ("Install the browser", "Fetch the page (robots.txt first)"):
+        assert steps[name]["if"] == "steps.mode.outputs.fetch == 'true'", name
+    # the plain install (used for pasted text too) never pulls in the browser package
+    plain = next(
+        s
+        for s in workflow()["jobs"]["add"]["steps"]
+        if s.get("run") == "pip install -r backend/requirements.txt"
+    )
+    assert "fetch" not in plain["run"]
+    assert "requirements-fetch.txt" in steps["Install the browser"]["run"]
+
+
+def test_the_fetch_comes_before_the_source_is_written_and_the_model_is_called() -> None:
+    names = [s.get("name") for s in workflow()["jobs"]["add"]["steps"]]
+
+    assert names.index("Check there is exactly one source") < names.index(
+        "Fetch the page (robots.txt first)"
+    )
+    assert names.index("Fetch the page (robots.txt first)") < names.index("Write the source file")
+    assert names.index("Write the source file") < names.index("Extract and validate the rules")
+
+
+def test_the_address_reaches_the_script_only_through_the_environment() -> None:
+    step = next(
+        s
+        for s in workflow()["jobs"]["add"]["steps"]
+        if s.get("name") == "Fetch the page (robots.txt first)"
+    )
+
+    assert step["env"]["SOURCE_URL"] == "${{ inputs.source_url }}"
+    assert "${{" not in step["run"]  # nothing typed by a person is pasted into the shell text

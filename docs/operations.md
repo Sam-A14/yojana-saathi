@@ -245,8 +245,13 @@ Render creates them when the backend starts, so deploy the backend before seedin
 
 ### Add a scheme in one step
 
-Actions > **Add scheme** > Run workflow (branch `main`): type the slug and paste the page text (the
-page URL on line 1, then the text exactly as pasted). It writes `data/scheme_sources/<slug>.txt`,
+Actions > **Add scheme** > Run workflow (branch `main`): type the slug and **either** paste the page text
+(the page URL on line 1, then the text exactly as pasted) **or** give one myScheme page address
+(`source_url`, like `https://www.myscheme.gov.in/schemes/pmay-g`; not both). With an address the job
+reads the site's robots.txt first and refuses if the path is disallowed, opens that one page in headless
+Chromium with a User-Agent that names the project, clicks each tab and saves its text, and the pull
+request shows the fetched text so you can compare it with the page. It never crawls or follows a link
+(see `docs/decisions/049-fetching-a-scheme-page.md`; read the site's terms of use first). It writes `data/scheme_sources/<slug>.txt`,
 extracts and validates the rules, and then either opens **one pull request** containing the source
 file and the seed file, or, if the proposal failed validation, opens (or adds to) a GitHub issue
 that lists the problems. There is no automatic retry. Same one-time setup as the two workflows below
