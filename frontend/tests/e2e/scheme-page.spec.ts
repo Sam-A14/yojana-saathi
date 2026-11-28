@@ -99,6 +99,19 @@ test("the page is in Hindi when the language is Hindi", async ({ page, api }) =>
   await expect(article.getByRole("link", { name: "सरकारी वेबसाइट खोलें" })).toBeVisible();
 });
 
+test("the page credits its source, linked to the page the rules were read from", async ({ page, api }) => {
+  const { article } = await openFor(page, api, "Kamla", "Indira Gandhi National Widow Pension Scheme (IGNWPS)");
+
+  const credit = article.getByRole("link", { name: "myScheme (myscheme.gov.in)" });
+  await expect(credit).toHaveAttribute("href", "https://www.myscheme.gov.in/schemes/nsap-ignwps");
+  await expect(credit).toHaveAttribute("target", "_blank");
+  await expect(credit).toHaveAttribute("rel", /noopener/);
+  await expect(article.getByText("Source:")).toBeVisible();
+
+  await page.getByRole("button", { name: "हिन्दी" }).click();
+  await expect(article.getByText("स्रोत:")).toBeVisible();
+});
+
 test("opening a scheme without saying for whom asks to start from the family page", async ({ page, api }) => {
   const family = api.seedHousehold();
   api.seedMembers(family.id, ["Kamla"]);

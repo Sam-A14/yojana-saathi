@@ -64,6 +64,8 @@ export type SchemeSummary = {
   state: string | null;
   category: string;
   official_url: string;
+  // The page the rules were read from. Absent on an older server: no "Source" line is shown.
+  source_url?: string;
   benefit_text_en: string | null;
   benefit_text_hi: string | null;
   // "Rules we can't check: ask the office": plain sentences. The Hindi list is null until it is written.

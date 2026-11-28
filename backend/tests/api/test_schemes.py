@@ -35,12 +35,18 @@ def test_verified_scheme_says_so(client: TestClient, db: Session, seeded) -> Non
     assert by_slug["pm-kisan"]["verified"] is True
 
 
+def test_list_carries_the_source_page_for_the_credit_line(client: TestClient, seeded) -> None:
+    for scheme in client.get("/schemes").json():
+        assert scheme["source_url"].startswith("http"), scheme["slug"]
+
+
 def test_detail_has_documents_and_source(client: TestClient, seeded) -> None:
     response = client.get("/schemes/ignwps")
 
     assert response.status_code == 200
     body = response.json()
     assert body["official_url"] == "https://nsap.nic.in/"
+    assert body["source_url"].startswith("http")
     assert body["version_no"] == 1
     codes = {d["code"] for d in body["documents"]}
     assert {"aadhaar_card", "bpl_card"} <= codes

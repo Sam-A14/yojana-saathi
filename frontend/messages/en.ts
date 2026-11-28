@@ -288,6 +288,9 @@ export const en = {
     docLink: "Official page for this paper",
     officialTitle: "Official source",
     openOfficial: "Open the official website",
+    sourceLabel: "Source:",
+    sourceMyScheme: "myScheme (myscheme.gov.in)",
+    sourceOfficial: "Official site ({host})",
     lastChecked: "Last checked on {date}",
     unverifiedNote:
       "Not yet verified: nobody has checked this scheme’s rules against the official source. Check the official website before you rely on it.",

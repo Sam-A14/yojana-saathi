@@ -251,7 +251,7 @@ Actions > **Add scheme** > Run workflow (branch `main`): type the slug and **eit
 reads the site's robots.txt first and refuses if the path is disallowed, opens that one page in headless
 Chromium with a User-Agent that names the project, clicks each tab and saves its text, and the pull
 request shows the fetched text so you can compare it with the page. It never crawls or follows a link
-(see `docs/decisions/049-fetching-a-scheme-page.md`; read the site's terms of use first). It writes `data/scheme_sources/<slug>.txt`,
+(see `docs/decisions/049-fetching-a-scheme-page.md`; **switched off by default**: no site is allowed until the owner sets the repository variable `FETCH_ALLOWED_HOSTS`, after reading the site's terms, see `docs/decisions/050-myscheme-terms.md`). It writes `data/scheme_sources/<slug>.txt`,
 extracts and validates the rules, and then either opens **one pull request** containing the source
 file and the seed file, or, if the proposal failed validation, opens (or adds to) a GitHub issue
 that lists the problems. There is no automatic retry. Same one-time setup as the two workflows below
