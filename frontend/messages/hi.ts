@@ -604,6 +604,11 @@ export const hi: typeof en = {
     state: "राज्य की योजना",
     stateNamed: "राज्य की योजना: {state}",
   },
+  // needs native review (owner): the myScheme link
+  myScheme: {
+    link: "myScheme पर और योजनाएँ देखें (Yojana Saathi ने इन्हें जाँचा नहीं है)",
+    newTab: "(नए टैब में खुलता है)",
+  },
   schemesPage: {
     title: "हम जो सभी योजनाएँ जाँचते हैं",
     intro:
