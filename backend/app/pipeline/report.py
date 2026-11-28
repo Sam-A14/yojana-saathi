@@ -37,10 +37,10 @@ def render_report(extraction: Extraction, saved_note: str, accuracy: str | None)
             lines.append(f"- `{problem.code}` at `{problem.where}`: {problem.message}")
     lines.append("")
 
-    lines.append("### Accuracy against the hand-labelled seed file")
+    lines.append("### Accuracy against the hand-labelled ground truth")
     if accuracy is None:
-        seed = f"data/schemes_seed/{extraction.source.slug}.json"
-        lines.append(f"No seed file `{seed}`, so no score.")
+        truth = f"data/ground_truth/{extraction.source.slug}.json"
+        lines.append(f"No ground-truth file `{truth}`, so no score.")
     else:
         lines.append(_fence(accuracy, "text"))
     lines.append("")

@@ -17,8 +17,8 @@ Every woman aged 18 years or above whose family income is below ...
 ```
 
 The file name must be the scheme's slug (lowercase words joined by `-`, for example `pm-kisan`),
-the same as `data/schemes_seed/<slug>.json` if you have labelled that scheme by hand. With a seed
-file, the extraction run also reports precision and recall against it.
+the same as `data/ground_truth/<slug>.json` if you have labelled that scheme by hand. With a
+ground-truth file, the extraction run also reports precision and recall against it.
 
 ## Run it
 

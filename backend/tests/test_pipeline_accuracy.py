@@ -9,8 +9,9 @@ from app.db.seed import DEFAULT_DATA_DIR
 from app.pipeline.accuracy import (
     AccuracyError,
     compare_rules,
-    compare_to_seed,
+    compare_to_ground_truth,
     describe,
+    ground_truth_path,
     leaf_conditions,
     main,
     render_accuracy,
@@ -27,7 +28,7 @@ NO_TAX = {"not": {"any_member": {"field": "paid_income_tax_last_year", "op": "is
 
 
 def load_seed(slug: str) -> dict[str, Any]:
-    return json.loads((DEFAULT_DATA_DIR / "schemes_seed" / f"{slug}.json").read_text("utf-8"))
+    return json.loads((DEFAULT_DATA_DIR / "ground_truth" / f"{slug}.json").read_text("utf-8"))
 
 
 # --- equivalent shapes count as equal --------------------------------------------------------
@@ -160,7 +161,7 @@ def test_unreadable_rules_raise_instead_of_scoring_zero() -> None:
 def test_a_seed_file_compared_with_a_reshuffled_copy_is_perfect(slug: str) -> None:
     scheme = copy.deepcopy(load_seed(slug))
     scheme["version"]["rules"]["all"].reverse()
-    result = compare_to_seed(slug, scheme)
+    result = compare_to_ground_truth(slug, scheme)
     assert result is not None
     assert result.missed == [] and result.extra == [] and len(result.matched) > 0
 
@@ -168,15 +169,15 @@ def test_a_seed_file_compared_with_a_reshuffled_copy_is_perfect(slug: str) -> No
 def test_dropping_one_rule_from_a_seed_file_shows_up_as_a_miss() -> None:
     scheme = copy.deepcopy(load_seed("pm-kisan"))
     dropped = scheme["version"]["rules"]["all"].pop()
-    result = compare_to_seed("pm-kisan", scheme)
+    result = compare_to_ground_truth("pm-kisan", scheme)
     assert result is not None
     assert result.extra == [] and len(result.missed) >= 1
     assert dropped  # the removed rule really existed
 
 
 def test_no_seed_file_means_no_score(tmp_path: Path) -> None:
-    assert compare_to_seed("no-such-scheme", {"version": {"rules": rules(AGE)}}) is None
-    assert compare_to_seed("pm-kisan", {"version": {"rules": rules(AGE)}}, tmp_path) is None
+    assert compare_to_ground_truth("no-such-scheme", {"version": {"rules": rules(AGE)}}) is None
+    assert compare_to_ground_truth("pm-kisan", {"version": {"rules": rules(AGE)}}, tmp_path) is None
 
 
 def test_cli_prints_per_scheme_and_overall(
@@ -195,10 +196,61 @@ def test_cli_prints_per_scheme_and_overall(
     assert "OVERALL (2 schemes)" in out
 
 
-def test_cli_fails_cleanly_without_a_seed_file(
+def test_cli_fails_cleanly_without_a_ground_truth_file(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     path = tmp_path / "p.json"
     path.write_text(json.dumps({"scheme": {"slug": "zzz-unknown"}}), encoding="utf-8")
     assert main([str(path)]) == 1
-    assert "no seed file" in capsys.readouterr().err
+    assert "no ground-truth file" in capsys.readouterr().err
+
+
+# --- the ground truth is its own folder (decision 052) -----------------------------------------
+
+
+def test_the_reference_is_the_ground_truth_folder_not_the_seed_folder() -> None:
+    assert ground_truth_path("pm-kisan") == DEFAULT_DATA_DIR / "ground_truth" / "pm-kisan.json"
+
+
+def test_a_scheme_with_a_seed_file_but_no_ground_truth_has_no_score() -> None:
+    """pmay-g was written by the extractor: comparing the model with its own output would be a
+    perfect score that means nothing."""
+    assert (DEFAULT_DATA_DIR / "schemes_seed" / "pmay-g.json").is_file()
+    assert not ground_truth_path("pmay-g").exists()
+    seed = json.loads((DEFAULT_DATA_DIR / "schemes_seed" / "pmay-g.json").read_text("utf-8"))
+    assert compare_to_ground_truth("pmay-g", seed) is None
+
+
+def test_the_score_still_reads_the_ground_truth_when_the_seed_file_is_replaced(
+    tmp_path: Path,
+) -> None:
+    """The point of the folder: the reference survives a bump_version replacement of the seed."""
+    truth = load_seed("pm-kisan")
+    (tmp_path / "ground_truth").mkdir()
+    (tmp_path / "ground_truth" / "pm-kisan.json").write_text(json.dumps(truth), encoding="utf-8")
+    (tmp_path / "schemes_seed").mkdir()
+    replaced = copy.deepcopy(truth)
+    replaced["version"]["rules"]["all"] = [AGE]  # a different, extractor-style seed
+    (tmp_path / "schemes_seed" / "pm-kisan.json").write_text(json.dumps(replaced), encoding="utf-8")
+
+    result = compare_to_ground_truth("pm-kisan", replaced, tmp_path)
+
+    assert result is not None and len(result.missed) >= 1  # scored against the human file
+
+
+def test_every_ground_truth_file_is_a_scheme_file_named_by_its_slug() -> None:
+    files = sorted((DEFAULT_DATA_DIR / "ground_truth").glob("*.json"))
+    assert {f.stem for f in files} >= {"pm-kisan", "ignwps"}
+    for file in files:
+        scheme = json.loads(file.read_text("utf-8"))
+        assert scheme["slug"] == file.stem, file.name
+        assert scheme["version"]["rules"]["all"], file.name
+
+
+def test_the_seed_loader_never_reads_the_ground_truth_folder() -> None:
+    from app.db.seed import read_seed_files
+
+    seeded = {scheme["slug"] for scheme in read_seed_files().schemes}
+    assert (DEFAULT_DATA_DIR / "ground_truth" / "pm-kisan.json").is_file()
+    # Reading it by mistake would make every ground-truth slug appear twice.
+    assert len(seeded) == len(list((DEFAULT_DATA_DIR / "schemes_seed").glob("*.json"))) - 1
