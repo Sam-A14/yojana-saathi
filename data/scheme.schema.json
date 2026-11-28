@@ -320,7 +320,8 @@
         "has_student_id_card",
         "has_fee_receipt_or_admission_letter",
         "has_driving_licence",
-        "has_pan_card"
+        "has_pan_card",
+        "has_mgnrega_job_card"
       ]
     },
     "node": {

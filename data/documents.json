@@ -105,6 +105,14 @@
       "how_to_get_en": "Apply online on the Income Tax Department website, or at a PAN service centre.",
       "how_to_get_hi": "आयकर विभाग की वेबसाइट पर ऑनलाइन आवेदन करें, या किसी पैन सेवा केंद्र पर करें।",
       "official_link": "https://www.incometax.gov.in/"
+    },
+    {
+      "code": "mgnrega_job_card",
+      "name_en": "MGNREGA job card",
+      "name_hi": "मनरेगा जॉब कार्ड",
+      "how_to_get_en": "Apply at your Gram Panchayat office. The job card is issued under the MGNREGA rural employment scheme.",
+      "how_to_get_hi": "अपनी ग्राम पंचायत के दफ़्तर में आवेदन करें। जॉब कार्ड मनरेगा ग्रामीण रोज़गार योजना के तहत मिलता है।",
+      "official_link": "https://nrega.nic.in/"
     }
   ]
 }
