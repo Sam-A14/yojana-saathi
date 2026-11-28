@@ -1,0 +1,51 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": false,
+    "notes": [
+      "Proposed by the LLM extractor (review item 11, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request.",
+      "Source: a PIB press release (Ministry of Health and Family Welfare, 9 Dec 2024, Release ID 2082288), not a scheme page. It has no Details or Eligibility headings, so rule quotes are checked against the whole text. The URL on line 1 of the source file was built from the Release ID (https://pib.gov.in/PressReleasePage.aspx?PRID=2082288), not copied from a browser.",
+      "Rule: age at least 70 and nothing else, by design: the release says the cover is for all senior citizens aged 70 and above 'irrespective of their socio-economic status', so there is no income rule. Persons with private health insurance or in the Employees' State Insurance scheme are stated to be eligible too, so there is no rule about them either.",
+      "Changed in review (owner's instructions): name_en and name_hi; benefit_text_en rewritten to add the top-up; the not_checked line replaced with the owner's wording. The release says 'per year' only for the top-up; the base cover of Rs 5 lakh is not stated per year in the release, so the text does not say 'a year' for it.",
+      "Source quote (benefit_text_en): Ayushman Vay Vandana Card provides Rs 5 lakh free health cover to all senior citizens of the age 70 years and above irrespective of their socio-economic status. The senior citizens of the age 70 years and above belonging to families already covered under AB PM-JAY get an additional top-up cover up to ₹5 lakh per year for themselves.",
+      "NEEDS NATIVE REVIEW (owner): name_hi, benefit_text_hi and not_checked_hi.",
+      "Not encoded: choosing between CGHS, ECHS or CAPF cover and this scheme (see not_checked_en)."
+    ],
+    "not_encoded": [
+      "Senior citizens already covered by CGHS, ECHS or CAPF must choose between that scheme and this one."
+    ]
+  },
+  "slug": "ayushman-vay-vandana",
+  "name_en": "Ayushman Vay Vandana (AB PM-JAY for 70+)",
+  "name_hi": "आयुष्मान वय वंदना (70+ के लिए एबी पीएम-जेएवाई)",
+  "level": "central",
+  "state": null,
+  "category": "health",
+  "official_url": "https://www.beneficiary.nha.gov.in",
+  "version": {
+    "rules": {
+      "all": [
+        {
+          "field": "age",
+          "op": "gte",
+          "value": 70
+        }
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "Free health cover of ₹5 lakh for every senior citizen aged 70 or above, no matter how well off the family is. If your family already has PM-JAY cover, you get an extra top-up of up to ₹5 lakh a year for yourself.",
+    "benefit_text_hi": "70 साल या उससे अधिक उम्र के हर वरिष्ठ नागरिक के लिए ₹5 लाख का मुफ़्त स्वास्थ्य बीमा, परिवार की आर्थिक स्थिति चाहे जो हो। अगर आपके परिवार के पास पहले से PM-JAY का कवर है, तो आपको अपने लिए हर साल ₹5 लाख तक का अतिरिक्त टॉप-अप कवर मिलता है।",
+    "not_checked_en": [
+      "If you are in CGHS, ECHS or CAPF, you must choose between that scheme and this one."
+    ],
+    "not_checked_hi": [
+      "अगर आप CGHS, ECHS या CAPF की योजना में हैं, तो आपको उस योजना और इस योजना में से एक चुननी होगी।"
+    ],
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://pib.gov.in/PressReleasePage.aspx?PRID=2082288",
+    "verified_at": "2026-11-28",
+    "approved_by": "Sam-A14",
+    "documents": []
+  }
+}
