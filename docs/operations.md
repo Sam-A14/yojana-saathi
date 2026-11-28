@@ -296,6 +296,12 @@ says so and opens nothing. Pull requests opened by a workflow do not start the n
 close and reopen the pull request to run them (the frontend test that every rule can be shown in
 words runs there). The workflow itself already ran the seed-file and test-profile tests.
 
+### Daily alerts ("What's new for your family")
+The **Daily alerts** workflow runs once a day (02:47 India time) and from the Actions tab. It needs
+the `DATABASE_URL` secret only. It makes the in-app list (new scheme fits, an age soon, rules
+changed; decision 051). The first run only saves a baseline, so alerts start from the second day.
+Check it in the run summary: `households`, `new_alerts`, `first_time_members`, `failed`.
+
 ### Why is the live site slow? Read the timing
 
 Every request prints one line in the Render logs, and sends the same numbers in a `Server-Timing`

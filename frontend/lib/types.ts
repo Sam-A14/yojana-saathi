@@ -130,3 +130,18 @@ export type Eligibility = {
   members: MemberEligibility[];
   skipped_schemes: string[];
 };
+
+// GET /households/{id}/alerts (backend/app/api/alerts.py): the "What's new for your family" list.
+// The server sends facts (who, which scheme, which age); the words are ours (lib/alerts.ts).
+export type AlertScheme = { slug: string; name_en: string; name_hi: string | null };
+export type AlertItem =
+  | { id: number; created_at: string; read: boolean; type: "new_scheme"; payload: { member: string; scheme: AlertScheme } }
+  | { id: number; created_at: string; read: boolean; type: "rule_change"; payload: { scheme: AlertScheme; version_no: number } }
+  | {
+      id: number;
+      created_at: string;
+      read: boolean;
+      type: "age_threshold";
+      payload: { member: string; age: number; year: number; schemes: AlertScheme[] };
+    };
+export type Alerts = { unread: number; alerts: AlertItem[] };
