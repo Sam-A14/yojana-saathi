@@ -286,6 +286,27 @@ def test_every_scheme_with_technical_notes_also_has_lines_a_family_can_read() ->
             assert not re.search(r"\b[a-z]+_[a-z_]+\b", line), f"{scheme['slug']}: {line!r}"
 
 
+def test_up_obc_papers_alternatives_are_optional_and_the_institute_papers_are_required() -> None:
+    """The residence proof is 'any one of' five papers, so none is required; the student ID and the
+    fee receipt or admission letter are separate papers the page asks for."""
+    papers = {
+        d["code"]: d["required"]
+        for d in load("schemes_seed/up-obc-post-matric.json")["version"]["documents"]
+    }
+
+    for alternative in ("ration_card", "aadhaar_card", "voter_id", "driving_licence", "pan_card"):
+        assert papers[alternative] is False, alternative
+    for needed in (
+        "student_id_card",
+        "fee_receipt_or_admission_letter",
+        "bank_account_aadhaar_linked",
+        "caste_certificate",
+        "income_certificate",
+        "marksheet",
+    ):
+        assert papers[needed] is True, needed
+
+
 def test_ignoaps_says_what_it_does_not_check_in_plain_words() -> None:
     version = load("schemes_seed/ignoaps.json")["version"]
     english = " ".join(version["not_checked_en"])

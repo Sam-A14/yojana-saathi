@@ -8,6 +8,7 @@
       "Also changed in review: the four not_checked lines replaced (papers removed, class 11-12 and budget lines added); document bank_account_aadhaar_linked added (source: \"Student bank passbook\"); name_en reworded; benefit_text_en rewritten.",
       "Source quote (benefit_text_en): 1 Group -1 Degree and Master Degree Courses, M. Fil.-Ph.D., Courses of all medical therapies, Technology, Engineering, Planning, Architecture, Design, Fashion Technology, Agriculture, Animal Husbandry, Allied Sciences, Business Finance, Management Administration, Computer Science etc, C.P.L. Courses, Post Graduate Diploma in Medical Management, C.A., I.C.W.A., C.S., I.C.F.A., LL.M. , D. Lit, D.S.C. etc. 1,200/- 550/-",
       "Source quote (benefit_text_en): 4 Group -4 All non-degree level courses, where-in the minimum entrance qualification is High School, like I.T.I. and three year’s diploma courses (Polytechnic) etc. 380/- 230/-",
+      "Papers: 'UP Residential Proof: any of Ration card, Aadhaar card, Voter ID, driving license, or PAN card' are alternatives, so none of the five is required (ration_card, aadhaar_card, voter_id, driving_licence, pan_card). 'Student ID proof ... issued by the educational institution' is student_id_card and 'Current year fee receipt/admission letter' is fee_receipt_or_admission_letter, both required. 'Student bank passbook' is bank_account_aadhaar_linked. 'Mark sheets of qualifying examination' is marksheet.",
       "NEEDS NATIVE REVIEW (owner): name_hi, benefit_text_hi and not_checked_hi."
     ]
   },
@@ -103,6 +104,26 @@
       {
         "code": "bank_account_aadhaar_linked",
         "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "student_id_card",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "fee_receipt_or_admission_letter",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "driving_licence",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "pan_card",
+        "required": false,
         "applies_to": "applicant"
       }
     ]
