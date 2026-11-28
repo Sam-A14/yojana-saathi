@@ -106,7 +106,9 @@ quotes, not copies of whole pages, and links back so a family can check the orig
 
 myScheme's Copyright Policy says:
 
-> [OWNER: paste the exact line from myScheme's Copyright Policy here. It could not be read when this section was written.]
+> "Material featured on this platform may be reproduced free of charge. However, the material has to be reproduced accurately and not be used in a derogatory manner or a misleading context. Wherever the material is being published or issued to others, the source must be prominently acknowledged."
+
+We follow it in three ways: the rules and quotes are kept as the page states them (and checked word for word against the page text by the validator); nothing is shown in a derogatory or misleading way, and every result carries "Guidance only, not an official decision"; and the source is named on every scheme page, in the "Source:" line.
 
 Nothing is fetched from myScheme automatically: the page-fetching tool is **switched off by default**
 and refuses every site until the owner names one ([decision 050](docs/decisions/050-myscheme-terms.md)).
