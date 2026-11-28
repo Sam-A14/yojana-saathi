@@ -311,6 +311,12 @@ the `DATABASE_URL` secret only. It makes the in-app list (new scheme fits, an ag
 changed; decision 051). The first run only saves a baseline, so alerts start from the second day.
 Check it in the run summary: `households`, `new_alerts`, `first_time_members`, `failed`.
 
+### Close old review items
+Actions tab, **Supersede review items**, type the numbers (for example `2,3,4,5,6,7,8,9,11,12`).
+It sets each item that is still *pending* to *rejected* with `reviewed_by` = "superseded by <you>"
+(there is no separate "superseded" status). Items that are approved, rejected or missing are left as
+they are and listed in the run summary. Nothing is deleted.
+
 ### Why is the live site slow? Read the timing
 
 Every request prints one line in the Render logs, and sends the same numbers in a `Server-Timing`
