@@ -315,7 +315,11 @@
         "has_spouse_death_certificate",
         "has_marriage_certificate",
         "has_marksheet",
-        "has_family_register"
+        "has_family_register",
+        "has_student_id_card",
+        "has_fee_receipt_or_admission_letter",
+        "has_driving_licence",
+        "has_pan_card"
       ]
     },
     "node": {
