@@ -131,6 +131,7 @@ function pmayGFor(household: StoredHousehold) {
       benefit_text_hi: null,
       not_checked_en: [],
       not_checked_hi: null,
+      for_whole_family: true, // its rules are about the house, the village and "no member pays income tax"
       deadline_start: null,
       deadline_end: null,
       verified: true,

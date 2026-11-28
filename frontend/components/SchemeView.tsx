@@ -118,7 +118,9 @@ export function SchemeDetail({
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-3">
           <Avatar name={member.nickname} />
-          <p className="text-lg font-bold text-muted">{t("forName", { name: member.nickname })}</p>
+          <p className="text-lg font-bold text-muted">
+            {scheme.for_whole_family ? t("forFamily") : t("forName", { name: member.nickname })}
+          </p>
         </div>
         <h1 className="page-title">{schemeName(scheme, locale)}</h1>
         <div className="flex flex-wrap items-center gap-3">
@@ -183,6 +185,10 @@ export function SchemeDetail({
 
       {found && (
         <Section title={t("docsTitle")} icon={SECTION_ICONS.docs}>
+          {/* A whole-family scheme is opened for the first person: say whose papers these are. */}
+          {scheme.for_whole_family && found.missing_documents.length > 0 && (
+            <p className="font-semibold">{t("docsFor", { name: member.nickname })}</p>
+          )}
           {found.missing_documents.length === 0 && <p>{t("docsNone")}</p>}
           <ul className="flex flex-col gap-4">
             {found.missing_documents.map((doc) => (

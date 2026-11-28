@@ -169,6 +169,9 @@ export const hi: typeof en = {
   },
   // needs native review
   dashboard: {
+    // needs native review (owner): the whole-family section
+    familyTitle: "पूरे परिवार के लिए",
+    familyHint: "ये योजनाएँ किसी एक व्यक्ति पर नहीं, पूरे परिवार पर निर्भर हैं, इसलिए एक ही बार दिखाई गई हैं।",
     title: "आपके परिवार की योजनाएँ",
     checkedOn: "{date} को जाँचा गया",
     summary:
@@ -270,6 +273,9 @@ export const hi: typeof en = {
   scheme: {
     back: "अपने परिवार की योजनाओं पर वापस जाएँ",
     forName: "{name} के लिए",
+    // needs native review (owner): whole-family scheme page
+    forFamily: "आपके पूरे परिवार के लिए",
+    docsFor: "{name} के लिए कागज़:",
     summaryTitle: "आपको क्या मिलता है",
     noSummary: "इस योजना का सरल सार अभी हमारे पास नहीं है। सरकारी वेबसाइट देखें।",
     whyTitle: "यह क्यों ठीक बैठ सकती है",

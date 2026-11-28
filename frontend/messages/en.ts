@@ -149,6 +149,8 @@ export const en = {
     saving: "Saving…",
   },
   dashboard: {
+    familyTitle: "For the whole family",
+    familyHint: "These schemes depend on your whole family, not on one person, so they are shown once.",
     title: "Your family’s schemes",
     checkedOn: "Checked on {date}",
     summary:
@@ -242,6 +244,8 @@ export const en = {
   scheme: {
     back: "Back to your family’s schemes",
     forName: "For {name}",
+    forFamily: "For your whole family",
+    docsFor: "Papers for {name}:",
     summaryTitle: "What you get",
     noSummary: "We do not have a plain summary for this scheme yet. See the official website.",
     whyTitle: "Why this may fit",

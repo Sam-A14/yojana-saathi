@@ -343,6 +343,48 @@ def test_house_type_answers_decide_the_rule(
         assert results["house-test"]["status"] == listed
 
 
+# --- schemes that are about the whole family ---
+
+
+def test_a_family_scheme_is_flagged_and_gives_every_member_the_same_answer(
+    client: TestClient, db: Session, seeded, today, make_family
+) -> None:
+    """The dashboard shows such a scheme once, taking one member's result, so every member's result
+    must be the same: that is what makes it safe."""
+    add_scheme(
+        db,
+        "family-test",
+        {
+            "all": [
+                {"field": "area_type", "op": "eq", "value": "rural"},
+                {"not": {"any_member": {"field": "paid_income_tax_last_year", "op": "is_true"}}},
+            ]
+        },
+    )
+    family = make_family(area_type="rural")
+    add_member(client, family, "Asha", birth_year=1990, paid_income_tax_last_year=False)
+    add_member(client, family, "Ravi", birth_year=2012)  # tax question never answered for him
+
+    body = eligibility(client, family)
+    asha, ravi = schemes_of(body, "Asha")["family-test"], schemes_of(body, "Ravi")["family-test"]
+
+    assert asha["scheme"]["for_whole_family"] is True
+    assert ravi["scheme"]["for_whole_family"] is True
+    assert asha["status"] == ravi["status"] == "unknown"  # Ravi's missing answer decides for all
+    assert [r["rule"] for r in asha["unknown_rules"]] == [r["rule"] for r in ravi["unknown_rules"]]
+
+
+def test_a_scheme_with_a_rule_about_a_person_is_not_a_family_scheme(
+    client: TestClient, db: Session, seeded, today, make_family
+) -> None:
+    family = make_family(area_type="rural")
+    add_member(client, family, "Asha", birth_year=1950)
+
+    results = schemes_of(eligibility(client, family), "Asha")
+
+    assert results["ignoaps"]["scheme"]["for_whole_family"] is False
+
+
 # --- what the person is studying now ---
 
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { EmptyResults } from "@/components/EmptyResults";
+import { FamilyResults } from "@/components/FamilyResults";
 import { FamilySummary } from "@/components/FamilySummary";
 import { MemberActions } from "@/components/MemberActions";
 import { MemberPanel } from "@/components/MemberPanel";
@@ -12,26 +13,13 @@ import { MemberResults } from "@/components/MemberResults";
 import { MyData } from "@/components/MyData";
 import { Button, ButtonLink, Card, ErrorNote, Skeleton } from "@/components/ui";
 import { api, errorKind, type ErrorKind } from "@/lib/api";
+import { countResults, nothingFound, splitFamilyLevel } from "@/lib/family-level";
 import { formatDate } from "@/lib/format";
 import { MAX_MEMBERS } from "@/lib/options";
 import { useFamilyResults } from "@/lib/use-family-results";
 import { useFamily } from "@/lib/use-family";
 import type { Session } from "@/lib/session";
-import type { Eligibility, Family, Member } from "@/lib/types";
-
-// How many (person, scheme) results fall in each group, across the whole family.
-function count(eligibility: Eligibility) {
-  const all = eligibility.members.flatMap((m) => m.schemes);
-  const of = (status: string) => all.filter((s) => s.status === status).length;
-  return { fit: of("eligible"), close: of("near_miss"), unsure: of("unknown") };
-}
-
-// True when we found nothing at all for anyone: no scheme that may fit, is close, needs an answer or
-// is blocked. (Schemes that simply do not fit are only counted, so they do not make it non-empty.)
-function nothingFound(eligibility: Eligibility): boolean {
-  const { fit, close, unsure } = count(eligibility);
-  return fit + close + unsure === 0 && eligibility.members.every((m) => m.excluded.length === 0);
-}
+import type { Family, Member } from "@/lib/types";
 
 // Next.js can keep pages the person left (hidden, with their state) for Back/Forward. The screen is
 // keyed by the family so that results loaded for one family can never be shown for another on a
@@ -72,6 +60,8 @@ function DashboardScreen({ family, session }: { family: Family; session: Session
   const te = useTranslations("errors");
   const locale = useLocale() === "hi" ? "hi" : "en";
   const { results, reload } = useFamilyResults(family);
+  // Schemes about the whole family are shown once, above the people (lib/family-level.ts).
+  const split = results.state === "ready" ? splitFamilyLevel(results.eligibility) : null;
   const [panel, setPanel] = useState<Panel>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [problem, setProblem] = useState<ErrorKind | null>(null);
@@ -158,7 +148,7 @@ function DashboardScreen({ family, session }: { family: Family; session: Session
           ) : (
             <>
               <FamilySummary
-                counts={count(results.eligibility)}
+                counts={countResults(results.eligibility)}
                 checkedOn={formatDate(results.eligibility.computed_on, locale)}
               />
               <ButtonLink href="/household/edit" variant="secondary">
@@ -169,8 +159,9 @@ function DashboardScreen({ family, session }: { family: Family; session: Session
           {results.eligibility.skipped_schemes.length > 0 && (
             <ErrorNote>{t("skipped", { count: results.eligibility.skipped_schemes.length })}</ErrorNote>
           )}
+          {split && <FamilyResults family={split.family} documents={results.documents} />}
           <div className="grid items-start gap-6 md:grid-cols-2">
-            {results.eligibility.members.map((member) => (
+            {(split?.members ?? []).map((member) => (
               <MemberResults
                 key={member.member_id}
                 member={member}

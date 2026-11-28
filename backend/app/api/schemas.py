@@ -225,6 +225,9 @@ class SchemeSummary(BaseModel):
     # the English).
     not_checked_en: list[str]
     not_checked_hi: list[str] | None
+    # True when every rule is about the household or about the members as a group (any_member), so
+    # the answer is the same for every member and the dashboard shows the scheme once.
+    for_whole_family: bool
     deadline_start: date | None
     deadline_end: date | None
     # False when no human has checked this scheme yet. The UI shows "Not yet verified"; we never

@@ -69,6 +69,9 @@ export type SchemeSummary = {
   // "Rules we can't check: ask the office": plain sentences. The Hindi list is null until it is written.
   not_checked_en: string[];
   not_checked_hi: string[] | null;
+  // true: every rule is about the household or the members as a group, so the answer is the same
+  // for everyone and the dashboard shows the scheme once. Absent (an older server): treated as false.
+  for_whole_family?: boolean;
   deadline_start: string | null;
   deadline_end: string | null;
   // false: no human has checked this scheme against the official source yet.

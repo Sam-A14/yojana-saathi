@@ -5,6 +5,7 @@ from sqlalchemy import Select, select
 
 from app.api.deps import DbSession
 from app.api.schemas import SchemeDetail, SchemeDocumentOut, SchemeSummary
+from app.api.scope import is_for_whole_family
 from app.db.models import Document, Scheme, SchemeDocument, SchemeVersion
 
 router = APIRouter(prefix="/schemes", tags=["schemes"])
@@ -23,6 +24,7 @@ def scheme_summary(scheme: Scheme, version: SchemeVersion) -> SchemeSummary:
         benefit_text_hi=version.benefit_text_hi,
         not_checked_en=version.not_checked_en,
         not_checked_hi=version.not_checked_hi,
+        for_whole_family=is_for_whole_family(version.rules_json),
         deadline_start=version.deadline_start,
         deadline_end=version.deadline_end,
         verified=version.verified_at is not None,
