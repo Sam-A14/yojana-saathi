@@ -20,6 +20,7 @@ The owner is a solo student developer building this as a resume project for prod
 - **Run checks before opening a PR**: `ruff check` and `pytest` in `backend/`; `npm run lint` and `npm run build` in `frontend/`.
 - **PR description must include:** What changed · Why · How to test (exact commands or clicks) · **Explain for interview** (3–6 plain-language bullets on the key design choices and trade-offs) · Suggestions (optional).
 - **When a design decision is made**, add a short note in `docs/decisions/NNN-title.md` (context, decision, alternatives, consequences).
+- **Adding a scheme:** follow `docs/scheme-review-checklist.md` (the checklist and the step-by-step process). Review every generated scheme pull request against it, fix problems on that pull request's branch, put a short "For the owner" summary at the top (what you changed, Hindi lines to check, anything you were unsure about), and never merge it.
 
 ## Tech standards
 
