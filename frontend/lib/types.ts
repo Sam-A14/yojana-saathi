@@ -64,6 +64,8 @@ export type SchemeSummary = {
   state: string | null;
   category: string;
   official_url: string;
+  // The page the rules were read from. Absent on an older server: no "Source" line is shown.
+  source_url?: string;
   benefit_text_en: string | null;
   benefit_text_hi: string | null;
   // "Rules we can't check: ask the office": plain sentences. The Hindi list is null until it is written.
@@ -131,3 +133,18 @@ export type Eligibility = {
   members: MemberEligibility[];
   skipped_schemes: string[];
 };
+
+// GET /households/{id}/alerts (backend/app/api/alerts.py): the "What's new for your family" list.
+// The server sends facts (who, which scheme, which age); the words are ours (lib/alerts.ts).
+export type AlertScheme = { slug: string; name_en: string; name_hi: string | null };
+export type AlertItem =
+  | { id: number; created_at: string; read: boolean; type: "new_scheme"; payload: { member: string; scheme: AlertScheme } }
+  | { id: number; created_at: string; read: boolean; type: "rule_change"; payload: { scheme: AlertScheme; version_no: number } }
+  | {
+      id: number;
+      created_at: string;
+      read: boolean;
+      type: "age_threshold";
+      payload: { member: string; age: number; year: number; schemes: AlertScheme[] };
+    };
+export type Alerts = { unread: number; alerts: AlertItem[] };

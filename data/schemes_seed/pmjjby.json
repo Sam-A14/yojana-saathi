@@ -1,0 +1,51 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": false,
+    "notes": [
+      "Proposed by the LLM extractor (review item 15, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request.",
+      "Reviewed by hand (assistant, against docs/scheme-review-checklist.md). Rule age 18-50 matches Eligibility item 1 and the Details sentence. Eligibility item 2 (individual bank / post office account) is a condition, not a paper: left in not_checked. It is not the `bank_account_aadhaar_linked` document, because the page never mentions Aadhaar. Wording of the not_checked line changed by hand to a plain sentence.",
+      "Hand-written Hindi (name_hi, benefit_text_hi, not_checked_hi) added. Benefit Hindi says ₹2 lakh and ₹436, both in the English quote; 'any reason' kept as in the quote.",
+      "official_url kept as the myScheme page: the page's only other link is a Guidelines PDF (jansuraksha.gov.in), not a portal.",
+      "Source page footer says 'Last Updated On : 18/09/20' (cut off, so the year is unclear). The premium and cover are as the page states; owner to compare with the live page.",
+      "Not encoded: auto-debit of the premium (an application step), delayed enrolment and renewal (FAQ headings only, no answers in the text).",
+      "NEEDS NATIVE REVIEW (owner): name_hi, benefit_text_hi and not_checked_hi."
+    ]
+  },
+  "slug": "pmjjby",
+  "name_en": "Pradhan Mantri Jeevan Jyoti Bima Yojana",
+  "name_hi": "प्रधानमंत्री जीवन ज्योति बीमा योजना",
+  "level": "central",
+  "state": null,
+  "category": "family_welfare",
+  "official_url": "https://www.myscheme.gov.in/schemes/pmjjby",
+  "version": {
+    "rules": {
+      "all": [
+        {
+          "field": "age",
+          "op": "between",
+          "value": [
+            18,
+            50
+          ]
+        }
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "Offers a 1-year term life cover of ₹ 2.00 Lakh for death due to any reason at a premium of ₹ 436/- per annum.",
+    "benefit_text_hi": "एक साल का जीवन बीमा: किसी भी कारण से मृत्यु होने पर ₹2 लाख का कवर। इसके लिए साल का प्रीमियम ₹436 है।",
+    "not_checked_en": [
+      "You must have your own bank or post office account. This app does not check it."
+    ],
+    "not_checked_hi": [
+      "आपका बैंक या डाकघर में अपना (व्यक्तिगत) खाता होना चाहिए। यह ऐप इसकी जाँच नहीं करता।"
+    ],
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://www.myscheme.gov.in/schemes/pmjjby",
+    "verified_at": "2026-11-28",
+    "approved_by": "Sam-A14",
+    "documents": []
+  }
+}

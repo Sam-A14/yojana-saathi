@@ -28,20 +28,37 @@ class AddSchemeError(Exception):
     """This request cannot be started. The message says why, in one line."""
 
 
-def write_source(slug: str, text: str, data_dir: Path = DEFAULT_DATA_DIR) -> Path:
+def write_source(
+    slug: str, text: str, data_dir: Path = DEFAULT_DATA_DIR, bump_version: bool = False
+) -> Path:
     """Save the pasted page as data/scheme_sources/<slug>.txt, exactly as given (line breaks made
-    uniform, one newline at the end). Refuses a slug that is already a scheme: this flow adds, it
-    never overwrites a source or a seed file a person has reviewed."""
+    uniform, one newline at the end).
+
+    Refuses a slug that is already a scheme: data/schemes_seed/<slug>.json is hand-labelled ground
+    truth and this flow adds, it does not overwrite. The one way to replace it is `bump_version`
+    (the workflow's tick box), the same guard as the Approve workflow: the old files stay in git
+    history and Seed database adds a new version of the scheme. `bump_version` for a slug that does
+    not exist is refused too, so a typo cannot start a "replacement" of nothing."""
     if not SLUG_PATTERN.fullmatch(slug):
         raise AddSchemeError(f"'{slug}' is not a valid slug (lowercase words joined by '-').")
     if len(text) > MAX_INPUT_CHARS:
         raise AddSchemeError(f"The text is longer than {MAX_INPUT_CHARS} characters.")
     source = data_dir / "scheme_sources" / f"{slug}.txt"
     seed = data_dir / "schemes_seed" / f"{slug}.json"
-    if source.exists() or seed.exists():
+    if bump_version and not seed.exists():
         raise AddSchemeError(
-            f"'{slug}' already exists in data/. Use a new slug, or change the existing scheme by "
-            "hand in a pull request."
+            f"bump_version is set but '{slug}' is not a scheme yet, so there is nothing to "
+            "replace. Run again with bump_version off."
+        )
+    if seed.exists() and not bump_version:
+        raise AddSchemeError(
+            f"'{slug}' already exists in data/ (data/schemes_seed/{slug}.json is hand-labelled "
+            "ground truth). Use a new slug, or tick bump_version to propose replacing it."
+        )
+    if source.exists() and not seed.exists():
+        raise AddSchemeError(
+            f"'{slug}' already exists in data/ (a source file is there). Use a new slug, or change "
+            "it by hand in a pull request."
         )
     clean = text.replace("\r\n", "\n").replace("\r", "\n").strip("\n") + "\n"
     source.parent.mkdir(parents=True, exist_ok=True)
@@ -86,10 +103,61 @@ def issue_body(result: dict[str, Any], run_url: str | None) -> str:
     return "\n".join(lines) + "\n"
 
 
-def pr_notice(actor: str, slug: str, run_url: str | None) -> str:
-    """The paragraph that starts a pull request opened by the "Add scheme" workflow."""
-    where = f" ([run]({run_url}))" if run_url else ""
+# GitHub refuses a pull request description over 65,536 characters; the fetched text is cut well
+# below that so the rest of the description always fits.
+MAX_SHOWN_SOURCE_CHARS = 40_000
+
+
+def fetched_section(page_url: str, source_text: str) -> str:
+    """The page text a robot fetched, shown in the pull request so a person can compare it with the
+    page before merging. Inside a code fence the text cannot close, and a collapsible block so it
+    does not push the review down."""
+    shown = source_text.strip("\n")
+    cut = len(shown) > MAX_SHOWN_SOURCE_CHARS
+    if cut:
+        shown = shown[:MAX_SHOWN_SOURCE_CHARS]
     return "\n".join(
+        [
+            "## The fetched source text: compare it with the page before merging",
+            "",
+            f"This text was **read from {page_url} by a program**, not pasted by a person. The "
+            "quotes behind every rule and the benefit text come from it word for word. Open the "
+            "page and check that it says the same, tab by tab, and that nothing is missing.",
+            "",
+            "<details><summary>Show the fetched text</summary>",
+            "",
+            _fence(shown),
+            *(
+                [
+                    "",
+                    f"*(Cut after {MAX_SHOWN_SOURCE_CHARS:,} characters; the whole file is in the "
+                    "pull request's changes.)*",
+                ]
+                if cut
+                else []
+            ),
+            "",
+            "</details>",
+            "",
+            "---",
+            "",
+        ]
+    )
+
+
+def pr_notice(
+    actor: str,
+    slug: str,
+    run_url: str | None,
+    fetched_from: str | None = None,
+    source_text: str | None = None,
+    replaces: bool = False,
+) -> str:
+    """The paragraph that starts a pull request opened by the "Add scheme" workflow. When the page
+    was fetched by the workflow (not pasted), it also shows the fetched text."""
+    where = f" ([run]({run_url}))" if run_url else ""
+    fetched = fetched_section(fetched_from, source_text or "") if fetched_from is not None else ""
+    notice = "\n".join(
         [
             f"## Added by the Add scheme workflow{where}",
             "",
@@ -102,11 +170,23 @@ def pr_notice(actor: str, slug: str, run_url: str | None) -> str:
             f"- This pull request contains the source file `data/scheme_sources/{slug}.txt` as "
             "well as the seed file, so it is the only merge needed.",
             "- When you merge, **Seed database** runs by itself and families see the scheme.",
+            *(
+                [
+                    f"- **bump_version was set: this REPLACES the existing "
+                    f"`data/schemes_seed/{slug}.json` and `data/scheme_sources/{slug}.txt`.** The "
+                    "old files stay in git history, their hand-written `labeller_notes` are "
+                    "replaced too, and Seed database adds a new version of the scheme. Read the "
+                    "diff for what changed."
+                ]
+                if replaces
+                else []
+            ),
             "",
             "---",
             "",
         ]
     )
+    return notice + fetched
 
 
 def _run_url() -> str | None:
@@ -121,21 +201,46 @@ def main(argv: list[str] | None = None) -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     write = commands.add_parser("write-source")
     write.add_argument("slug")
+    write.add_argument("--from-file", type=Path, help="read the page text from this file")
+    write.add_argument(
+        "--bump-version", action="store_true", help="replace an existing scheme on purpose"
+    )
     issue = commands.add_parser("issue-body")
     issue.add_argument("result_file", type=Path)
     notice = commands.add_parser("pr-notice")
     notice.add_argument("--actor", required=True)
     notice.add_argument("--slug", required=True)
+    notice.add_argument("--fetched-from", help="the page address, when the workflow fetched it")
+    notice.add_argument("--bump-version", action="store_true", help="the run replaces a scheme")
     args = parser.parse_args(argv)
 
     try:
         if args.command == "write-source":
-            write_source(args.slug, os.environ.get("SOURCE_TEXT", ""))
+            text = (
+                args.from_file.read_text(encoding="utf-8")
+                if args.from_file
+                else os.environ.get("SOURCE_TEXT", "")
+            )
+            # Only passed when set, so the common call stays exactly write_source(slug, text).
+            write_source(args.slug, text, **({"bump_version": True} if args.bump_version else {}))
         elif args.command == "issue-body":
             result = json.loads(args.result_file.read_text(encoding="utf-8"))
             sys.stdout.write(issue_body(result, _run_url()))
         else:
-            sys.stdout.write(pr_notice(args.actor, args.slug, _run_url()))
+            source = None
+            if args.fetched_from:  # show exactly what was saved for this scheme
+                path = DEFAULT_DATA_DIR / "scheme_sources" / f"{args.slug}.txt"
+                source = path.read_text(encoding="utf-8")
+            sys.stdout.write(
+                pr_notice(
+                    args.actor,
+                    args.slug,
+                    _run_url(),
+                    args.fetched_from,
+                    source,
+                    replaces=args.bump_version,
+                )
+            )
     except (AddSchemeError, OSError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1

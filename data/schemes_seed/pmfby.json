@@ -1,0 +1,92 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": false,
+    "notes": [
+      "Proposed by the LLM extractor (review item 18, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request.",
+      "Reviewed by hand (assistant, against docs/scheme-review-checklist.md). One rule: occupation = farmer, from Eligibility item 1 ('All farmers, including tenant farmers and sharecroppers growing notified crops in notified areas'). Not `owns_cultivable_land`, because tenant farmers and sharecroppers are included and do not own the land.",
+      "official_url is https://pmfby.gov.in/, the 'Official Website' the page links under Sources And References (checklist 1).",
+      "Documents (hand-edited): land_record changed to required: false. Eligibility item 3 says 'a valid and authenticated land ownership certificate or a valid land tenure agreement' and Documents Required says 'Evidence of Land records, as per the State Records of Right (RoR), Land Possession Certificate (LPC), and other applicable agreements', so it is an 'any one of'. bank_account_aadhaar_linked added (required: true) for the 'Passbook' line of Documents Required (checklist 3: a bank passbook is this code). The page never says 'Aadhaar-linked'.",
+      "'Any one of' papers: Identity Proof (Aadhaar Card/PAN Card/Voter ID/Bank Passbook with Photo, Kisan Photo Book/NREGA Job Card) and Address Proof (Aadhaar Card/PAN Card/Voter ID/Electricity Bill/Bank Passbook with Photo). Listed with required: false. aadhaar_card, pan_card, voter_id and mgnrega_job_card cover them. No code exists for Kisan Photo Book, electricity bill, passport-size photograph or the crop declaration: none was invented (a code needs its own pull request first).",
+      "not_checked rewritten by hand into plain sentences and extended: Eligibility item 4 (cultivator or sharecropper on the insured land, which our occupation field only partly says) added; the premium line (Exclusions, 'Non-Premium Payment') kept but softened to 'ask the office', as 'may not be eligible' is not a firm rule.",
+      "Not encoded: the Exclusions about non-notified areas, losses outside the crop cycle, negligence and losses beyond specified limits. They describe which losses are paid, not who may join, so none is an eligibility line. The government paying the entire premium in North-Eastern States, Jammu, Kashmir and Himachal Pradesh is in Benefits and is left out of the benefit text.",
+      "Benefit text numbers 2%, 1.5% and 5% are all in the Benefits quote. Hindi keeps the same numbers.",
+      "Hand-written Hindi added (name_hi, benefit_text_hi, not_checked_hi).",
+      "NEEDS NATIVE REVIEW (owner): name_hi, benefit_text_hi and not_checked_hi."
+    ]
+  },
+  "slug": "pmfby",
+  "name_en": "Pradhan Mantri Fasal Bima Yojna (PMFBY)",
+  "name_hi": "प्रधानमंत्री फसल बीमा योजना (पीएमएफबीवाई)",
+  "level": "central",
+  "state": null,
+  "category": "farmer",
+  "official_url": "https://pmfby.gov.in/",
+  "version": {
+    "rules": {
+      "all": [
+        {
+          "field": "occupation",
+          "op": "eq",
+          "value": "farmer"
+        }
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "The maximum premium payable by the farmer will be 2% for the Kharif food and oilseed crops, 1.5% for rabi food and oilseeds crop, and 5% for yearly commercial or horticultural crops, with the remaining premium subsidized by the government.",
+    "benefit_text_hi": "फसल बीमा, सस्ते प्रीमियम पर। किसान को ज़्यादा से ज़्यादा 2% (खरीफ की खाद्य और तिलहन फसलें), 1.5% (रबी की खाद्य और तिलहन फसलें) या 5% (साल भर वाली व्यावसायिक या बागवानी फसलें) प्रीमियम देना होता है। बाकी प्रीमियम सरकार देती है।",
+    "not_checked_en": [
+      "Your crop must be one of the crops notified for the scheme, and your land must be in a notified area. This app does not check it. Ask the office.",
+      "You must be the person who grows the crop on the land, as a farmer, a tenant farmer or a sharecropper. This app only asks about your work, so ask the office.",
+      "You must stand to lose money if the crop fails (the page calls this an insurable interest). This app does not check it.",
+      "You must apply in time, usually within 2 weeks of the start of the sowing season. This app does not check dates. Ask the office.",
+      "You must not already have been paid for the same crop loss from any other source. This app does not check it.",
+      "You must pay your share of the premium. Without it you may not be covered. Ask the office how and when to pay."
+    ],
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://www.myscheme.gov.in/schemes/pmfby",
+    "verified_at": "2026-11-28",
+    "approved_by": "Sam-A14",
+    "documents": [
+      {
+        "code": "aadhaar_card",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "pan_card",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "voter_id",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "mgnrega_job_card",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "land_record",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "bank_account_aadhaar_linked",
+        "required": true,
+        "applies_to": "applicant"
+      }
+    ],
+    "not_checked_hi": [
+      "आपकी फसल योजना में अधिसूचित (नोटिफाइड) फसलों में से एक होनी चाहिए, और आपकी ज़मीन अधिसूचित इलाके में होनी चाहिए। यह ऐप इसकी जाँच नहीं करता। दफ़्तर से पूछें।",
+      "आपको उस ज़मीन पर फसल उगाने वाला व्यक्ति होना चाहिए, यानी किसान, बटाईदार या किराये पर खेती करने वाला किसान। यह ऐप सिर्फ़ आपका काम पूछता है, इसलिए दफ़्तर से पूछें।",
+      "फसल खराब होने पर आपका पैसे का नुकसान होना चाहिए (पन्ने पर इसे \"बीमा योग्य हित\" कहा गया है)। यह ऐप इसकी जाँच नहीं करता।",
+      "आपको समय पर आवेदन करना होगा, आमतौर पर बुवाई का मौसम शुरू होने के 2 हफ़्तों के अंदर। यह ऐप तारीख़ें नहीं जाँचता। दफ़्तर से पूछें।",
+      "उसी फसल के नुकसान के लिए आपको किसी और जगह से पहले ही पैसा नहीं मिला होना चाहिए। यह ऐप इसकी जाँच नहीं करता।",
+      "आपको अपने हिस्से का प्रीमियम भरना होगा। इसके बिना आप बीमे में शामिल नहीं हो सकते। दफ़्तर से पूछें कि कब और कैसे भरना है।"
+    ]
+  }
+}

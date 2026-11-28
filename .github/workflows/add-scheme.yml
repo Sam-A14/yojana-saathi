@@ -1,7 +1,8 @@
 name: Add scheme
 
 # Manual only, and only from main. One run does the whole job that used to be three:
-#   1. writes data/scheme_sources/<slug>.txt from the page text you give it,
+#   1. writes data/scheme_sources/<slug>.txt from the page text you give it, OR reads a myScheme page
+#      for you (see "Fetching a page" below),
 #   2. extracts and validates the rules with the LLM (saves a review item, like "Extract scheme rules"),
 #   3a. if the proposal is valid: writes data/schemes_seed/<slug>.json (like "Approve scheme proposal")
 #       and opens ONE pull request with both files,
@@ -15,6 +16,15 @@ name: Add scheme
 # Needs the same repository secrets as the two workflows it replaces: LLM_API_KEY and DATABASE_URL,
 # and the setting Settings > Actions > General > "Allow GitHub Actions to create and approve pull
 # requests". The optional repository variable LLM_MODEL picks the model.
+#
+# Fetching a page: give `source_url` (one https://www.myscheme.gov.in/schemes/<slug> address) instead
+# of `source_text`. The job reads the site's robots.txt and stops if the path is disallowed, opens
+# that one page in headless Chromium with a User-Agent that names the project, clicks each tab and
+# saves its text (URL on line 1), then carries on exactly as with pasted text. It never crawls or
+# follows a link. The pull request shows the fetched text so you can compare it with the page.
+# Switched OFF by default: no site is allowed until the owner sets the repository variable
+# FETCH_ALLOWED_HOSTS (docs/decisions/050-myscheme-terms.md). Pasting the text always works.
+# Read the site's terms of use before using this (docs/decisions/049-fetching-a-scheme-page.md).
 on:
   workflow_dispatch:
     inputs:
@@ -23,9 +33,24 @@ on:
         required: true
         type: string
       source_text:
-        description: "The scheme page text. Line 1 must be the page URL, then the text as pasted."
-        required: true
+        description: "EITHER the pasted page text (line 1 = the page URL) ..."
+        required: false
+        default: ""
         type: string
+      source_url:
+        description: "... OR one myScheme scheme page address, e.g. https://www.myscheme.gov.in/schemes/pmay-g (not both)"
+        required: false
+        default: ""
+        type: string
+      bump_version:
+        description: >-
+          Only if the slug is already a scheme (data/schemes_seed/<slug>.json exists): propose
+          replacing it. Without this the run refuses before the model is called, because that file
+          is hand-labelled ground truth. The old files stay in git history; Seed database then adds
+          a new scheme version.
+        required: false
+        default: false
+        type: boolean
 
 # contents: push the branch. pull-requests: open the pull request. issues: report problems.
 permissions:
@@ -51,15 +76,92 @@ jobs:
           cache-dependency-path: backend/requirements.txt
       - run: pip install -r backend/requirements.txt
 
+      - name: Check there is exactly one source
+        id: mode
+        shell: bash
+        env:
+          SOURCE_TEXT: ${{ inputs.source_text }}
+          SOURCE_URL: ${{ inputs.source_url }}
+        run: |
+          if [ -n "${SOURCE_TEXT//[[:space:]]/}" ] && [ -n "${SOURCE_URL//[[:space:]]/}" ]; then
+            echo "::error::Give the page text or a page address, not both."
+            exit 1
+          fi
+          if [ -n "${SOURCE_URL//[[:space:]]/}" ]; then
+            echo "fetch=true" >> "$GITHUB_OUTPUT"
+          elif [ -n "${SOURCE_TEXT//[[:space:]]/}" ]; then
+            echo "fetch=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Give the page text (source_text) or a myScheme page address (source_url)."
+            exit 1
+          fi
+
+      # --- fetching a page (only when an address was given) ---------------------------------------
+      - name: Install the browser
+        if: steps.mode.outputs.fetch == 'true'
+        shell: bash
+        run: |
+          pip install -r backend/requirements-fetch.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Fetch the page (robots.txt first)
+        id: fetch
+        if: steps.mode.outputs.fetch == 'true'
+        shell: bash
+        working-directory: backend
+        # The address is typed by a person: it goes in through an environment variable and is checked
+        # in Python (one https://www.myscheme.gov.in/schemes/<slug> address), never pasted into the
+        # script text. A refusal (robots.txt, a bad address, a page without tabs) stops the run here,
+        # before anything is written or sent to the model.
+        env:
+          SOURCE_URL: ${{ inputs.source_url }}
+          # Empty unless the owner sets this repository variable: the fetcher refuses every site by
+          # default (decision 050).
+          FETCH_ALLOWED_HOSTS: ${{ vars.FETCH_ALLOWED_HOSTS }}
+        run: |
+          if python -m app.pipeline.fetch_page "$SOURCE_URL" --out "$RUNNER_TEMP/fetched.txt" \
+              2> "$RUNNER_TEMP/fetch-log.txt"; then
+            {
+              echo '### Page fetched'
+              echo '```'
+              cat "$RUNNER_TEMP/fetch-log.txt"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            message=$(cat "$RUNNER_TEMP/fetch-log.txt")
+            {
+              echo '### Page NOT fetched'
+              echo '```'
+              echo "$message"
+              echo '```'
+              echo 'Nothing was written and the model was not called. Paste the page text into source_text instead.'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::${message//$'\n'/ }"
+            exit 1
+          fi
+
       - name: Write the source file
         shell: bash
         working-directory: backend
         # The slug and the text are typed by a person. They reach the script only through
-        # environment variables and are checked in Python, never pasted into the script text.
+        # environment variables or the fetched file and are checked in Python, never pasted into the
+        # script text.
         env:
           SLUG: ${{ inputs.slug }}
           SOURCE_TEXT: ${{ inputs.source_text }}
-        run: python -m app.pipeline.add_scheme write-source "$SLUG"
+          FETCHED: ${{ steps.mode.outputs.fetch }}
+          BUMP_VERSION: ${{ inputs.bump_version }}
+        run: |
+          extra=()
+          if [ "$BUMP_VERSION" = "true" ]; then
+            extra+=(--bump-version)
+          fi
+          # An existing scheme is refused here, before the model is called, unless bump_version.
+          if [ "$FETCHED" = "true" ]; then
+            python -m app.pipeline.add_scheme write-source "$SLUG" --from-file "$RUNNER_TEMP/fetched.txt" "${extra[@]}"
+          else
+            python -m app.pipeline.add_scheme write-source "$SLUG" "${extra[@]}"
+          fi
 
       - name: Extract and validate the rules
         id: extract
@@ -125,15 +227,27 @@ jobs:
           APPROVER: ${{ github.actor }}
           SLUG: ${{ inputs.slug }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          FETCHED: ${{ steps.mode.outputs.fetch }}
+          SOURCE_URL: ${{ inputs.source_url }}
+          BUMP_VERSION: ${{ inputs.bump_version }}
         run: |
+          extra=()
+          if [ "$BUMP_VERSION" = "true" ]; then
+            extra+=(--bump-version)
+          fi
           slug=$(python -m app.pipeline.approve "$REVIEW_ITEM_ID" --approver "$APPROVER" \
-            --body-file "$RUNNER_TEMP/approve-body.md")
+            --body-file "$RUNNER_TEMP/approve-body.md" "${extra[@]}")
           if [ "$slug" != "$SLUG" ]; then
             echo "::error::The approved scheme is '$slug', not '$SLUG'."
             exit 1
           fi
-          python -m app.pipeline.add_scheme pr-notice --actor "$APPROVER" --slug "$SLUG" \
-            > "$RUNNER_TEMP/pr-body.md"
+          if [ "$FETCHED" = "true" ]; then
+            python -m app.pipeline.add_scheme pr-notice --actor "$APPROVER" --slug "$SLUG" \
+              --fetched-from "$SOURCE_URL" "${extra[@]}" > "$RUNNER_TEMP/pr-body.md"
+          else
+            python -m app.pipeline.add_scheme pr-notice --actor "$APPROVER" --slug "$SLUG" \
+              "${extra[@]}" > "$RUNNER_TEMP/pr-body.md"
+          fi
           cat "$RUNNER_TEMP/approve-body.md" >> "$RUNNER_TEMP/pr-body.md"
 
       # The job's own check, because a pull request opened by a workflow does not start CI.

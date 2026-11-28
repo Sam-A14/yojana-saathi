@@ -57,7 +57,7 @@ export const en = {
       "Tell us about your family once. We show which government schemes each person may qualify for, and which papers are still needed.",
     start: "Find schemes for my family",
     signIn: "Sign in",
-    example: "See an example",
+    example: "Try a demo family",
     free: "Free. Sign in with just your email.",
     photoAlt: "A smiling family of several generations standing together in a park",
   },
@@ -215,6 +215,28 @@ export const en = {
     checkOfficial: "The official website shows the exact limit.",
     everyone: "everyone in your family",
   },
+  // The same questions when the rule is about the whole family ("no one in the family pays income
+  // tax"): one yes from anyone settles a yes/no fact, so those say "anyone"; the others ask about
+  // everyone. See lib/question-text.ts.
+  familyQuestions: {
+    age: "What year was everyone in your family born?",
+    gender: "Is everyone in your family male, female or other?",
+    marital_status: "What is the marital status of everyone in your family?",
+    occupation: "What is the main work of everyone in your family?",
+    education: "How much schooling did everyone in your family finish?",
+    is_student: "Is anyone in your family studying now?",
+    current_study_level: "What is each student in your family studying now?",
+    disability: "Does anyone in your family have a disability?",
+    owns_cultivable_land: "Does anyone in your family own farmland?",
+    is_remarried: "Has anyone in your family married again?",
+    paid_income_tax_last_year: "Did anyone in your family pay income tax last year?",
+    govt_employee: "Does anyone in your family work, or did they work, in a government job?",
+    pension_band: "Does anyone in your family get a government pension?",
+    is_registered_professional:
+      "Is anyone in your family a registered doctor, engineer, lawyer, chartered accountant or architect?",
+    holds_constitutional_post: "Does anyone in your family hold, or did they hold, a high public post?",
+    document: "Does anyone in your family have this paper: {document}?",
+  },
   questions: {
     age: "What year was {name} born?",
     gender: "Is {name} male, female or other?",
@@ -267,6 +289,9 @@ export const en = {
     docLink: "Official page for this paper",
     officialTitle: "Official source",
     openOfficial: "Open the official website",
+    sourceLabel: "Source:",
+    sourceMyScheme: "myScheme (myscheme.gov.in)",
+    sourceOfficial: "Official site ({host})",
     lastChecked: "Last checked on {date}",
     unverifiedNote:
       "Not yet verified: nobody has checked this scheme’s rules against the official source. Check the official website before you rely on it.",
@@ -385,11 +410,25 @@ export const en = {
     invalid_google_token: "We could not check your Google sign-in. Please try again, or use your email instead.",
     google_unavailable: "Sign-in with Google is not available right now. Please use your email instead.",
   },
+  alerts: {
+    title: "What’s new for your family",
+    unread: "{count} new",
+    new: "New",
+    empty: "Nothing new yet. We check once a day, and tell you here when something changes.",
+    markRead: "Mark as read",
+    markAllRead: "Mark all as read",
+    text: {
+      newScheme: "{member} may now qualify for {scheme}.",
+      ageThreshold:
+        "{member} turns {age} in {year}. We only know the year of birth, so it could be any time that year. Then these may fit: {schemes}.",
+      ruleChange: "The rules of {scheme} have changed. Your family’s result may be different now. Please look again.",
+    },
+  },
   example: {
-    label: "Example",
-    title: "An example family",
+    label: "Demo, not a real family",
+    title: "A demo family",
     banner:
-      "This is a made-up family, only to show you how the results look. Nothing here is about you.",
+      "This is a made-up family, only to show you how the results look. Nothing here is about you, and nothing you do here is saved.",
     cta: "Check my own family",
     back: "Back to the example",
   },
@@ -537,6 +576,10 @@ export const en = {
     central: "Central government scheme",
     state: "State scheme",
     stateNamed: "State scheme: {state}",
+  },
+  myScheme: {
+    link: "See more schemes on myScheme (not checked by Yojana Saathi)",
+    newTab: "(opens in a new tab)",
   },
   schemesPage: {
     title: "All the schemes we check",

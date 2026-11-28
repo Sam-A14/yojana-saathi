@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { documentName } from "@/lib/format";
+import { questionText } from "@/lib/question-text";
 import { type NeededAnswers as Needed } from "@/lib/rules";
 import { useText } from "@/lib/use-text";
 import type { DocumentInfo } from "@/lib/types";
@@ -25,14 +26,12 @@ export function NeededAnswers({
   const text = useText();
   const locale = useLocale() === "hi" ? "hi" : "en";
 
-  function question(field: string, familyWide: boolean): string {
-    const name = familyWide ? t("everyone") : memberName;
-    if (field.startsWith("has_")) {
-      const document = documentName(documents, field.slice(4), locale);
-      return text("questions.document", { name, document });
-    }
-    return text(`questions.${field}`, { name });
-  }
+  const question = (field: string, familyWide: boolean) =>
+    questionText(
+      text,
+      { field, familyWide },
+      { memberName, everyone: t("everyone"), documentName: (code) => documentName(documents, code, locale) },
+    );
 
   return (
     <div className="flex flex-col gap-3">

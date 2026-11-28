@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { benefitText, documentName, formatDate, notCheckedLines, schemeName } from "@/lib/format";
 import { neededAnswers } from "@/lib/rules";
+import { sourceCredit } from "@/lib/source-credit";
 import type { DocumentInfo, Eligibility, ExcludedScheme, Family, MemberEligibility, SchemeResult } from "@/lib/types";
 import { useFamilyResults } from "@/lib/use-family-results";
 import { useFamily } from "@/lib/use-family";
@@ -241,10 +242,28 @@ export function SchemeDetail({
           {t("openOfficial")}
           <ExternalLink aria-hidden size={20} />
         </a>
+        <SourceLine sourceUrl={scheme.source_url} />
         {scheme.verified && scheme.verified_at && <p>{t("lastChecked", { date: formatDate(scheme.verified_at, locale) })}</p>}
       </Section>
 
       {back}
     </article>
+  );
+}
+
+/** "Source: myScheme (myscheme.gov.in)" or the official site, linked to the page the rules were
+ * read from. Nothing is shown when the server did not send an address. */
+function SourceLine({ sourceUrl }: { sourceUrl: string | undefined }) {
+  const t = useTranslations("scheme");
+  const credit = sourceCredit(sourceUrl);
+  if (!credit) return null;
+  const label = credit.kind === "myscheme" ? t("sourceMyScheme") : t("sourceOfficial", { host: credit.host });
+  return (
+    <p>
+      {t("sourceLabel")}{" "}
+      <a href={credit.href} target="_blank" rel="noopener noreferrer" className="font-semibold underline">
+        {label}
+      </a>
+    </p>
   );
 }

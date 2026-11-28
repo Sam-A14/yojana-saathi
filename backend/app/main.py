@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
-from app.api import auth, documents, eligibility, households, schemes
+from app.api import alerts, auth, documents, eligibility, households, schemes
 from app.api.deps import DbSession
 from app.config import Settings, get_settings
 from app.timing import TimingMiddleware
@@ -39,6 +39,7 @@ app.add_middleware(TimingMiddleware)  # added last, so it wraps everything, CORS
 app.include_router(auth.router)
 app.include_router(households.router)
 app.include_router(eligibility.router)
+app.include_router(alerts.router)
 app.include_router(schemes.router)
 app.include_router(documents.router)
 

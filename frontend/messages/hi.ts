@@ -68,7 +68,7 @@ export const hi: typeof en = {
     start: "मेरे परिवार के लिए योजनाएँ खोजें",
     // needs native review (changed in the Google sign-in change: no longer says "with email")
     signIn: "साइन इन करें",
-    example: "एक उदाहरण देखें",
+    example: "डेमो परिवार आज़माएँ",
     free: "मुफ़्त। बस अपने ईमेल से साइन इन करें।",
     photoAlt: "कई पीढ़ियों का एक मुस्कुराता परिवार, पार्क में साथ खड़ा हुआ",
   },
@@ -239,6 +239,27 @@ export const hi: typeof en = {
     checkOfficial: "सही सीमा सरकारी वेबसाइट पर मिलेगी।",
     everyone: "आपके परिवार के हर व्यक्ति",
   },
+  // needs native review (owner): the questions about the whole family. "anyone" for yes/no facts,
+  // "everyone" for the others. See lib/question-text.ts.
+  familyQuestions: {
+    age: "आपके परिवार के हर व्यक्ति का जन्म किस वर्ष हुआ?",
+    gender: "आपके परिवार के हर व्यक्ति पुरुष हैं, महिला हैं या अन्य?",
+    marital_status: "आपके परिवार के हर व्यक्ति की वैवाहिक स्थिति क्या है?",
+    occupation: "आपके परिवार के हर व्यक्ति का मुख्य काम क्या है?",
+    education: "आपके परिवार के हर व्यक्ति ने कितनी पढ़ाई पूरी की?",
+    is_student: "क्या आपके परिवार में कोई अभी पढ़ाई कर रहा है?",
+    current_study_level: "आपके परिवार का हर विद्यार्थी अभी किस कक्षा में पढ़ रहा है?",
+    disability: "क्या आपके परिवार में किसी को कोई विकलांगता है?",
+    owns_cultivable_land: "क्या आपके परिवार में किसी के नाम खेती की ज़मीन है?",
+    is_remarried: "क्या आपके परिवार में किसी ने दोबारा शादी की है?",
+    paid_income_tax_last_year: "क्या आपके परिवार में किसी ने पिछले साल आयकर दिया?",
+    govt_employee: "क्या आपके परिवार में कोई सरकारी नौकरी करता है या करता था?",
+    pension_band: "क्या आपके परिवार में किसी को सरकारी पेंशन मिलती है?",
+    is_registered_professional:
+      "क्या आपके परिवार में कोई पंजीकृत डॉक्टर, इंजीनियर, वकील, चार्टर्ड अकाउंटेंट या आर्किटेक्ट है?",
+    holds_constitutional_post: "क्या आपके परिवार में किसी के पास कोई ऊँचा सार्वजनिक पद है या रहा है?",
+    document: "क्या आपके परिवार में किसी के पास यह कागज़ है: {document}?",
+  },
   // needs native review
   questions: {
     age: "{name} का जन्म किस वर्ष हुआ?",
@@ -299,6 +320,9 @@ export const hi: typeof en = {
     docLink: "इस कागज़ का सरकारी पन्ना",
     officialTitle: "सरकारी स्रोत",
     openOfficial: "सरकारी वेबसाइट खोलें",
+    sourceLabel: "स्रोत:",
+    sourceMyScheme: "myScheme (myscheme.gov.in)",
+    sourceOfficial: "सरकारी साइट ({host})",
     lastChecked: "आख़िरी बार {date} को जाँचा गया",
     unverifiedNote:
       "अभी जाँचा नहीं गया: किसी ने इस योजना के नियमों को सरकारी स्रोत से मिलाकर नहीं देखा है। भरोसा करने से पहले सरकारी वेबसाइट देखें।",
@@ -425,11 +449,26 @@ export const hi: typeof en = {
     google_unavailable: "Google से साइन-इन अभी उपलब्ध नहीं है। कृपया ईमेल से साइन इन करें।",
   },
   // needs native review
+  // needs native review (owner): the whole "What's new" list
+  alerts: {
+    title: "आपके परिवार के लिए नया क्या है",
+    unread: "{count} नए",
+    new: "नया",
+    empty: "अभी कुछ नया नहीं है। हम दिन में एक बार जाँचते हैं, और कुछ बदलने पर आपको यहाँ बताते हैं।",
+    markRead: "पढ़ा हुआ मानें",
+    markAllRead: "सब पढ़ा हुआ मानें",
+    text: {
+      newScheme: "{member} अब {scheme} के लिए पात्र हो सकते हैं।",
+      ageThreshold:
+        "{member} {year} में {age} साल के होंगे। हमें सिर्फ़ जन्म का साल पता है, इसलिए यह उस साल में कभी भी हो सकता है। तब ये योजनाएँ बैठ सकती हैं: {schemes}।",
+      ruleChange: "{scheme} के नियम बदल गए हैं। आपके परिवार का नतीजा अब अलग हो सकता है। कृपया फिर से देखें।",
+    },
+  },
   example: {
-    label: "उदाहरण",
-    title: "एक उदाहरण परिवार",
+    label: "डेमो, असली परिवार नहीं",
+    title: "एक डेमो परिवार",
     banner:
-      "यह एक काल्पनिक परिवार है, सिर्फ़ यह दिखाने के लिए कि नतीजे कैसे दिखते हैं। इसमें कुछ भी आपके बारे में नहीं है।",
+      "यह एक काल्पनिक परिवार है, सिर्फ़ यह दिखाने के लिए कि नतीजे कैसे दिखते हैं। इसमें कुछ भी आपके बारे में नहीं है, और यहाँ आप जो भी करें वह सहेजा नहीं जाता।",
     cta: "मेरा अपना परिवार जाँचें",
     back: "उदाहरण पर वापस",
   },
@@ -583,6 +622,11 @@ export const hi: typeof en = {
     central: "केंद्र सरकार की योजना",
     state: "राज्य की योजना",
     stateNamed: "राज्य की योजना: {state}",
+  },
+  // needs native review (owner): the myScheme link
+  myScheme: {
+    link: "myScheme पर और योजनाएँ देखें (Yojana Saathi ने इन्हें जाँचा नहीं है)",
+    newTab: "(नए टैब में खुलता है)",
   },
   schemesPage: {
     title: "हम जो सभी योजनाएँ जाँचते हैं",
