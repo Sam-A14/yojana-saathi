@@ -1,0 +1,87 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": false,
+    "notes": [
+      "Proposed by the LLM extractor (review item 10, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request."
+    ]
+  },
+  "slug": "up-obc-post-matric",
+  "name_en": "Post-matric Scholarship Scheme- Uttar Pradesh",
+  "name_hi": null,
+  "level": "state",
+  "state": "UP",
+  "category": "education",
+  "official_url": "https://www.myscheme.gov.in/schemes/mpss",
+  "version": {
+    "rules": {
+      "all": [
+        {
+          "field": "state",
+          "op": "eq",
+          "value": "UP"
+        },
+        {
+          "field": "income_band_max",
+          "op": "lte",
+          "value": 200000
+        },
+        {
+          "field": "category",
+          "op": "eq",
+          "value": "OBC"
+        },
+        {
+          "field": "is_student",
+          "op": "is_true"
+        }
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "Students receive an annual scholarship with monthly allowance rates ranging from Rs. 380 to Rs. 1,200 for hostellers and Rs. 230 to Rs. 550 for day scholars depending on the course group.",
+    "benefit_text_hi": null,
+    "not_checked_en": [
+      "The applicant must be studying in a government, government-aided, or recognized educational institute in Uttar Pradesh.",
+      "The applicant must provide a student ID proof issued by the educational institution.",
+      "The applicant must provide current year fee receipt or admission letter issued by the educational institution.",
+      "The applicant must provide a student bank passbook."
+    ],
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://www.myscheme.gov.in/schemes/mpss",
+    "verified_at": "2026-11-28",
+    "approved_by": "Sam-A14",
+    "documents": [
+      {
+        "code": "caste_certificate",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "income_certificate",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "marksheet",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "ration_card",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "aadhaar_card",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "voter_id",
+        "required": false,
+        "applies_to": "applicant"
+      }
+    ]
+  }
+}
