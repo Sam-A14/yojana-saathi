@@ -1,0 +1,71 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": false,
+    "notes": [
+      "Proposed by the LLM extractor (review item 13, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request.",
+      "Rules: only female and age at least 18, as the owner decided. 'Adult women' and 'attained 18 years' are both under Eligibility. Details also says the scheme is for women from below-poverty-line households; that is not encoded (the category list in Eligibility covers it and is listed in not_checked_en).",
+      "Papers: 'Ration Card ... / other State Govt. document certifying family composition / Self-Declaration (for migrant applicants)' are alternatives, so ration_card is not required. Aadhaar is its own line, so aadhaar_card is required. 'Bank Account Number and IFSC' is bank_account_aadhaar_linked (added in review: the proposal left it out). Proof of address is covered by Aadhaar; there is no code for the KYC form.",
+      "Source quote (benefit_text_en): Cash assistance for PMUY connections is provided by the Government of India - Rs. 1600 (for a connection 14.2kg cylinder/ Rs. 1150 for a 5 kg cylinder). The cash assistance covers: Security Deposit of Cylinder – Rs. 1250 for 14.2 kg cylinder/ Rs. 800 for 5 kg cylinder. Pressure Regulator – Rs. 150. LPG Hose – Rs. 100. Domestic Gas Consumer Card – Rs. 25. Inspection/ Installation/ Demonstration charges – Rs. 75. Additionally, All PMUY beneficiaries will be provided with first LPG refill and Stove (hotplate) both free of cost along with their deposit-free connection by the Oil Marketing Companies (OMCs).",
+      "Changed in review: the two not_checked lines reworded as plain sentences (the first listed the groups in one run-on sentence); bank_account_aadhaar_linked added; name_hi and Hindi added.",
+      "NEEDS NATIVE REVIEW (owner): name_hi, benefit_text_hi and not_checked_hi.",
+      "Not encoded: the category list in Eligibility (SC, ST, PMAY-Gramin, Most Backward Classes, AAY, tea and ex-tea garden tribes, forest dwellers, island residents, SECC households, poor household as per the 14-point declaration) and 'no other LPG connection in the same household'."
+    ]
+  },
+  "slug": "pmuy-2",
+  "name_en": "Pradhan Mantri Ujjwala Yojana 2.0",
+  "name_hi": "प्रधानमंत्री उज्ज्वला योजना 2.0",
+  "level": "central",
+  "state": null,
+  "category": "family_welfare",
+  "official_url": "https://www.myscheme.gov.in/schemes/pmuy2",
+  "version": {
+    "rules": {
+      "all": [
+        {
+          "field": "gender",
+          "op": "eq",
+          "value": "female"
+        },
+        {
+          "field": "age",
+          "op": "gte",
+          "value": 18
+        }
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "Free LPG connection with cash assistance of Rs. 1600 for a 14.2 kg cylinder or Rs. 1150 for a 5 kg cylinder, along with a free first LPG refill and stove.",
+    "benefit_text_hi": "मुफ़्त एलपीजी कनेक्शन: 14.2 किलो के सिलेंडर के लिए ₹1600 या 5 किलो के सिलेंडर के लिए ₹1150 की नकद सहायता, साथ में पहला रिफिल और स्टोव भी मुफ़्त।",
+    "not_checked_en": [
+      "Your family must belong to one of the groups the scheme lists, such as SC or ST households, AAY, PMAY-Gramin, Most Backward Classes, forest dwellers, tea garden tribes, island residents, or a poor household under the 14-point declaration. This app does not check this.",
+      "Your household must not already have another LPG connection. This app does not check it."
+    ],
+    "not_checked_hi": [
+      "आपके परिवार को योजना में बताए गए किसी एक समूह में आना होगा (जैसे SC या ST परिवार, AAY, PMAY-ग्रामीण, अति पिछड़ा वर्ग, वनवासी, चाय बागान की जनजातियाँ, द्वीपों के निवासी, या 14 बिंदु वाली घोषणा के अनुसार ग़रीब परिवार)। यह ऐप इसकी जाँच नहीं करता।",
+      "आपके घर में पहले से कोई और LPG कनेक्शन नहीं होना चाहिए। यह ऐप इसकी जाँच नहीं करता।"
+    ],
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://www.myscheme.gov.in/schemes/pmuy2",
+    "verified_at": "2026-11-28",
+    "approved_by": "Sam-A14",
+    "documents": [
+      {
+        "code": "ration_card",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "aadhaar_card",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "bank_account_aadhaar_linked",
+        "required": true,
+        "applies_to": "applicant"
+      }
+    ]
+  }
+}
