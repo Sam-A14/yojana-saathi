@@ -46,7 +46,7 @@ type Fixture = { members: ({ nickname: string } & Record<string, unknown>)[] } &
 // The real API always sends every fact about a person, as null when it was never answered.
 const UNANSWERED_FACTS = Object.fromEntries(
   [
-    "birth_year", "gender", "marital_status", "occupation", "education", "is_student", "disability",
+    "birth_year", "gender", "marital_status", "occupation", "education", "is_student", "current_study_level", "disability",
     "owns_cultivable_land", "is_remarried", "paid_income_tax_last_year", "govt_employee",
     "pension_band", "is_registered_professional", "holds_constitutional_post",
   ].map((name) => [name, null]),
