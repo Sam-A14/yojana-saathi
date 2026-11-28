@@ -3,7 +3,8 @@
     python -m app.pipeline.fetch_page <https://www.myscheme.gov.in/schemes/<slug>> --out <file>
 
 What it does, in this order, and stops at the first refusal:
-  1. Only a scheme page on an allowed site (ALLOWED_HOSTS), https, no query or fragment.
+  1. Only a scheme page on an allowed site (none by default: see ALLOWED_HOSTS), https, no query
+     or fragment.
   2. Reads the site's robots.txt and refuses if the path is disallowed for this bot, or if
      robots.txt cannot be read (only "does not exist" counts as "no rules"). A Crawl-delay is
      obeyed.
@@ -33,8 +34,12 @@ import httpx
 PRODUCT = "YojanaSaathiBot"
 VERSION = "1.0"
 
-# Only the site whose tab layout this reads. Any other site: paste the text instead.
-ALLOWED_HOSTS = frozenset({"www.myscheme.gov.in"})
+# Sites this may fetch from. EMPTY by default: myScheme's terms have not been cleared for automated
+# access, so the fetcher refuses every address until the owner names a host on purpose, with the
+# repository variable FETCH_ALLOWED_HOSTS (comma-separated, e.g. "www.myscheme.gov.in") or the
+# environment variable of the same name. Pasting the page text always works (decision 050).
+ALLOWED_HOSTS: frozenset[str] = frozenset()
+ALLOWED_HOSTS_ENV = "FETCH_ALLOWED_HOSTS"
 _PATH = re.compile(r"^/schemes/[a-z0-9]+(?:-[a-z0-9]+)*/?$")
 
 # The tabs of a myScheme page, in the order they are written. Each is also a heading the source
@@ -69,10 +74,24 @@ def user_agent() -> str:
 # --- 1. which pages --------------------------------------------------------------------------
 
 
-def check_url(url: str, allowed_hosts: frozenset[str] = ALLOWED_HOSTS) -> str:
+def allowed_hosts() -> frozenset[str]:
+    """The hosts that may be fetched: ALLOWED_HOSTS plus the ones the owner names in the
+    FETCH_ALLOWED_HOSTS variable. Read at call time, so a test or a workflow can set it."""
+    named = os.environ.get(ALLOWED_HOSTS_ENV, "")
+    return ALLOWED_HOSTS | {h.strip().lower() for h in named.split(",") if h.strip()}
+
+
+def check_url(url: str, hosts: frozenset[str] | None = None) -> str:
+    hosts = allowed_hosts() if hosts is None else hosts
+    if not hosts:
+        raise FetchError(
+            "Fetching pages is switched off: no site is on the allowed list, because a site's "
+            "terms must be cleared first (docs/decisions/050-myscheme-terms.md). Paste the page "
+            "text into 'source_text' instead."
+        )
     parts = urlsplit(url.strip())
-    if parts.scheme != "https" or parts.hostname not in allowed_hosts:
-        sites = ", ".join(sorted(allowed_hosts))
+    if parts.scheme != "https" or parts.hostname not in hosts:
+        sites = ", ".join(sorted(hosts))
         raise FetchError(
             f"Only https pages on {sites} can be fetched. Paste the page text into "
             "'source_text' instead."

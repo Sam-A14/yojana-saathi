@@ -219,6 +219,8 @@ class SchemeSummary(BaseModel):
     state: str | None
     category: str
     official_url: str
+    # The page the rules were read from (for "Source: ..." on the scheme page).
+    source_url: str
     benefit_text_en: str | None
     benefit_text_hi: str | None
     # "Rules we can't check: ask the office": plain sentences. Hindi is null until written (show
@@ -256,7 +258,6 @@ class SchemeDocumentOut(BaseModel):
 
 
 class SchemeDetail(SchemeSummary):
-    source_url: str
     version_no: int
     documents: list[SchemeDocumentOut]
 

@@ -22,6 +22,8 @@ name: Add scheme
 # that one page in headless Chromium with a User-Agent that names the project, clicks each tab and
 # saves its text (URL on line 1), then carries on exactly as with pasted text. It never crawls or
 # follows a link. The pull request shows the fetched text so you can compare it with the page.
+# Switched OFF by default: no site is allowed until the owner sets the repository variable
+# FETCH_ALLOWED_HOSTS (docs/decisions/050-myscheme-terms.md). Pasting the text always works.
 # Read the site's terms of use before using this (docs/decisions/049-fetching-a-scheme-page.md).
 on:
   workflow_dispatch:
@@ -104,6 +106,9 @@ jobs:
         # before anything is written or sent to the model.
         env:
           SOURCE_URL: ${{ inputs.source_url }}
+          # Empty unless the owner sets this repository variable: the fetcher refuses every site by
+          # default (decision 050).
+          FETCH_ALLOWED_HOSTS: ${{ vars.FETCH_ALLOWED_HOSTS }}
         run: |
           if python -m app.pipeline.fetch_page "$SOURCE_URL" --out "$RUNNER_TEMP/fetched.txt" \
               2> "$RUNNER_TEMP/fetch-log.txt"; then

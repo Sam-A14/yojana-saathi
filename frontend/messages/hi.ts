@@ -319,6 +319,9 @@ export const hi: typeof en = {
     docLink: "इस कागज़ का सरकारी पन्ना",
     officialTitle: "सरकारी स्रोत",
     openOfficial: "सरकारी वेबसाइट खोलें",
+    sourceLabel: "स्रोत:",
+    sourceMyScheme: "myScheme (myscheme.gov.in)",
+    sourceOfficial: "सरकारी साइट ({host})",
     lastChecked: "आख़िरी बार {date} को जाँचा गया",
     unverifiedNote:
       "अभी जाँचा नहीं गया: किसी ने इस योजना के नियमों को सरकारी स्रोत से मिलाकर नहीं देखा है। भरोसा करने से पहले सरकारी वेबसाइट देखें।",

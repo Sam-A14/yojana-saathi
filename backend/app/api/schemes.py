@@ -20,6 +20,7 @@ def scheme_summary(scheme: Scheme, version: SchemeVersion) -> SchemeSummary:
         state=scheme.state,
         category=scheme.category,
         official_url=scheme.official_url,
+        source_url=version.source_url,
         benefit_text_en=version.benefit_text_en,
         benefit_text_hi=version.benefit_text_hi,
         not_checked_en=version.not_checked_en,
@@ -62,7 +63,6 @@ def read_scheme(slug: str, db: DbSession) -> SchemeDetail:
     ).all()
     return SchemeDetail(
         **scheme_summary(scheme, version).model_dump(),
-        source_url=version.source_url,
         version_no=version.version_no,
         documents=[
             SchemeDocumentOut(

@@ -82,6 +82,24 @@ schemes, and what stopped each one:
 | A benefit text with rupee amounts whose quote contained no numbers | The validator requires every number in the benefit text to appear in its quote. |
 | "No member pays income tax" written without `any_member`, so it only looked at the person being checked | **Not** the validator: found in review of the generated pull request, fixed by hand, and pinned by a test. This is why a person reads every diff. |
 
+## Data sources and credit
+
+Scheme rules are read by a person from each scheme's public page, mostly on
+[myScheme](https://www.myscheme.gov.in) (the government's scheme portal, run by the Digital India
+Corporation) and the scheme's own official site. Every scheme page in this app says
+**"Source: myScheme (myscheme.gov.in)"** (or the official site) and links to the page the rules
+were read from, and has a button to the official website. The app keeps short summaries and rule
+quotes, not copies of whole pages, and links back so a family can check the original.
+
+myScheme's Copyright Policy says:
+
+> [OWNER: paste the exact line from myScheme's Copyright Policy here. It could not be read when this section was written.]
+
+Nothing is fetched from myScheme automatically: the page-fetching tool is **switched off by default**
+and refuses every site until the owner names one ([decision 050](docs/decisions/050-myscheme-terms.md)).
+Text is pasted by a person. This is an independent student project and not affiliated with myScheme
+or any government body.
+
 ## Numbers
 
 As of this commit:
