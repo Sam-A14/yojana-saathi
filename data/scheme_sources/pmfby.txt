@@ -1,0 +1,141 @@
+https://www.myscheme.gov.in/schemes/pmfby
+
+Pradhan Mantri Fasal Bima Yojna (PMFBY)
+Agriculture
+Crop
+Farmer
+Insurance
+Premium
+Check Eligibility
+Details
+Launched on 18th February 2016, "Pradhan Mantri Fasal Bima Yojana" is a crop insurance scheme by the Department of Agriculture, Cooperation and Farmers’ Welfare, Ministry of Agriculture. PMFBY aims to provide financial protection to farmers against crop loss due to natural disasters (hail, drought, famine), pests, and diseases. PMFBY provides crop insurance at a cost-effective premium to all Indian farmers. PMFBY is an affordable crop insurance product implemented through a network of insurance companies and banks. The scheme covers over 50 crore farmers and provides insurance coverage for over 50 different crops.
+Objectives
+
+* To provide financial assistance and support to farmers suffering from crop damage or loss arising out of unforeseen events.
+* To stabilise the income of farmers and ensure continuance in farming. 
+* To encourage the farmers to adopt modern and innovative agricultural practices.
+* To ensure crop diversification, and credit-worthiness of the farmers, enhance growth and competitiveness of the agriculture sector and protect the farmers from production risks.
+
+Benefits
+
+* Affordable Premiums: The maximum premium payable by the farmer will be 2% for the Kharif food and oilseed crops. For rabi food and oilseeds crop, it is 1.5% and for yearly commercial or horticultural crops it will be 5%. The remaining premium is subsidized by the government.
+
+* * For the farmers in North-Eastern States, Jammu, Kashmir, and Himachal Pradesh, the government also pays the entire premium.
+* Comprehensive Coverage: The scheme covers natural disasters (droughts, floods), pests, and diseases. Post-harvest losses due to local risks like hailstorms and landslides are also included.
+* Timely Compensation: PMFBY aims to process claims within two months of the harvest to ensure that farmers get the compensation quickly, preventing them from falling into debt traps.
+* Technology-Driven Implementation: PMFBY integrates advanced technologies like satellite imaging, drones, and mobile apps for precise estimation of crop loss, ensuring accurate claim settlements.
+
+﻿
+RISKS COVERED
+
+* Yield Losses (Standing Crops): The Government provides this insurance coverage for yield losses that fall under the non-preventable risks, such as Natural Fire and Lightning: Storm, Hailstorm, Tornado etc.:  Flood, Inundation and Landslide;  Pests/ Diseases, etc.; Drought etc.
+* Prevented Sowing: Cases may arise where most of the farmers (insured )of notified areas may want to plant or sow. In such cases, they have to bear the expenditure for that cause and are restricted from planting or sowing insured crops because of unfavourable weather conditions. These farmers will then become eligible for the indemnity claims of up to a maximum of 25% of the sum insured.
+* Post-harvest Losses: The Government provides for post-harvest losses on an individual farm basis. The Government offers coverage of up to 14 days (maximum) from harvesting for crops that are stored in “cut and spread” condition. It means that the Government covers farmers who have put the crops to become sun-baked in the field after harvesting that have been destroyed due to cyclone or cyclonic rains occurred across the country.
+* Localised Calamities: The Government provides for localised calamities on an individual farm basis. Risks such as loss or damage arising from identified localised hazards, such as hailstorms, landslides, and inundation impacting separated farmlands in the notified area comes under this coverage.
+
+Eligibility
+
+1. All farmers, including tenant farmers and sharecroppers growing notified crops in notified areas.
+2. Farmers must have an insurable interest in the insured crops.
+3. Farmers must possess a valid and authenticated land ownership certificate or a valid land tenure agreement.
+4. The farmer must be a cultivator or sharecropper on the insured land.
+5. The farmer must apply for insurance coverage within the prescribed time frame, usually within 2 weeks of the start of the sowing season.
+6. Farmers must not have received compensation for the same crop loss from any other medium or source.
+
+Exclusions
+Non-Notified Areas
+PMFBY applies to notified areas, and crop losses in non-notified areas are generally not covered. Farmers in areas not designated under the scheme may not receive compensation.
+Losses Outside the Crop Cycle
+Crop losses occurring outside the specified crop cycle are often excluded from coverage. If a loss is not directly related to the growing season, it may not be eligible for compensation.
+Negligence and Non-Compliance
+Losses resulting from farmer negligence, non-compliance with recommended agricultural practices, or failure to protect the crop adequately may be excluded.
+Losses Beyond Specified Limits
+Some losses beyond specified limits or thresholds may not be covered. The scheme may have predefined criteria for determining the extent of loss that qualifies for compensation.
+Non-Premium Payment
+Farmers who fail to pay their premium contributions as required may not be eligible for coverage. Non-payment of premiums can result in the cancellation of insurance.
+Application Process
+Online
+Offline
+Online - via CSCs
+Step 1: Visit the [Official Website](https://pmfby.gov.in/) of "Pradhan Mantri Fasal Bima Yojana".
+Step 2: At the top right corner of the homepage, click "Farmer Corner".
+In the popup window, click "Guest Farmer". You will be taken to the [Online Registration Form](https://pmfby.gov.in/farmerRegistrationForm).
+*If already registered, skip to Step: 4.
+Step 3: In the Registration Form, fill in the following mandatory fields (marked with a red asterisk): 
+"FARMER DETAILS" Section: Full Name, Passbook Name, Relationship, Relative Name, Mobile No., Age, Caste Category, Gender, Farmer Type, Farmer Category, 
+"RESIDENTIAL DETAILS" Section: State, District, Sub District, Residential Village/ Town, Address, PIN Code
+"FARMER ID" Section: ID Type, ID No, 
+"ACCOUNT DETAILS" Section: IFSC, Bank Name, Branch Name, Savings Bank A/C No., Confirm Savings Bank A/C No..
+At the bottom of the registration form, fill in the Captcha Code and click "Create User".
+Step 4: Upon successful registration, click "Farmer Corner (Apply for Crop Insurance Yourself)".
+In the popup window, click "Login for Farmer". You will be taken to the Login Page.
+https://pmfby.gov.in/farmerLogin
+Step 5: On the Login Page, provide your Mobile Number, fill the Captcha Code, then click "Request for OTP". Enter the OTP received on your registered Mobile Number, and click "Submit". You will be taken to the "Farmer Application Form".
+Step 6: Fill in all the mandatory fields of the Application Form and upload all the mandatory documents in the specified format and size.
+Click "Preview" to carefully review all the information provided and the uploaded documents. Click "Submit" to submit your application. You'll receive a confirmation message.
+Step 7: In the popup window, the following options will be displayed: "Pay Later" and "Make Payment". Select "Pay Later" if you intend to pay for the insurance at a later stage. Else, select "Make Payment".
+Step 8: Upon successful payment, you may print the receipt of the payment.
+Track Your Application
+You can track the application status on the PMFBY website through the ‘Application Status’ option on the home page.
+Documents Required
+
+* Passport–sized Photograph
+* Passbook
+* Identity Proof (Aadhaar Card/PAN Card/Voter ID/Bank Passbook with Photo, Kisan Photo Book/NREGA Job Card)
+* Address Proof (Aadhaar Card/PAN Card/Voter ID/Electricity Bill/Bank Passbook with Photo).
+* Evidence of Land records, as per the State Records of Right (RoR), Land Possession Certificate (LPC), and other applicable agreements, contracts notified or permitted by the state.
+* Declaration about the crop sown/intended to be sown.
+
+Frequently Asked Questions
+I'm a tenant farmer without formal land ownership documents. Can I still apply for crop insurance under PMFBY if I can prove I cultivate the land?
+My crops were damaged by unseasonal rains after harvesting while drying in the field. Does PMFBY cover such losses?
+What is the exact premium rate for Kharif paddy, and how is the government subsidy calculated?
+If a drought prevents me from sowing crops despite preparation, what percentage of compensation can I claim?
+I farm in Himachal Pradesh. Do I need to pay any premium for my apple crop under PMFBY?
+Can I claim compensation if my entire village faced crop damage from a landslide, but neighboring villages were unaffected?
+How long after reporting crop damage should I expect to receive the claim amount?
+If I've taken a bank loan for farming, do I need to separately apply for PMFBY, or is it automatic?
+What happens if I'm unable to pay the premium online due to technical issues on the last date?
+If I've already registered on the PMFBY portal last season, do I need to create a new registration for this season?
+I discovered pest damage in my field but couldn't document it immediately due to hospitalization. Will my claim be rejected?
+How can I ensure my claim isn't rejected due to wrong information if the CSC operator fills my form?
+If my crop loss assessment shows 60% damage but I'm not satisfied with the evaluation, what's the grievance process?
+Does PMFBY cover damage from wild animals or fire caused by neighboring fields?
+Sources And References
+[Official Website](https://pmfby.gov.in/)
+[Guidelines](https://pmfby.gov.in/pdf/Revamped%20Operational%20Guidelines_17th%20August%202020.pdf)
+[FAQ](https://pmfby.gov.in/pdf/FAQ%E2%80%93For%20Portal.pdf)
+Was this helpful?
+News and Updates
+No new news and updates available
+Share
+©2026
+Powered by
+Digital India Corporation(DIC)Ministry of Electronics & IT (MeitY)Government of India®
+Connect on Social Media
+Quick Links
+
+* [About Us](https://www.myscheme.gov.in/about)
+* [Contact Us](https://www.myscheme.gov.in/contact)
+* [Screen Reader](https://www.myscheme.gov.in/screen-reader)
+* [Accessibility Statement](https://www.myscheme.gov.in/accessibility-statement)
+* [Frequently Asked Questions](https://www.myscheme.gov.in/faqs)
+* [Disclaimer](https://www.myscheme.gov.in/disclaimer)
+* [Terms & Conditions](https://www.myscheme.gov.in/terms-conditions)
+* [Dashboard](https://www.myscheme.gov.in/dashboard)
+
+Useful Links
+
+* 
+* 
+* 
+* 
+* 
+* 
+* 
+
+Get in touch
+4th Floor, NeGD, Electronics Niketan, 6 CGO Complex, Lodhi Road, New Delhi - 110003, India
+support-myscheme[at]digitalindia[dot]gov[dot]in
+(011) 24303714 (9:00 AM to 5:30 PM)
+Last Updated On : 18/09/2026 | v-3.1.27
