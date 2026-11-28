@@ -70,11 +70,14 @@ export function MemberResults({
   member,
   documents,
   schemeHref = (memberId, slug) => `/scheme/${slug}?member=${memberId}`,
+  actions,
 }: {
   member: MemberEligibility;
   documents: DocumentInfo[];
   /** Where a scheme's own page is. The example family has its own pages (no sign-in needed). */
   schemeHref?: (memberId: string, slug: string) => string;
+  /** Edit and Remove for this person (the example family has none: there is nobody to change). */
+  actions?: React.ReactNode;
 }) {
   const t = useTranslations("dashboard");
   const describe = useRuleText(documents);
@@ -156,6 +159,7 @@ export function MemberResults({
           {t("notFit", { count: member.not_eligible_count })}
         </p>
       )}
+      {actions}
     </section>
   );
 }

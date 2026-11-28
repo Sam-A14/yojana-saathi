@@ -8,7 +8,15 @@ import { ButtonLink } from "./ui";
  * fit, is close, needs an answer or is blocked). It says so plainly and offers the two useful next
  * steps: check the household details (they decide which schemes can match) or read the full list.
  * One main action (full width); the other is the quieter outline button. */
-export function EmptyResults({ checkedOn }: { checkedOn?: string }) {
+export function EmptyResults({
+  checkedOn,
+  quiet = false,
+}: {
+  checkedOn?: string;
+  /** True when another button on the screen is the main action (the dashboard's "Add a family
+   * member"): this one steps back to the outline look, so there is still only one. */
+  quiet?: boolean;
+}) {
   const t = useTranslations("dashboard");
   return (
     <section aria-labelledby="empty-results" className="flex flex-col gap-5 rounded-3xl border border-line-soft bg-soft p-5 shadow-card">
@@ -25,7 +33,7 @@ export function EmptyResults({ checkedOn }: { checkedOn?: string }) {
         </div>
       </div>
       <div className="flex flex-col gap-3">
-        <ButtonLink href="/household/edit" className="w-full">
+        <ButtonLink href="/household/edit" variant={quiet ? "secondary" : "primary"} className="w-full">
           {t("empty.review")}
         </ButtonLink>
         <ButtonLink href="/schemes" variant="secondary" className="w-full">

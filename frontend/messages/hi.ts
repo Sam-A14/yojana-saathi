@@ -173,6 +173,14 @@ export const hi: typeof en = {
     toStart: "शुरुआत पर वापस जाएँ",
     toSignIn: "ईमेल से साइन इन करें",
     editHousehold: "घर की जानकारी बदलें",
+    // needs native review (owner): the new "add a family member" lines
+    addMember: "परिवार का सदस्य जोड़ें",
+    addMemberHelp: "हम आपके परिवार के हर व्यक्ति के लिए हर योजना जाँचते हैं।",
+    memberAdded: "{name} को जोड़ दिया गया है। उनकी योजनाएँ नीचे हैं।",
+    memberUpdated: "{name} की जानकारी बदल दी गई है।",
+    memberRemoved: "{name} को हटा दिया गया है।",
+    membersFull: "आप इससे ज़्यादा लोग नहीं जोड़ सकते (20)।",
+    openingMember: "खुल रहा है…",
     retry: "फिर कोशिश करें",
     skipped: "{count} योजनाएँ जाँची नहीं जा सकीं और छोड़ दी गईं। हम इसे ठीक कर रहे हैं।",
     sections: {

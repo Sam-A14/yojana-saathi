@@ -495,3 +495,64 @@ def test_the_real_clock_is_used_when_the_date_is_not_overridden(
 
     # Computed in India's date, not the server's (which is UTC on Render).
     assert body["computed_on"] == datetime.now(INDIA).date().isoformat()
+
+
+# --- a person added after setup is checked straight away -----------------------------------------
+
+
+def ignoaps_status(body: dict[str, Any], nickname: str) -> str | None:
+    result = schemes_of(body, nickname).get("ignoaps")
+    return None if result is None else str(result["status"])
+
+
+def test_a_person_added_after_setup_is_checked_straight_away(
+    client: TestClient, seeded, today, make_family
+) -> None:
+    """The dashboard's 'Add a family member' uses the same endpoint as the setup. A person born in
+    1958 in a UP household that is below the poverty line may qualify for IGNOAPS (60 or over)."""
+    family = make_family(state="UP", is_bpl=True)
+    add_member(client, family, "Asha", birth_year=1990)  # the owner, set up earlier
+    assert ignoaps_status(eligibility(client, family), "Asha") is None  # 36: too young, not listed
+
+    add_member(client, family, "Sita", birth_year=1958, relation="mother")  # added later
+
+    body = eligibility(client, family)
+    assert ignoaps_status(body, "Sita") == "eligible"
+    assert {r["rule"]["field"] for r in schemes_of(body, "Sita")["ignoaps"]["passed_rules"]} == {
+        "is_bpl",
+        "age",
+    }
+    assert ignoaps_status(body, "Asha") is None  # the first person's results did not change
+
+
+@pytest.mark.parametrize(
+    ("is_bpl", "born", "expected"),
+    [
+        (True, 1958, "eligible"),
+        (None, 1958, "unknown"),  # never answered: asked, not rejected
+        (False, 1958, None),  # a definite "no": counted, not listed
+        (True, 1990, None),  # under 60
+    ],
+)
+def test_ignoaps_for_a_person_added_later_follows_the_family_and_the_age(
+    client: TestClient, seeded, today, make_family, is_bpl, born, expected
+) -> None:
+    family = make_family(state="UP", is_bpl=is_bpl)
+    add_member(client, family, "Sita", birth_year=born)
+
+    assert ignoaps_status(eligibility(client, family), "Sita") == expected
+
+
+def test_removing_a_person_removes_their_results(
+    client: TestClient, seeded, today, make_family
+) -> None:
+    family = make_family(state="UP", is_bpl=True)
+    keep = add_member(client, family, "Asha", birth_year=1990)
+    gone = add_member(client, family, "Sita", birth_year=1958)
+    assert ignoaps_status(eligibility(client, family), "Sita") == "eligible"
+
+    assert client.delete(f"{family.url}/members/{gone}", headers=family.headers).status_code == 204
+
+    body = eligibility(client, family)
+    assert [m["nickname"] for m in body["members"]] == ["Asha"]
+    assert keep  # the other person is untouched

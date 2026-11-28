@@ -54,3 +54,6 @@ export const EDUCATIONS = [
 
 export const GOVT_EMPLOYEE = ["none", "group_d", "other"] as const;
 export const PENSION_BANDS = ["none", "below_10k", "10k_plus"] as const;
+
+/** The most people one household can have; the API enforces the same number. */
+export const MAX_MEMBERS = 20;

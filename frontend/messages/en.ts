@@ -155,6 +155,13 @@ export const en = {
     toStart: "Back to start",
     toSignIn: "Sign in with email",
     editHousehold: "Edit household details",
+    addMember: "Add a family member",
+    addMemberHelp: "We check every person in your family against every scheme.",
+    memberAdded: "{name} was added. Their schemes are below.",
+    memberUpdated: "{name} was updated.",
+    memberRemoved: "{name} was removed.",
+    membersFull: "You have added the most people allowed (20).",
+    openingMember: "Opening…",
     retry: "Try again",
     skipped:
       "{count, plural, one {# scheme} other {# schemes}} could not be checked and left out. We are fixing this.",

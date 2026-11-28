@@ -2,17 +2,22 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { UserPlus } from "lucide-react";
+import { useEffect, useState } from "react";
 import { EmptyResults } from "@/components/EmptyResults";
 import { FamilySummary } from "@/components/FamilySummary";
+import { MemberActions } from "@/components/MemberActions";
+import { MemberPanel } from "@/components/MemberPanel";
 import { MemberResults } from "@/components/MemberResults";
 import { MyData } from "@/components/MyData";
-import { Button, ButtonLink, ErrorNote, Skeleton } from "@/components/ui";
+import { Button, ButtonLink, Card, ErrorNote, Skeleton } from "@/components/ui";
+import { api, errorKind, type ErrorKind } from "@/lib/api";
 import { formatDate } from "@/lib/format";
+import { MAX_MEMBERS } from "@/lib/options";
 import { useFamilyResults } from "@/lib/use-family-results";
 import { useFamily } from "@/lib/use-family";
 import type { Session } from "@/lib/session";
-import type { Eligibility, Family } from "@/lib/types";
+import type { Eligibility, Family, Member } from "@/lib/types";
 
 // How many (person, scheme) results fall in each group, across the whole family.
 function count(eligibility: Eligibility) {
@@ -57,15 +62,81 @@ export default function DashboardPage() {
   return <DashboardScreen key={family.id} family={family} session={session} />;
 }
 
+// What the dashboard is showing instead of the results: nothing (the results), the form for a new
+// person, a person being opened for editing, or that person's form. Only one thing at a time, so the
+// screen has one main action.
+type Panel = null | { kind: "add" } | { kind: "opening" } | { kind: "edit"; member: Member };
+
 function DashboardScreen({ family, session }: { family: Family; session: Session }) {
   const t = useTranslations("dashboard");
   const te = useTranslations("errors");
   const locale = useLocale() === "hi" ? "hi" : "en";
   const { results, reload } = useFamilyResults(family);
+  const [panel, setPanel] = useState<Panel>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [problem, setProblem] = useState<ErrorKind | null>(null);
+  const [removing, setRemoving] = useState(false);
+
+  // The edit form needs the person's full details (birth year, work, ...); the results only carry
+  // the name, so ask for the family's people when someone taps Edit.
+  async function openEdit(memberId: string) {
+    setNotice(null);
+    setProblem(null);
+    setPanel({ kind: "opening" });
+    try {
+      const found = (await api.listMembers(family)).find((m) => m.id === memberId);
+      if (!found) throw new Error("gone");
+      setPanel({ kind: "edit", member: found });
+    } catch (error) {
+      setProblem(errorKind(error));
+      setPanel(null);
+    }
+  }
+
+  async function remove(memberId: string, name: string) {
+    setNotice(null);
+    setProblem(null);
+    setRemoving(true);
+    try {
+      await api.deleteMember(family, memberId);
+      setNotice(t("memberRemoved", { name }));
+      reload(); // the results are for the family as it was: ask again
+    } catch (error) {
+      setProblem(errorKind(error));
+    }
+    setRemoving(false);
+  }
+
+  function saved(person: Member, wasNew: boolean) {
+    setPanel(null);
+    setProblem(null);
+    setNotice(t(wasNew ? "memberAdded" : "memberUpdated", { name: person.nickname }));
+    reload();
+  }
+
+  if (panel?.kind === "opening") return <Skeleton label={t("openingMember")} />;
+  if (panel) {
+    return (
+      <div className="flex flex-col gap-6">
+        <Card>
+          <MemberPanel
+            family={family}
+            member={panel.kind === "edit" ? panel.member : null}
+            onDone={saved}
+            onCancel={() => setPanel(null)}
+          />
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
       <h1 className="page-title">{t("title")}</h1>
+      <div role="status" aria-live="polite">
+        {notice && <p className="rounded-xl border-2 border-ok-fg bg-ok-bg px-4 py-3 text-lg font-semibold text-ok-fg">{notice}</p>}
+      </div>
+      {problem && <ErrorNote>{te(problem)}</ErrorNote>}
 
       {results.state === "loading" && <Skeleton label={t("loading")} />}
 
@@ -83,7 +154,7 @@ function DashboardScreen({ family, session }: { family: Family; session: Session
       {results.state === "ready" && (
         <>
           {nothingFound(results.eligibility) ? (
-            <EmptyResults checkedOn={formatDate(results.eligibility.computed_on, locale)} />
+            <EmptyResults checkedOn={formatDate(results.eligibility.computed_on, locale)} quiet />
           ) : (
             <>
               <FamilySummary
@@ -100,9 +171,42 @@ function DashboardScreen({ family, session }: { family: Family; session: Session
           )}
           <div className="grid items-start gap-6 md:grid-cols-2">
             {results.eligibility.members.map((member) => (
-              <MemberResults key={member.member_id} member={member} documents={results.documents} />
+              <MemberResults
+                key={member.member_id}
+                member={member}
+                documents={results.documents}
+                actions={
+                  <MemberActions
+                    name={member.nickname}
+                    busy={removing}
+                    onEdit={() => openEdit(member.member_id)}
+                    onRemove={() => remove(member.member_id, member.nickname)}
+                  />
+                }
+              />
             ))}
           </div>
+
+          {/* The one main action of this screen: more people means more schemes found. */}
+          <section aria-label={t("addMember")} className="flex flex-col gap-3">
+            {results.eligibility.members.length >= MAX_MEMBERS ? (
+              <p className="text-lg">{t("membersFull")}</p>
+            ) : (
+              <>
+                <p className="text-lg">{t("addMemberHelp")}</p>
+                <Button
+                  onClick={() => {
+                    setNotice(null);
+                    setProblem(null);
+                    setPanel({ kind: "add" });
+                  }}
+                >
+                  <UserPlus aria-hidden size={22} />
+                  {t("addMember")}
+                </Button>
+              </>
+            )}
+          </section>
         </>
       )}
 

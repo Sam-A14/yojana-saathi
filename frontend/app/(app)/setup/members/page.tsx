@@ -8,11 +8,9 @@ import { SetupFrame } from "@/components/SetupFrame";
 import { Avatar } from "@/components/Avatar";
 import { Button, ButtonLink, Card, ErrorNote, Skeleton } from "@/components/ui";
 import { api, errorKind, type ErrorKind } from "@/lib/api";
-import { isRelation } from "@/lib/options";
+import { MAX_MEMBERS, isRelation } from "@/lib/options";
 import type { Member, MemberInput } from "@/lib/types";
 import { useSetupFamily } from "@/lib/use-setup-family";
-
-const MAX_MEMBERS = 20; // the same limit the API enforces
 
 type Problem = ErrorKind;
 
