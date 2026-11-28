@@ -7,7 +7,8 @@
       "EXAMPLE, VERIFY BEFORE USE. The rules follow the eligibility and exclusion list given by the project owner (Session 3 brief), NOT text read from the official page: pmkisan.gov.in was blocked (HTTP 403) from the build environment.",
       "Check the amount, the instalments and every exclusion against https://pmkisan.gov.in/ before setting verified_at.",
       "Eligible = at least one household member owns cultivable land. Each exclusion is its own rule, written as 'no member of the household ...', so the result page can show which one applies and who triggered it.",
-      "Pension rule: a pension of Rs 10,000 a month or more excludes the person unless they were Group D / Multi Tasking Staff. Serving or retired employees other than Group D are excluded whatever their pension."
+      "Pension rule: a pension of Rs 10,000 a month or more excludes the person unless they were Group D / Multi Tasking Staff. Serving or retired employees other than Group D are excluded whatever their pension.",
+      "DRAFT, NEEDS REVIEW (owner): version.not_checked_en and not_checked_hi were written from the technical not_encoded notes above, in plain words. Check each line against the official source; the Hindi needs a native speaker."
     ],
     "not_encoded": [
       "Institutional landholders: no member field for this.",
@@ -89,6 +90,16 @@
     },
     "benefit_text_en": "Example, verify before use: income support of Rs 6,000 a year for farmer families that own cultivable land, paid in three instalments of Rs 2,000 straight into the bank account. Families with an excluded member (for example an income tax payer or a government employee other than Group D) do not qualify.",
     "benefit_text_hi": "उदाहरण, उपयोग से पहले जाँचें: खेती योग्य भूमि वाले किसान परिवारों को साल में 6,000 रुपये की सहायता, 2,000 रुपये की तीन किस्तों में सीधे बैंक खाते में। जिस परिवार में कोई बाहर रखा गया सदस्य है (जैसे आयकर देने वाला या ग्रुप डी के अलावा सरकारी कर्मचारी) उसे लाभ नहीं मिलता।",
+    "not_checked_en": [
+      "Land held by an institution, such as a trust, company or government body, does not qualify. This app does not ask about it.",
+      "The scheme counts only a husband, wife and their minor children as one family. This app looks at everyone in your household, so a relative’s income tax or government job can wrongly show your family as left out. Ask the office if that applies to you.",
+      "The official rules may have a cut-off date or other conditions about owning the land. This app does not check them."
+    ],
+    "not_checked_hi": [
+      "किसी संस्था (जैसे ट्रस्ट, कंपनी या सरकारी निकाय) के नाम की ज़मीन पर यह लाभ नहीं मिलता। यह ऐप इसके बारे में नहीं पूछता।",
+      "यह योजना सिर्फ़ पति, पत्नी और उनके नाबालिग बच्चों को एक परिवार मानती है। यह ऐप आपके घर के सभी लोगों को देखता है, इसलिए किसी रिश्तेदार का आयकर या सरकारी नौकरी आपके परिवार को ग़लती से बाहर दिखा सकती है। ऐसा हो तो दफ़्तर से पूछें।",
+      "सरकारी नियमों में ज़मीन के मालिकाना हक़ पर कोई आख़िरी तारीख़ या और शर्तें हो सकती हैं। यह ऐप इन्हें नहीं जाँचता।"
+    ],
     "deadline_start": null,
     "deadline_end": null,
     "source_url": "https://pmkisan.gov.in/",

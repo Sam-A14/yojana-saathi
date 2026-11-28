@@ -3,6 +3,7 @@ from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.db.models import Scheme, SchemeVersion
+from tests.api.conftest import add_scheme
 
 
 def test_list_is_public_and_includes_unverified_schemes(client: TestClient, seeded) -> None:
@@ -54,9 +55,19 @@ def test_detail_and_list_carry_what_we_did_not_check(client: TestClient, seeded)
 
     listed = {s["slug"]: s for s in client.get("/schemes").json()}
     assert listed["ignoaps"]["not_checked_en"] == detail["not_checked_en"]
-    # A scheme with nothing to say gets an empty list (never null), and no Hindi yet is null.
-    assert listed["pm-kisan"]["not_checked_en"] == []
-    assert listed["pm-kisan"]["not_checked_hi"] is None
+    assert len(listed["pm-kisan"]["not_checked_en"]) == 3
+    assert len(listed["ignwps"]["not_checked_en"]) == 2
+
+
+def test_a_scheme_with_nothing_to_say_has_an_empty_list_and_no_hindi_yet(
+    client: TestClient, db: Session, seeded
+) -> None:
+    add_scheme(db, "plain-test", {"all": [{"field": "age", "op": "gte", "value": 60}]})
+
+    body = client.get("/schemes/plain-test").json()
+
+    assert body["not_checked_en"] == []  # never null: the page can always count the lines
+    assert body["not_checked_hi"] is None  # not written yet, which is not the same as nothing
 
 
 def test_unknown_scheme_is_404(client: TestClient, seeded) -> None:
