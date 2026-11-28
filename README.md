@@ -1,6 +1,6 @@
 # Yojana Saathi
 
-**Live: <https://yojana-saathi-hazel.vercel.app>**
+**Live: <https://yojana-saathi-hazel.vercel.app>** · **[Try a demo family](https://yojana-saathi-hazel.vercel.app/example)** (made-up data, no sign-in, nothing saved)
 
 > An independent student project. **Not a government app.** Guidance only, not an official decision.
 
@@ -13,8 +13,18 @@ certificate **numbers** are ever stored: papers are only "has / does not have".
 
 ![The family dashboard, with made-up example data: a scheme for the whole family shown once, then one card per person](docs/images/dashboard.png)
 
-*The dashboard for a made-up example family. A scheme that depends on the whole family (here, a
-housing scheme) is shown once; the people's cards follow.*
+*The dashboard for a made-up demo family: the "What's new for your family" list on top, then the
+summary and one card per person.*
+
+## What a family gets
+
+- **Every scheme each member may qualify for**, and *why*: each rule ticked or crossed, with a link to
+  the official source. Papers still missing, and near misses.
+- **"What's new for your family"** on the dashboard, filled once a day by a GitHub Actions job (no
+  email): a scheme that now fits someone, someone reaching an age a scheme starts at (we only hold a
+  birth year, so it says "in 2027"), or a scheme whose rules changed. Each can be marked as read
+  ([decision 051](docs/decisions/051-in-app-alerts.md)).
+- **A demo family** to look at before giving any detail, in Hindi or English.
 
 ## The principle: the LLM never decides eligibility
 
@@ -81,6 +91,9 @@ schemes, and what stopped each one:
 | `is_bpl` compared with the text `"yes"` | The validator checks the kind of value each field holds (a yes/no field takes true or false). |
 | A benefit text with rupee amounts whose quote contained no numbers | The validator requires every number in the benefit text to appear in its quote. |
 | "No member pays income tax" written without `any_member`, so it only looked at the person being checked | **Not** the validator: found in review of the generated pull request, fixed by hand, and pinned by a test. This is why a person reads every diff. |
+| "Is or has been an income tax payer" encoded as "paid income tax last year" (APY) | **Not** the validator: found in review. The rule is kept and a plain "ask the office" line says what it cannot check. |
+| A paper written as required when the page says "ownership certificate **or** tenure agreement" (PMFBY land record) | **Not** the validator: found in review and set to optional. |
+| Gemini overloaded (HTTP 503) or timing out | Not a data mistake: the model wrapper retries 3 times (5, 15, 45 s), then the run fails clearly and is re-run. Nothing invalid is ever published. |
 
 ## Data sources and credit
 
@@ -104,8 +117,8 @@ or any government body.
 
 As of this commit:
 
-- **8 schemes** in the data folder (central and Uttar Pradesh), **20** document types, **48** written design decisions ([`docs/decisions/`](docs/decisions/)).
-- **881 backend tests** (pytest, against a real PostgreSQL) and **273 frontend tests** (Playwright, including unit tests); the same checks run on every pull request.
+- **12 schemes** in the data folder (central and Uttar Pradesh), **20** document types, **51** written design decisions ([`docs/decisions/`](docs/decisions/)).
+- **948 backend tests** (pytest, against a real PostgreSQL; 3 skipped) and **283 frontend tests** (Playwright, including unit tests; 10 skipped). The same checks run on every pull request.
 
 ## Run it locally
 
