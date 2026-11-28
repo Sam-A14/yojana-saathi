@@ -3,12 +3,19 @@
   "labeller_notes": {
     "example": false,
     "notes": [
-      "Proposed by the LLM extractor (review item 17, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request."
+      "Proposed by the LLM extractor (review item 17, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request.",
+      "Reviewed by hand (assistant, against docs/scheme-review-checklist.md). Rules: age 18-40 (Eligibility item 1 'minimum age of joining APY is 18 years and maximum is 40 years') and not paid_income_tax_last_year (Exclusions: 'any citizen who is or has been an income tax payer, shall not be eligible to join APY'). The quote says 'is or has been', wider than our field 'paid income tax last year', so the rule is a partial check and a not_checked line says so. The rule is on the person (APY is an individual scheme), not any_member.",
+      "not_checked lines reworded by hand into plain sentences and two lines added: the income tax 'has been' gap, and the auto-debit contribution until 60 (Eligibility items 3 and 4). The savings account line comes from the Details sentence ('a savings account holder').",
+      "Not encoded: government employees and existing NPS subscribers (only a FAQ heading, no answer in the text); the pension amount chosen and the contribution amount (a contribution chart link only); government co-contribution for people who joined before 31 March 2016 (Benefits, not Eligibility).",
+      "The benefit text covers only the subscriber's own pension at 60. The spouse's pension and the nominee's return of wealth (Benefits items ii and iii) are left out on purpose, to say no more than the quote.",
+      "official_url kept as the myScheme page: the page's other links are a Guidelines PDF (jansuraksha.gov.in) and the contribution chart (npscra.nsdl.co.in), not a portal. The page's footer date is cut off ('Last Updated On : 18/0').",
+      "Hand-written Hindi added (name_hi, benefit_text_hi, not_checked_hi). Rupee amounts match the English.",
+      "NEEDS NATIVE REVIEW (owner): name_hi, benefit_text_hi and not_checked_hi."
     ]
   },
   "slug": "apy",
   "name_en": "Atal Pension Yojana",
-  "name_hi": null,
+  "name_hi": "अटल पेंशन योजना",
   "level": "central",
   "state": null,
   "category": "pension",
@@ -33,15 +40,22 @@
       "fixable": []
     },
     "benefit_text_en": "Subscribers receive a guaranteed minimum pension of Rs. 1000, Rs. 2000, Rs. 3000, Rs. 4000, or Rs. 5000 per month after reaching 60 years of age until death.",
-    "benefit_text_hi": null,
+    "benefit_text_hi": "60 साल की उम्र के बाद, जीवन भर हर महीने तय पेंशन की गारंटी: आपकी चुनी हुई राशि के हिसाब से ₹1000, ₹2000, ₹3000, ₹4000 या ₹5000।",
     "not_checked_en": [
-      "Must hold a savings bank account."
+      "You must have your own savings account in a bank or post office. This app does not check it.",
+      "The page says anyone who is, or ever was, an income tax payer cannot join (from 1 October 2022). This app only asks whether the person paid income tax last year, so ask the office if the person paid in an earlier year.",
+      "The yearly contribution is taken from your savings account automatically (auto-debit), every month, three months or six months, until you turn 60. This app does not check it."
     ],
     "deadline_start": null,
     "deadline_end": null,
     "source_url": "https://www.myscheme.gov.in/schemes/apy",
     "verified_at": "2026-11-28",
     "approved_by": "Sam-A14",
-    "documents": []
+    "documents": [],
+    "not_checked_hi": [
+      "आपका बैंक या डाकघर में अपना बचत खाता होना चाहिए। यह ऐप इसकी जाँच नहीं करता।",
+      "पन्ने पर लिखा है कि जो व्यक्ति आयकर देता है, या कभी देता रहा है, वह 1 अक्टूबर 2022 से इसमें शामिल नहीं हो सकता। यह ऐप सिर्फ़ यह पूछता है कि पिछले साल आयकर दिया या नहीं, इसलिए अगर उससे पहले के किसी साल में आयकर दिया हो तो दफ़्तर से पूछें।",
+      "योजना की रकम आपके बचत खाते से अपने-आप कटती है (ऑटो-डेबिट), हर महीने, तीन महीने या छह महीने में, जब तक आप 60 साल के नहीं हो जाते। यह ऐप इसकी जाँच नहीं करता।"
+    ]
   }
 }
