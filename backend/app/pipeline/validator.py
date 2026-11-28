@@ -5,7 +5,8 @@ what the model got wrong, and a silent drop would hide a bad extraction behind "
 
 Checks, in order:  parseable JSON -> expected shape -> scheme.schema.json -> only allowed fields ->
 engine accepts the rules -> every value has the right type for its field -> every document code
-exists -> slug/URL/verified fields -> a real quote for every top-level rule -> no rule about a paper
+exists -> slug/URL/verified fields -> a real quote for every top-level rule, taken from the Details
+or Eligibility section -> no rule about a paper
 unless the Eligibility section says so -> a real quote for the benefit text.
 
 A proposal this validator calls valid must be one the approval step can write: whatever the seed
@@ -20,7 +21,7 @@ from jsonschema import Draft202012Validator
 
 from app.db.seed import schema_problems
 from app.pipeline.field_types import value_problem
-from app.pipeline.sections import eligibility_text
+from app.pipeline.sections import eligibility_text, rule_quote_text, sections_containing
 from app.rules.engine import RuleError, validate_rules
 
 # A quote shorter than this proves nothing ("age", "farmer" appear everywhere in the source).
@@ -283,7 +284,13 @@ def _check_quotes(result: ValidationResult, source_text: str) -> None:
     top_level = rules.get("all")
     rule_count = len(top_level) if isinstance(top_level, list) else None
     source = _squash(source_text)
+    # A source with section headings: a rule quote must sit under Details, Eligibility or
+    # Exclusions. A source without headings has no sections to tell apart, so the whole text is
+    # accepted as before.
+    allowed_text = rule_quote_text(source_text)
+    allowed = source if allowed_text is None else _squash(allowed_text)
     quoted: set[int] = set()
+    wrong_section: set[int] = set()  # already told why; no second 'no valid quote' line
 
     for position, entry in enumerate(result.quotes):
         where = f"rule_quotes[{position}]"
@@ -304,11 +311,20 @@ def _check_quotes(result: ValidationResult, source_text: str) -> None:
         elif squashed not in source:
             message = f"Quote is not found word for word in the source text: {quote[:80]!r}"
             result.problems.append(Problem("quote_not_in_source", where, message))
+        elif squashed not in allowed:
+            found_in = ", ".join(sections_containing(source_text, quote)) or "no section"
+            message = (
+                "A rule quote must come from the Details, Eligibility or Exclusions section. "
+                f"This quote is under: {found_in}. Papers go in version.documents, and anything "
+                "else in labeller_notes.not_encoded."
+            )
+            result.problems.append(Problem("quote_wrong_section", where, message))
+            wrong_section.add(index)
         else:
             quoted.add(index)
 
     for index in range(rule_count or 0):
-        if index not in quoted:
+        if index not in quoted and index not in wrong_section:
             where = f"scheme.version.rules.all[{index}]"
             result.problems.append(Problem("missing_quote", where, "No valid source quote."))
 
