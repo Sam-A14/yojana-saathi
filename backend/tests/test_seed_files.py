@@ -256,6 +256,31 @@ def test_cross_file_checks() -> None:
     assert any("deadline_end is before deadline_start" in p for p in problems)
 
 
+def test_not_checked_lines_must_line_up_in_both_languages_and_be_real_text() -> None:
+    scheme = copy.deepcopy(load("schemes_seed/ignoaps.json"))
+    known = {d["code"] for d in load("documents.json")["documents"]}
+    assert scheme_file_problems(scheme, known, "ignoaps") == []
+
+    scheme["version"]["not_checked_hi"] = scheme["version"]["not_checked_hi"][:1]
+    problems = scheme_file_problems(scheme, known, "ignoaps")
+    assert any("one line for each line of not_checked_en" in p for p in problems)
+
+    scheme["version"]["not_checked_hi"] = None  # not written yet: allowed
+    assert scheme_file_problems(scheme, known, "ignoaps") == []
+    for bad in ("one long string", [""], [3]):
+        scheme["version"]["not_checked_en"] = bad
+        assert schema_problems(_validator(SCHEMA_PATH), scheme), bad
+
+
+def test_ignoaps_says_what_it_does_not_check_in_plain_words() -> None:
+    version = load("schemes_seed/ignoaps.json")["version"]
+    english = " ".join(version["not_checked_en"])
+
+    assert "citizen of India" in english and "affidavit" in english
+    assert len(version["not_checked_hi"]) == len(version["not_checked_en"]) == 2
+    assert "_" not in english  # no field names such as is_bpl
+
+
 def test_loader_reports_every_problem_at_once(tmp_path: Any) -> None:
     for name in ("documents.json", "documents.schema.json", "scheme.schema.json"):
         (tmp_path / name).write_text((DEFAULT_DATA_DIR / name).read_text(encoding="utf-8"))

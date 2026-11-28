@@ -131,6 +131,31 @@ def test_switching_ignwps_from_the_bpl_card_to_is_bpl_adds_version_2_and_keeps_t
     assert required["bpl_card"] is True
 
 
+def test_not_checked_lines_are_stored_and_a_change_adds_a_version(
+    db: Session, data_dir: Path
+) -> None:
+    load(db, data_dir)
+    first = scheme(db, "ignoaps").current_version
+    assert first is not None and len(first.not_checked_en) == 2
+    assert scheme(db, "pm-kisan").current_version.not_checked_en == []  # type: ignore[union-attr]
+    assert scheme(db, "pm-kisan").current_version.not_checked_hi is None  # type: ignore[union-attr]
+
+    def reword(content: dict[str, Any]) -> None:
+        content["version"]["not_checked_en"][0] = "You must be a citizen of India."
+        content["version"]["not_checked_hi"] = None
+
+    edit_scheme(data_dir, "ignoaps", reword)
+    summary = load(db, data_dir)
+    db.expire_all()
+
+    versions = scheme(db, "ignoaps").versions
+    assert [v.version_no for v in versions] == [1, 2]
+    assert versions[0].not_checked_en[0].endswith("does not ask about it.")  # history kept
+    assert versions[1].not_checked_en[0] == "You must be a citizen of India."
+    assert versions[1].not_checked_hi is None
+    assert summary.count("version", "created") == 1
+
+
 def test_changed_document_list_adds_a_new_version(db: Session, data_dir: Path) -> None:
     load(db, data_dir)
 

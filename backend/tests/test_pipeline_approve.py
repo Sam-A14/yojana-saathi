@@ -91,6 +91,33 @@ def test_a_valid_item_becomes_a_verified_seed_file_the_loader_accepts(data_dir: 
     assert [s["slug"] for s in loaded] == [SLUG]
 
 
+def test_conditions_the_fields_cannot_express_become_what_we_did_not_check(
+    data_dir: Path,
+) -> None:
+    answer = answer_with_benefit()
+    answer["scheme"]["labeller_notes"] = {
+        "not_encoded": ["You must be a citizen of India. This app does not ask about it."]
+    }
+    approval = prepare(make_item(answer), "octocat", today=TODAY, data_dir=data_dir)
+
+    # One list, in the version families read; not a second copy in the labeller's notes.
+    assert approval.seed["version"]["not_checked_en"] == [
+        "You must be a citizen of India. This app does not ask about it."
+    ]
+    assert "not_encoded" not in approval.seed["labeller_notes"]
+    assert "Rules we can't check: ask the office" in approval.body
+    assert "citizen of India" in approval.body
+    (data_dir / "schemes_seed" / f"{SLUG}.json").write_text(file_text(approval.seed), "utf-8")
+    assert read_seed_files(data_dir).schemes[0]["version"]["not_checked_en"]  # the loader accepts
+
+
+def test_no_such_conditions_means_no_section_and_no_list(data_dir: Path) -> None:
+    approval = prepare(make_item(), "octocat", today=TODAY, data_dir=data_dir)
+
+    assert "not_checked_en" not in approval.seed["version"]
+    assert "Rules we can't check: ask the office" not in approval.body
+
+
 def test_rule_keys_are_written_in_the_order_a_person_writes_them(data_dir: Path) -> None:
     item = make_item()
     # What PostgreSQL's JSONB hands back: shortest key first.

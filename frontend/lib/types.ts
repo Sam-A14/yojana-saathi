@@ -64,6 +64,9 @@ export type SchemeSummary = {
   official_url: string;
   benefit_text_en: string | null;
   benefit_text_hi: string | null;
+  // "Rules we can't check: ask the office": plain sentences. The Hindi list is null until it is written.
+  not_checked_en: string[];
+  not_checked_hi: string[] | null;
   deadline_start: string | null;
   deadline_end: string | null;
   // false: no human has checked this scheme against the official source yet.

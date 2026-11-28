@@ -89,6 +89,8 @@ function ignoapsFor(member: Json, household: StoredHousehold) {
       official_url: "https://www.myscheme.gov.in/schemes/nsap-ignoaps",
       benefit_text_en: "₹200 a month from the Centre up to age 79, ₹500 from age 80. The State Government may add more on top.",
       benefit_text_hi: null,
+      not_checked_en: [],
+      not_checked_hi: null,
       deadline_start: null,
       deadline_end: null,
       verified: true,

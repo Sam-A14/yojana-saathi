@@ -81,6 +81,7 @@ export function categoryKey(category: string): Category | "other" {
 export const SECTION_ICONS = {
   summary: Gift,
   why: ListChecks,
+  unchecked: CircleHelp, // "Rules we can't check: ask the office"
   docs: FileText,
   official: ShieldCheck,
   celebrate: PartyPopper,

@@ -8,6 +8,11 @@ export const schemeName = (scheme: SchemeSummary, locale: Locale): string =>
 export const benefitText = (scheme: SchemeSummary, locale: Locale): string | null =>
   (locale === "hi" && scheme.benefit_text_hi) || scheme.benefit_text_en;
 
+/** The lines under "Rules we can't check: ask the office". Hindi shows the English lines until a Hindi list
+ * exists, like the benefit text. */
+export const notCheckedLines = (scheme: SchemeSummary, locale: Locale): string[] =>
+  (locale === "hi" && scheme.not_checked_hi?.length ? scheme.not_checked_hi : scheme.not_checked_en) ?? [];
+
 export const documentName = (documents: DocumentInfo[], code: string, locale: Locale): string => {
   const found = documents.find((d) => d.code === code);
   return found ? (locale === "hi" ? found.name_hi : found.name_en) : code;

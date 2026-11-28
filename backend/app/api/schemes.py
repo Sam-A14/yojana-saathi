@@ -21,6 +21,8 @@ def scheme_summary(scheme: Scheme, version: SchemeVersion) -> SchemeSummary:
         official_url=scheme.official_url,
         benefit_text_en=version.benefit_text_en,
         benefit_text_hi=version.benefit_text_hi,
+        not_checked_en=version.not_checked_en,
+        not_checked_hi=version.not_checked_hi,
         deadline_start=version.deadline_start,
         deadline_end=version.deadline_end,
         verified=version.verified_at is not None,

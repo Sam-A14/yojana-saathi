@@ -45,6 +45,8 @@ VERSION_KEYS = (
     "rules",
     "benefit_text_en",
     "benefit_text_hi",
+    "not_checked_en",
+    "not_checked_hi",
     "deadline_start",
     "deadline_end",
     "source_url",
@@ -162,9 +164,11 @@ def build_seed_file(
             "Every rule has a word-for-word source quote, shown in that pull request.",
         ],
     }
+    # Conditions the rule fields cannot express go to families as "Rules we can't check: ask the
+    # office". They live in the version only, so there is one list to review and one to keep right.
     proposed_notes = proposed.get("labeller_notes")
     if isinstance(proposed_notes, dict) and proposed_notes.get("not_encoded"):
-        notes["not_encoded"] = list(proposed_notes["not_encoded"])
+        version["not_checked_en"] = list(proposed_notes["not_encoded"])
 
     seed: dict[str, Any] = {"$schema": "../scheme.schema.json", "labeller_notes": notes}
     seed.update({key: proposed[key] for key in SCHEME_KEYS if key in proposed})
@@ -295,12 +299,15 @@ def render_body(
             "Hindi text (a translation; have a native speaker check it):",
             _fence(str(version["benefit_text_hi"])),
         ]
-    not_encoded = seed["labeller_notes"].get("not_encoded")
-    if not_encoded:
+    not_checked = seed["version"].get("not_checked_en")
+    if not_checked:
         lines += [
             "",
-            "### Conditions the rule fields could not express",
-            *[f"- `{_one_line(n)}`" for n in not_encoded],
+            "### Rules we can't check: ask the office "
+            "(families will read these lines on the scheme page)",
+            "Conditions the rule fields cannot express. Each line must make sense to a parent "
+            "reading it aloud. There is no Hindi yet: the page shows these English lines.",
+            *[f"- `{_one_line(n)}`" for n in not_checked],
         ]
     lines += ["", "### The file", _fence(diff, "diff"), ""]
     lines += [

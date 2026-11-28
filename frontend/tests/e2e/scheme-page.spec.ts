@@ -1,6 +1,7 @@
 import { type Page } from "@playwright/test";
 import { type FakeApi } from "./fake-api";
 import { expect, test, STORAGE_KEY } from "./fixtures";
+import eligibility from "../fixtures/eligibility.json";
 
 async function openFor(page: Page, api: FakeApi, person: string, scheme: string) {
   const family = api.seedHousehold();
@@ -72,7 +73,7 @@ test("a verified scheme shows its date, and a failed rule that can be fixed", as
 test("an unknown rule is marked as not checked yet, with what would settle it", async ({ page, api }) => {
   const { article } = await openFor(page, api, "Asha", "Indira Gandhi National Widow Pension Scheme (IGNWPS)");
 
-  const unchecked = group(article, "What we could not check yet");
+  const unchecked = group(article, "Answers we still need from you");
   await expect(unchecked).toContainText("Age: 40 or more");
   await expect(unchecked.getByText("Not checked yet:")).toHaveCount(1);
   await expect(unchecked).toContainText("This depends on the exact age.");
@@ -109,4 +110,61 @@ test("opening a scheme without saying for whom asks to start from the family pag
   await page.goto("/scheme/ignwps");
 
   await expect(page.getByText("Open a scheme from your family’s page")).toBeVisible();
+});
+
+// "Rules we can’t check: ask the office": conditions of the scheme that the app cannot test (the API sends them
+// with the scheme). Shown even when the result is "may qualify".
+const NOT_CHECKED_EN = [
+  "You must be a citizen of India. This app does not ask about it.",
+  "You must not already get a pension from any other source.",
+];
+
+// The block of the page (a <section>) under one heading.
+const sectionOf = (article: ReturnType<Page["getByRole"]>, heading: string) =>
+  article.locator("section", { has: article.page().getByRole("heading", { name: heading }) });
+
+function withNotChecked(hindi: string[] | null) {
+  const fixture = structuredClone(eligibility) as typeof eligibility;
+  for (const member of fixture.members) {
+    for (const { scheme } of [...member.schemes, ...member.excluded]) {
+      if (scheme.slug !== "ignwps") continue;
+      Object.assign(scheme, { not_checked_en: NOT_CHECKED_EN, not_checked_hi: hindi });
+    }
+  }
+  return fixture;
+}
+
+test("a scheme with conditions we do not check lists them in plain words", async ({ page, api }) => {
+  api.fixture = withNotChecked(null);
+  const { article } = await openFor(page, api, "Kamla", "Indira Gandhi National Widow Pension Scheme (IGNWPS)");
+
+  const section = sectionOf(article, "Rules we can’t check: ask the office");
+  await expect(section).toBeVisible();
+  await expect(section).toContainText("Please ask the office, or read them on the official website, before you apply.");
+  await expect(section.getByRole("listitem")).toHaveText(NOT_CHECKED_EN);
+});
+
+test("a scheme with nothing to say shows no such section", async ({ page, api }) => {
+  const { article } = await openFor(page, api, "Kamla", "Indira Gandhi National Widow Pension Scheme (IGNWPS)");
+
+  await expect(article.getByRole("heading", { name: "Official source" })).toBeVisible();
+  await expect(article.getByRole("heading", { name: "Rules we can’t check: ask the office" })).toHaveCount(0);
+});
+
+test("Hindi shows the Hindi lines, or the English ones until they are written", async ({ page, api }) => {
+  api.fixture = withNotChecked(["आपका भारत का नागरिक होना ज़रूरी है।", "आपको किसी और जगह से पेंशन नहीं मिलनी चाहिए।"]);
+  const { article } = await openFor(page, api, "Kamla", "Indira Gandhi National Widow Pension Scheme (IGNWPS)");
+  await page.getByRole("button", { name: "हिन्दी" }).click();
+
+  const section = sectionOf(article, "जो नियम हम नहीं जाँच सकते: दफ़्तर से पूछें");
+  await expect(section.getByRole("listitem")).toHaveText(["आपका भारत का नागरिक होना ज़रूरी है।", "आपको किसी और जगह से पेंशन नहीं मिलनी चाहिए।"]);
+});
+
+test("in Hindi with no Hindi lines yet, the English lines are shown, never a blank", async ({ page, api }) => {
+  api.fixture = withNotChecked(null);
+  const { article } = await openFor(page, api, "Kamla", "Indira Gandhi National Widow Pension Scheme (IGNWPS)");
+  await page.getByRole("button", { name: "हिन्दी" }).click();
+
+  const section = sectionOf(article, "जो नियम हम नहीं जाँच सकते: दफ़्तर से पूछें");
+  await expect(section.getByRole("listitem")).toHaveText(NOT_CHECKED_EN);
 });
