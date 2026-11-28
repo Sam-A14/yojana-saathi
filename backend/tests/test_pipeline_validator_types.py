@@ -52,6 +52,12 @@ def test_item_4_is_no_longer_valid_and_each_defect_is_named_with_its_position() 
     assert not result.is_valid
     assert [(p.code, p.where) for p in result.problems] == [
         ("invalid_value_type", "scheme.version.rules.all[1]"),
+        # The four paper rules were quoted from Documents Required: refused for that, and refused
+        # again as papers. Both lines stay, because each names a different fix.
+        ("quote_wrong_section", "rule_quotes[2]"),
+        ("quote_wrong_section", "rule_quotes[3]"),
+        ("quote_wrong_section", "rule_quotes[4]"),
+        ("quote_wrong_section", "rule_quotes[5]"),
         ("document_as_rule", "scheme.version.rules.all[2]"),
         ("document_as_rule", "scheme.version.rules.all[3]"),
         ("document_as_rule", "scheme.version.rules.all[4]"),
@@ -60,7 +66,7 @@ def test_item_4_is_no_longer_valid_and_each_defect_is_named_with_its_position() 
     type_problem = result.problems[0].message
     assert "is_bpl is a yes/no field" in type_problem and '"yes"' in type_problem
     assert "is_true" in type_problem and "would match nobody" in type_problem
-    paper_problem = result.problems[1].message
+    paper_problem = result.problems[5].message
     assert "domicile_certificate" in paper_problem and "only in version.documents" in paper_problem
     assert "Eligibility section" in paper_problem
 
@@ -200,7 +206,7 @@ def one_rule(field: str, quote: str) -> dict[str, Any]:
 
 def test_a_paper_rule_quoted_from_documents_required_is_refused() -> None:
     result = check(one_rule("has_ration_card", "Ration Card"))
-    assert codes(result) == ["document_as_rule"]
+    assert codes(result) == ["quote_wrong_section", "document_as_rule"]
 
 
 def test_a_paper_rule_quoted_from_the_eligibility_section_is_allowed() -> None:
@@ -220,7 +226,8 @@ def test_a_quote_that_is_in_both_sections_counts_as_eligibility() -> None:
 def test_with_no_eligibility_heading_a_paper_rule_cannot_be_shown_to_come_from_it() -> None:
     text = "Documents Required\nRation Card\nBank Passbook\n"
     assert codes(check(one_rule("has_ration_card", "Ration Card"), source_text=text)) == [
-        "document_as_rule"
+        "quote_wrong_section",
+        "document_as_rule",
     ]
     plain = "Every family with a ration card may apply for this scheme."
     assert codes(
@@ -239,8 +246,8 @@ def test_a_paper_inside_a_bigger_rule_is_found_too() -> None:
         alternatives_required=False,
     )
     result = check(answer)
-    assert codes(result) == ["document_as_rule"]
-    assert result.problems[0].where == "scheme.version.rules.all[0]"
+    assert codes(result) == ["quote_wrong_section", "document_as_rule"]
+    assert result.problems[1].where == "scheme.version.rules.all[0]"
 
 
 def test_rules_that_are_not_about_papers_never_trigger_the_check() -> None:

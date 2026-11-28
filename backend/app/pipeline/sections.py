@@ -66,6 +66,28 @@ def eligibility_text(text: str) -> str:
     )
 
 
+# Where a rule's quote may come from. Details and Eligibility state who the scheme is for; a paper
+# list (Documents Required) or a how-to-apply text (Application Process) does not, even when it
+# happens to contain words like "Aadhaar" or "BPL".
+RULE_QUOTE_SECTIONS = ("details", "eligibility", "eligibility criteria")
+
+
+def rule_quote_text(text: str) -> str | None:
+    """The text a rule quote may come from: Details plus Eligibility ('' if the source has headings
+    but neither). None when the source has no headings at all (a press release, a PDF): then there
+    is nothing to tell the sections apart by, and the whole text is the only thing to check."""
+    sections = split_sections(text)
+    if not sections:
+        return None
+    return "\n".join(sections[name] for name in RULE_QUOTE_SECTIONS if name in sections)
+
+
+def sections_containing(text: str, quote: str) -> list[str]:
+    """Names of the sections whose text holds `quote` (whitespace ignored), in page order."""
+    wanted = squash(quote)
+    return [name for name, body in split_sections(text).items() if wanted in squash(body)]
+
+
 _SPACES = re.compile(r"\s+")
 
 
