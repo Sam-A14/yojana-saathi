@@ -16,10 +16,11 @@ The scheme gives a pension to every person aged 60 years or above.
 Only persons belonging to SC or ST
 categories can apply.
 A family where any member paid income tax last year is not eligible.
+The pension is Rs.1,000 a month.
 """
 
 BENEFIT_TEXT = "The family gets a monthly pension of Rs.1,000."
-BENEFIT_QUOTE = "gives a pension to every person"
+BENEFIT_QUOTE = "The pension is Rs.1,000 a month."
 
 QUOTES = [
     "aged 60 years or above",

@@ -5,15 +5,16 @@ what the model got wrong, and a silent drop would hide a bad extraction behind "
 
 Checks, in order:  parseable JSON -> expected shape -> scheme.schema.json -> only allowed fields ->
 engine accepts the rules -> every value has the right type for its field -> every document code
-exists -> slug/URL/verified fields -> a real quote for every top-level rule, taken from the Details
-or Eligibility section -> no rule about a paper
-unless the Eligibility section says so -> a real quote for the benefit text.
+exists -> slug/URL/verified fields -> a real quote for every top-level rule, taken from the Details,
+Eligibility or Exclusions section -> no rule about a paper unless the Eligibility section says so
+-> a real quote for the benefit text, containing every number the benefit text states.
 
 A proposal this validator calls valid must be one the approval step can write: whatever the seed
 loader would refuse (decision 004) is refused here first, with the reason, instead of at approval.
 """
 
 import json
+import re
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -352,6 +353,45 @@ def _check_benefit(result: ValidationResult, source_text: str) -> None:
     elif squashed not in _squash(source_text):
         message = f"Benefit quote is not found word for word in the source text: {squashed[:80]!r}"
         result.problems.append(Problem("benefit_quote_not_in_source", where, message))
+    else:
+        _check_benefit_numbers(result)  # only for a quote that is real: one problem at a time
+
+
+# A number as it is written in a scheme text: 1,200  2,50,000  3500  2.5  (the sign "Rs", a slash
+# or a rupee mark around it are not part of it).
+_NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
+
+
+def numbers_in(text: str) -> set[str]:
+    """Every number in the text, written the same way whatever its commas: 3,500 and 3500 and
+    2,50,000 and 250000 match. A trailing comma or full stop belongs to the sentence, not to the
+    number."""
+    found = set()
+    for token in _NUMBER.findall(text):
+        number = token.replace(",", "")
+        found.add(number.rstrip(".") if number.endswith(".") else number)
+    return found
+
+
+def _check_benefit_numbers(result: ValidationResult) -> None:
+    """Every figure in the benefit text must be written in the benefit quote. The quote is the proof
+    of the text; an amount the quote does not contain has no proof, even when the quote itself is
+    real (review item 10: the quote was a sentence with no numbers, and the rates in the text were
+    right only because a person checked them against a table)."""
+    version = _dict(_dict(result.scheme).get("version"))
+    text, quote = version.get("benefit_text_en"), result.benefit_quote
+    if not isinstance(text, str) or not quote:
+        return
+    missing = sorted(numbers_in(text) - numbers_in(quote), key=lambda n: (len(n), n))
+    if missing:
+        where = "scheme.version.benefit_text_en"
+        message = (
+            "benefit_text_en has numbers that benefit_quote does not contain: "
+            f"{', '.join(missing)}. "
+            "Quote the words that show these figures (a table row is fine), or leave the figure "
+            "out of the text."
+        )
+        result.problems.append(Problem("benefit_number_not_in_quote", where, message))
 
 
 def _squash(text: str) -> str:

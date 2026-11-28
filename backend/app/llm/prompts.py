@@ -22,6 +22,8 @@ You do NOT decide who is eligible. You only copy the conditions the text states 
 - benefit_text_en says in plain words what the family receives, using only what the text states.
   Give benefit_quote: words copied word for word from the SOURCE TEXT that state the benefit. If
   the text does not state it, benefit_text_en, benefit_text_hi and benefit_quote must all be null.
+  Every number in benefit_text_en (every amount, age or count) must be written in benefit_quote, so
+  quote the lines that contain the figures; a figure the quote does not show is refused.
 - If a condition cannot be written with the allowed fields, do not force it into a rule.
   List it in scheme.labeller_notes.not_encoded. Families read these lines on the scheme page under
   "Rules we can't check: ask the office", so write each as one short plain sentence a parent can
