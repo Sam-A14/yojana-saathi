@@ -67,7 +67,7 @@ const EXCLUSION_FIELDS = [
   "is_registered_professional",
   "holds_constitutional_post",
 ];
-const HOME_FIELDS = ["state", "district", "area_type", "income_band_max", "category", "house_type", "is_bpl"];
+export const HOME_FIELDS = ["state", "district", "area_type", "income_band_max", "category", "house_type", "is_bpl"];
 
 export type Need = {
   field: string; // "age", "gender", "has_bpl_card", ...

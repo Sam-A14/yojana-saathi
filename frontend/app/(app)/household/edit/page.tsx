@@ -37,6 +37,10 @@ function HouseholdEditor({ family }: { family: Family }) {
   const te = useTranslations("errors");
   const router = useRouter();
   const [household, setHousehold] = useState<Household | null>(null);
+  // Counts the times the saved answers arrived. It is the form's key: a form keeps what it was
+  // given when it first appeared, so without a new key it would go on showing the answers it
+  // started with after the saved ones changed.
+  const [loads, setLoads] = useState(0);
   const [loadProblem, setLoadProblem] = useState<Problem | null>(null);
   const [attempt, setAttempt] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -53,7 +57,10 @@ function HouseholdEditor({ family }: { family: Family }) {
     api
       .getHousehold(family)
       .then((loaded) => {
-        if (!cancelled) setHousehold(loaded);
+        if (!cancelled) {
+          setHousehold(loaded);
+          setLoads((n) => n + 1);
+        }
       })
       .catch((error) => {
         if (!cancelled) setLoadProblem(errorKind(error));
@@ -101,6 +108,7 @@ function HouseholdEditor({ family }: { family: Family }) {
       <h1 className="page-title">{t("title")}</h1>
       <p>{t("intro")}</p>
       <HouseholdForm
+        key={loads}
         initial={{
           state: household.state,
           district: household.district ?? "",
