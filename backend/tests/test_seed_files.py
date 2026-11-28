@@ -416,3 +416,16 @@ def test_seed_folder_holds_only_json_files() -> None:
     )
 
     assert stray == [], f"move these to data/scheme_sources/ or delete them: {stray}"
+
+
+def test_the_pm_kisan_source_keeps_its_second_labelled_block_word_for_word() -> None:
+    """The PIB release of 2019 has no amount, so the 2026 PIB paragraph was added as a labelled
+    second block. The benefit amounts must be in the file, in the exact words, with its own URL."""
+    source = read_source("pm-kisan")
+    text = " ".join(source.text.split())
+
+    assert source.url == "https://pib.gov.in/PressReleasePage.aspx?PRID=1575610"
+    assert "=== SECOND SOURCE, added for the benefit amount: PIB" in source.text
+    assert "doc2026620898101.pdf" in source.text
+    assert "each eligible farmer family receives annual financial assistance of ₹6,000" in text
+    assert "disbursed in three equal instalments of ₹2,000" in text
