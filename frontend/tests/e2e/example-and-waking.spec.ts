@@ -1,14 +1,17 @@
 import { expect, test, STORAGE_KEY } from "./fixtures";
 
-test("'See an example' shows a made-up family with no sign-in and no family data call", async ({ page, api }) => {
+test("'Try a demo family' shows a made-up family with no sign-in and no family data call", async ({ page, api }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: "See an example" }).click();
+  await page.getByRole("link", { name: "Try a demo family" }).click();
 
   await expect(page).toHaveURL(/\/example$/);
-  await expect(page.getByText("Example", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Demo, not a real family", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("This is a made-up family")).toBeVisible();
   await expect(page.getByRole("region", { name: "Asha", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Check my own family" })).toHaveAttribute("href", "/setup/basics");
+  // Several schemes across several people's cards, and nothing on the page edits anything.
+  expect(await page.getByRole("region").getByRole("link", { name: /scheme|yojana|pension|pm|scholarship/i }).count()).toBeGreaterThanOrEqual(4);
+  await expect(page.getByRole("button", { name: /add|edit|delete|save/i })).toHaveCount(0);
   // Nothing about a household was asked of the server, and nobody had to sign in.
   expect(api.requests.filter((r) => r.path.startsWith("/households") || r.path === "/me")).toEqual([]);
   expect(await page.evaluate((k) => localStorage.getItem(k), STORAGE_KEY)).toBeNull();
@@ -33,7 +36,7 @@ test("the example is in Hindi when the language is Hindi", async ({ page }) => {
   await page.goto("/example");
   await page.getByRole("button", { name: "हिन्दी" }).click();
 
-  await expect(page.getByRole("heading", { name: "एक उदाहरण परिवार" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "एक डेमो परिवार" })).toBeVisible();
 });
 
 test("the home page wakes the server in the background, without a banner", async ({ page, api }) => {
