@@ -1,59 +1,97 @@
 {
   "$schema": "../scheme.schema.json",
   "labeller_notes": {
-    "example": true,
-    "source_reached": false,
+    "example": false,
     "notes": [
-      "EXAMPLE, VERIFY BEFORE USE. Written from memory of public information, NOT from the official page: nsap.nic.in could not be reached when this file was written.",
-      "Check the age limit and the pension amounts against https://nsap.nic.in/ before trusting anything here.",
-      "The scheme asks for a below-poverty-line family. The rule uses the household's own yes / no answer (is_bpl); 'Not sure' leaves it unknown. States keep their own BPL lists, so we trust the family's answer. The BPL card stays a required document, so a BPL family without the card is told it is missing.",
-      "This is the Centre's scheme. States add their own amount and may have their own widow pension with different rules.",
-      "DRAFT, NEEDS REVIEW (owner): version.not_checked_en and not_checked_hi were written from the technical not_encoded notes below, in plain words. Check each line against the official source; the Hindi needs a native speaker."
-    ],
-    "not_encoded": [
-      "Exact BPL test used by each state.",
-      "State top-up amounts and any separate state widow pension (including Uttar Pradesh).",
-      "Proof of age and the application route through the local office."
+      "Proposed by the LLM extractor (review item 21, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request.",
+      "Reviewed by hand (assistant, against docs/scheme-review-checklist.md). Replaces the old hand-labelled example (a copy is in data/ground_truth/ignwps.json, which the accuracy score uses).",
+      "Rules kept as the extractor wrote them: marital_status = widow, age between [40, 79] (Eligibility: 'The applicant must be a widow in the age group of 40-79 years.'), is_bpl is true (Eligibility, 'a household living below the poverty line'), is_remarried = false (Exclusions, 'In case of remarriage of widow'; the app asks it only of widows, and an unanswered answer gives 'may qualify'). The old example also required gender = female; the page says only 'widow', so it is not encoded.",
+      "OWNER DECISION on age (kept as Eligibility says, 40 to 79): the Benefits section also says 'For persons who are 80 years and above the pension is Rs.500/- per month', which could be read as the widow pension continuing at 80. Under NSAP, at 80 a widow moves to the old-age pension (IGNOAPS, Rs.500 a month from 80), which the app already shows for her. So at 80 the widow pension rule stops matching and IGNOAPS takes over; a not_checked line says so. Test profile 17 pins this (aged 85: IGNWPS not eligible, IGNOAPS eligible).",
+      "Documents: spouse_death_certificate and bpl_card required (Documents Required). The age proof is 'any one of': birth certificate, school certificate (no code), then ration card and EPIC (voter_id), then a medical officer's certificate; listed with required: false. bpl_card and ration_card are household papers (applies_to household). The old example also listed aadhaar_card and a bank account; this page lists neither, so they are dropped.",
+      "Not encoded (see not_checked): the government's definition of 'below the poverty line' (the app uses the family's own yes or no); the pension stopping when a widow remarries or the family rises above the line (checked only as today's answers); and the move to IGNOAPS at 80 (said in a line; the IGNOAPS scheme itself decides at 80).",
+      "Source quote (benefit_text_en): A pension of Rs.300/- per month is provided to Widows between 40 years and 79 years. For persons who are 80 years and above the pension is Rs.500/- per month.",
+      "Hand-written Hindi added (name_hi, benefit_text_hi, not_checked_hi). The amounts match the English.",
+      "NEEDS NATIVE REVIEW (owner): name_hi, benefit_text_hi and not_checked_hi."
     ]
   },
   "slug": "ignwps",
-  "name_en": "Indira Gandhi National Widow Pension Scheme (IGNWPS)",
+  "name_en": "Indira Gandhi National Widow Pension Scheme",
   "name_hi": "इंदिरा गांधी राष्ट्रीय विधवा पेंशन योजना",
   "level": "central",
   "state": null,
   "category": "widow_pension",
-  "official_url": "https://nsap.nic.in/",
-  "status": "active",
+  "official_url": "https://www.myscheme.gov.in/schemes/ignwps",
   "version": {
     "rules": {
       "all": [
-        {"field": "gender", "op": "eq", "value": "female"},
-        {"field": "marital_status", "op": "eq", "value": "widow"},
-        {"field": "age", "op": "gte", "value": 40},
-        {"field": "is_bpl", "op": "is_true"}
+        {
+          "field": "marital_status",
+          "op": "eq",
+          "value": "widow"
+        },
+        {
+          "field": "age",
+          "op": "between",
+          "value": [
+            40,
+            79
+          ]
+        },
+        {
+          "field": "is_bpl",
+          "op": "is_true"
+        },
+        {
+          "field": "is_remarried",
+          "op": "eq",
+          "value": false
+        }
       ],
       "fixable": []
     },
-    "benefit_text_en": "Example, verify before use: a monthly pension from the Centre for widows from age 40 in below-poverty-line families, about Rs 300 a month, higher from age 80. States may add to it.",
-    "benefit_text_hi": "उदाहरण, उपयोग से पहले जाँचें: 40 साल या उससे अधिक उम्र की गरीबी रेखा से नीचे की विधवाओं को केंद्र से मासिक पेंशन, लगभग 300 रुपये प्रति माह, 80 साल के बाद अधिक। राज्य इसमें और जोड़ सकते हैं।",
+    "benefit_text_en": "A pension of Rs. 300 per month is provided to widows between 40 and 79 years. For persons 80 years and above, the pension is Rs. 500 per month.",
+    "benefit_text_hi": "विधवाओं को हर महीने पेंशन: 40 से 79 साल की उम्र में ₹300, और 80 साल या उससे ज़्यादा की उम्र में ₹500।",
     "not_checked_en": [
-      "Each state decides which families count as below the poverty line. This app goes by your own yes or no answer, so the office may decide differently.",
-      "Your state may add money on top, or have its own widow pension with different rules, including Uttar Pradesh. This app does not check those."
+      "Which families count as below the poverty line is decided by the Government of India's rules. This app goes by your own yes or no answer, so the office may decide differently. Ask the office.",
+      "The pension stops if the widow marries again or her family moves above the poverty line. Tell the office if that happens. This app only checks today's answers.",
+      "At 80, the widow pension moves to the old-age pension (IGNOAPS), which pays ₹500 a month."
     ],
     "not_checked_hi": [
-      "कौन-से परिवार ग़रीबी रेखा से नीचे माने जाएँगे, यह हर राज्य तय करता है। यह ऐप आपके अपने हाँ या नहीं के जवाब पर चलता है, इसलिए दफ़्तर का फ़ैसला अलग हो सकता है।",
-      "आपका राज्य ऊपर से पैसा जोड़ सकता है, या अपनी अलग विधवा पेंशन चला सकता है जिसके नियम अलग हैं, उत्तर प्रदेश सहित। यह ऐप इन्हें नहीं जाँचता।"
+      "कौन-से परिवार ग़रीबी रेखा से नीचे माने जाएँगे, यह भारत सरकार के नियमों से तय होता है। यह ऐप आपके अपने हाँ या नहीं के जवाब पर चलता है, इसलिए दफ़्तर का फ़ैसला अलग हो सकता है। दफ़्तर से पूछें।",
+      "अगर विधवा दोबारा शादी कर ले या परिवार ग़रीबी रेखा से ऊपर चला जाए तो पेंशन बंद हो जाती है। ऐसा हो तो दफ़्तर को बताएँ। यह ऐप सिर्फ़ आज के जवाब जाँचता है।",
+      "80 साल की उम्र में विधवा पेंशन की जगह वृद्धावस्था पेंशन (IGNOAPS) मिलती है, जो हर महीने ₹500 है।"
     ],
     "deadline_start": null,
     "deadline_end": null,
-    "source_url": "https://nsap.nic.in/",
-    "verified_at": null,
-    "approved_by": "seed-example-unverified",
+    "source_url": "https://www.myscheme.gov.in/schemes/ignwps",
+    "verified_at": "2026-11-28",
+    "approved_by": "Sam-A14",
     "documents": [
-      {"code": "aadhaar_card", "required": true, "applies_to": "applicant"},
-      {"code": "spouse_death_certificate", "required": true, "applies_to": "applicant"},
-      {"code": "bpl_card", "required": true, "applies_to": "household"},
-      {"code": "bank_account_aadhaar_linked", "required": true, "applies_to": "applicant"}
+      {
+        "code": "spouse_death_certificate",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "bpl_card",
+        "required": true,
+        "applies_to": "household"
+      },
+      {
+        "code": "birth_certificate",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "ration_card",
+        "required": false,
+        "applies_to": "household"
+      },
+      {
+        "code": "voter_id",
+        "required": false,
+        "applies_to": "applicant"
+      }
     ]
   }
 }

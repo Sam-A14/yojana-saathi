@@ -1,0 +1,54 @@
+{
+  "description": "A widow aged 85 in a BPL family: the widow pension (IGNWPS) is for ages 40 to 79, and at 80 she moves to the old-age pension (IGNOAPS, Rs.500 a month), so IGNWPS is not eligible and IGNOAPS is. Her son's land makes the family PM-KISAN eligible.",
+  "household": {
+    "state": "UP",
+    "district": "Sitapur",
+    "area_type": "rural",
+    "income_band_max": 100000,
+    "category": "OBC",
+    "is_bpl": true
+  },
+  "members": [
+    {
+      "nickname": "Kamla",
+      "age": 85,
+      "gender": "female",
+      "marital_status": "widow",
+      "owns_cultivable_land": false,
+      "paid_income_tax_last_year": false,
+      "govt_employee": "none",
+      "pension_band": "none",
+      "is_registered_professional": false,
+      "holds_constitutional_post": false,
+      "is_remarried": false,
+      "has_bpl_card": true
+    },
+    {
+      "nickname": "Raju",
+      "age": 35,
+      "gender": "male",
+      "marital_status": "married",
+      "owns_cultivable_land": true,
+      "paid_income_tax_last_year": false,
+      "govt_employee": "none",
+      "pension_band": "none",
+      "is_registered_professional": false,
+      "holds_constitutional_post": false,
+      "is_remarried": false
+    }
+  ],
+  "expected": {
+    "pm-kisan": {
+      "Kamla": "eligible",
+      "Raju": "eligible"
+    },
+    "ignwps": {
+      "Kamla": "not_eligible",
+      "Raju": "not_eligible"
+    },
+    "ignoaps": {
+      "Kamla": "eligible",
+      "Raju": "not_eligible"
+    }
+  }
+}
