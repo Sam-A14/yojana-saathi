@@ -1,0 +1,103 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": false,
+    "notes": [
+      "Proposed by the LLM extractor (review item 6, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request.",
+      "Changed by the owner in review of the approve pull request: added the rule is_student is_true (quote, under Details: \"pursuing secondary education in Class 9 or 10.\"); replaced the four not_checked lines; added the document bank_account_aadhaar_linked (source: \"Bank passbook photocopy\"); official_url set to the scholarship portal; benefit_text_en reworded; name_hi added.",
+      "Source quote (benefit_text_en): Component-1 ₹3,500/- per annum (Day Students). ₹7,000/- per annum (residential students). Component-2 ₹3,500/- per annum (Day Students). ₹8,000/- per annum (residential students).",
+      "Not encoded: Component 2 (parents in occupations traditionally considered unclean, no income limit): no field says what a parent does. Component 1 income limit (₹2,50,000) is not encoded either, so a family above it is not turned away wrongly. Other scholarships at the same time. Age as of 1 July.",
+      "NEEDS NATIVE REVIEW (owner): name_hi, benefit_text_hi and not_checked_hi."
+    ]
+  },
+  "slug": "up-sc-st-pre-matric",
+  "name_en": "SC/ST Pre Matric Scholarship - Uttar Pradesh",
+  "name_hi": "अनुसूचित जाति/जनजाति पूर्वदशम छात्रवृत्ति – उत्तर प्रदेश",
+  "level": "state",
+  "state": "UP",
+  "category": "education",
+  "official_url": "https://scholarship.up.gov.in/index.aspx",
+  "version": {
+    "rules": {
+      "all": [
+        {
+          "field": "state",
+          "op": "eq",
+          "value": "UP"
+        },
+        {
+          "field": "category",
+          "op": "in",
+          "value": [
+            "SC",
+            "ST"
+          ]
+        },
+        {
+          "field": "age",
+          "op": "between",
+          "value": [
+            12,
+            20
+          ]
+        },
+        {
+          "field": "current_study_level",
+          "op": "eq",
+          "value": "class_9_10"
+        },
+        {
+          "field": "is_student",
+          "op": "is_true"
+        }
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "₹3,500 a year for students who live at home. For students who live in a hostel: ₹7,000 a year (Component 1) or ₹8,000 a year (Component 2).",
+    "benefit_text_hi": "घर पर रहने वाले छात्रों के लिए ₹3,500 प्रति वर्ष। छात्रावास में रहने वाले छात्रों के लिए: ₹7,000 प्रति वर्ष (कॉम्पोनेंट 1) या ₹8,000 प्रति वर्ष (कॉम्पोनेंट 2)।",
+    "not_checked_en": [
+      "If your family earns more than ₹2.5 lakh a year, your child may still qualify under Component 2 if a parent works in an occupation traditionally considered unclean (Component 2 has no income limit). Ask the office.",
+      "Under Component 1, parents' income must be ₹2.5 lakh a year or less. This app does not check income for this scheme.",
+      "A student cannot get another scholarship at the same time (some exceptions). This app does not check it.",
+      "Age is counted on 1 July of the year you apply. This app uses today's date, so near age 12 or 20, ask the office."
+    ],
+    "not_checked_hi": [
+      "अगर आपके परिवार की सालाना आमदनी ₹2.5 लाख से ज़्यादा है, तब भी आपका बच्चा कॉम्पोनेंट 2 के तहत पात्र हो सकता है, अगर माता-पिता में से कोई ऐसे पेशे में काम करता है जिसे परंपरागत रूप से अशुद्ध माना जाता रहा है (कॉम्पोनेंट 2 में आमदनी की कोई सीमा नहीं है)। दफ़्तर से पूछें।",
+      "कॉम्पोनेंट 1 में माता-पिता की सालाना आमदनी ₹2.5 लाख या उससे कम होनी चाहिए। यह ऐप इस योजना के लिए आमदनी की जाँच नहीं करता।",
+      "कोई छात्र इसके साथ-साथ दूसरी छात्रवृत्ति नहीं ले सकता (कुछ अपवाद हैं)। यह ऐप इसकी जाँच नहीं करता।",
+      "उम्र आवेदन वाले साल की 1 जुलाई को गिनी जाती है। यह ऐप आज की तारीख़ इस्तेमाल करता है, इसलिए 12 या 20 साल के आसपास होने पर दफ़्तर से पूछें।"
+    ],
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://www.myscheme.gov.in/schemes/pmcup",
+    "verified_at": "2026-11-28",
+    "approved_by": "Sam-A14",
+    "documents": [
+      {
+        "code": "marksheet",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "caste_certificate",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "income_certificate",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "aadhaar_card",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "bank_account_aadhaar_linked",
+        "required": true,
+        "applies_to": "applicant"
+      }
+    ]
+  }
+}
