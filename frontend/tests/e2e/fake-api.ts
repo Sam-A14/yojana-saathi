@@ -63,9 +63,11 @@ function eligibilityFor(fixture: Fixture, householdId: string, household: Stored
     const sample =
       fixture.members.find((m) => m.nickname === member.nickname) ??
       fixture.members[index % fixture.members.length];
-    const own = ignoapsFor(member, household);
-    const schemes = (sample.schemes as { scheme: { slug: string } }[]).filter((s) => s.scheme.slug !== "ignoaps");
-    return { ...sample, schemes: own ? [own, ...schemes] : schemes, member_id: member.id, nickname: member.nickname };
+    const own = [ignoapsFor(member, household), pmayGFor(household)].filter(Boolean);
+    const schemes = (sample.schemes as { scheme: { slug: string } }[]).filter(
+      (s) => s.scheme.slug !== "ignoaps" && s.scheme.slug !== "pmay-g",
+    );
+    return { ...sample, schemes: [...own, ...schemes], member_id: member.id, nickname: member.nickname };
   });
   return { ...fixture, household_id: householdId, members };
 }
@@ -101,6 +103,44 @@ function ignoapsFor(member: Json, household: StoredHousehold) {
     passed_rules: [
       { rule: { field: "is_bpl", op: "is_true" }, fields: ["is_bpl"], matched_members: [], fixable: false, reasons: [] },
       { rule: { field: "age", op: "gte", value: 60 }, fields: ["age"], matched_members: [], fixable: false, reasons: [] },
+    ],
+    failed_rules: [],
+    unknown_rules: [],
+    excluded_by: [],
+    missing_documents: [],
+  };
+}
+
+// PMAY-Gramin is decided here by two household answers: the family lives in a village, and its
+// house is kutcha or it has none. This fake mirrors those two rules so a test can change the
+// answers on the edit screen and watch the scheme come and go. The real engine's answer for the
+// same facts is proved in the backend tests (a rule on area_type and house_type).
+function pmayGFor(household: StoredHousehold) {
+  const { area_type, house_type } = household.fields;
+  if (area_type !== "rural" || (house_type !== "no_house" && house_type !== "kutcha")) return null;
+  return {
+    scheme: {
+      slug: "pmay-g",
+      name_en: "Pradhan Mantri Awaas Yojana - Gramin",
+      name_hi: "प्रधानमंत्री आवास योजना – ग्रामीण",
+      level: "central",
+      state: null,
+      category: "housing",
+      official_url: "https://www.myscheme.gov.in/schemes/pmay-g",
+      benefit_text_en: "Money to build a pucca house: ₹1,20,000 in plain areas, or ₹1,30,000 in hilly and difficult areas.",
+      benefit_text_hi: null,
+      not_checked_en: [],
+      not_checked_hi: null,
+      deadline_start: null,
+      deadline_end: null,
+      verified: true,
+      verified_at: "2026-11-28T00:00:00Z",
+    },
+    status: "eligible",
+    reasons: [],
+    passed_rules: [
+      { rule: { field: "area_type", op: "eq", value: "rural" }, fields: ["area_type"], matched_members: [], fixable: false, reasons: [] },
+      { rule: { field: "house_type", op: "in", value: ["no_house", "kutcha"] }, fields: ["house_type"], matched_members: [], fixable: false, reasons: [] },
     ],
     failed_rules: [],
     unknown_rules: [],

@@ -5,7 +5,7 @@ import { createTranslator } from "use-intl";
 import { en } from "../../messages/en";
 import { hi } from "../../messages/hi";
 import { describeRule, toTranslate } from "../../lib/rule-text";
-import { neededAnswers, parseRule } from "../../lib/rules";
+import { HOME_FIELDS, neededAnswers, parseRule } from "../../lib/rules";
 import type { Eligibility } from "../../lib/types";
 import eligibility from "../fixtures/eligibility.json";
 import eligibility_missing_home from "../fixtures/eligibility-missing-home.json";
@@ -208,5 +208,17 @@ test.describe("the BPL question", () => {
     expect(en.questions.is_bpl).toBe("We need to know if your family is BPL");
     expect(hi.basics.bpl).toContain("गरीबी रेखा से नीचे (BPL)");
     expect(hi.questions.is_bpl).toContain("गरीबी रेखा से नीचे (BPL)");
+  });
+});
+
+test.describe("where a missing household answer is asked", () => {
+  test("every household fact in the engine leads to the household edit screen", async () => {
+    const { readFileSync } = await import("node:fs");
+    const source = readFileSync(path.resolve(__dirname, "../../../backend/app/rules/fields.py"), "utf8");
+    const block = source.match(/HOUSEHOLD_FIELDS = frozenset\(\s*\{([^}]*)\}/);
+    const engine = [...(block?.[1] ?? "").matchAll(/"([a-z_]+)"/g)].map((m) => m[1]).sort();
+
+    expect(engine.length).toBeGreaterThan(5);
+    expect([...HOME_FIELDS].sort()).toEqual(engine);
   });
 });
