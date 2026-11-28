@@ -3,12 +3,20 @@
   "labeller_notes": {
     "example": false,
     "notes": [
-      "Proposed by the LLM extractor (review item 14, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request."
+      "Proposed by the LLM extractor (review item 14, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request.",
+      "Rules (owner's decisions): area_type rural (quote, under Details: 'households living in kutcha and dilapidated house in rural areas'); house_type in [no_house, kutcha] (quote, under Eligibility: 'all the houseless households living in zero, one, or two-room houses with kutcha walls and kutcha roofs'; the Exclusions section also filters out pucca houses); no member pays income tax, as any_member (quote, under Exclusions: '7. Paying income tax'). The workflow wrote the income-tax rule without any_member, so it only looked at the person being checked; fixed in review.",
+      "The government-employee exclusion ('4. Household with any member as a Government employee') is deliberately NOT a rule: our govt_employee answer also counts people who used to work in a government job, so it would exclude retired employees wrongly. It is a not_checked line instead.",
+      "Stale source: Details says PMAY-G was 'extended for another two years, i.e. till 31st March 2024' and aims to build houses 'by 2024'. No deadline_end is set. The last not_checked line tells families to ask the office whether applications are open. The page itself may be outdated; check an official page.",
+      "Papers: Aadhaar (own line) required; MGNREGA job card required (new document code mgnrega_job_card, added in this pull request); 'Bank account details' is bank_account_aadhaar_linked, required. The Swachh Bharat Mission number is a number, not a paper, and is never stored. The affidavit about not owning a pucca house has no document code (owner's decision): it is a not_checked line.",
+      "Benefits left out of benefit_text_en: the toilet money and the LPG connection are paid under other schemes (convergence), and the maximum loan principal of ₹2,00,000 is a technical limit.",
+      "Source quote (benefit_text_en): Financial Assistance of ₹ 1,20,000 per unit for plain areas; and ₹ 1,30,000 per unit for hilly areas, difficult areas, and IAP districts (Himalayan states, North-Eastern states, and Union Territories of Jammu & Kashmir). A willing beneficiary can avail of institutional finance (loan) of up to ₹ 70,000 at 3% lower interest rate, to build a permanent house. The maximum principal amount for which subsidy can be sought is ₹ 2,00,000.",
+      "NEEDS NATIVE REVIEW (owner): name_hi, benefit_text_hi, not_checked_hi, and the Hindi lines of the new document mgnrega_job_card in documents.json.",
+      "Not encoded: more than two rooms; motorised vehicle or fishing boat; mechanised farm equipment; Kisan Credit Card limit of Rs 50,000; government-registered non-farm business; any member earning over Rs 10,000 a month; professional tax; refrigerator; landline phone; irrigated land limits; government employee; SECC list and Gram Sabha verification; automatic inclusion groups; affidavit."
     ]
   },
   "slug": "pmay-g",
   "name_en": "Pradhan Mantri Awaas Yojana - Gramin",
-  "name_hi": null,
+  "name_hi": "प्रधानमंत्री आवास योजना – ग्रामीण",
   "level": "central",
   "state": null,
   "category": "housing",
@@ -23,39 +31,46 @@
         },
         {
           "field": "house_type",
-          "op": "neq",
-          "value": "pucca"
+          "op": "in",
+          "value": [
+            "no_house",
+            "kutcha"
+          ]
         },
         {
           "not": {
             "any_member": {
-              "field": "govt_employee",
-              "op": "neq",
-              "value": "none"
+              "field": "paid_income_tax_last_year",
+              "op": "is_true"
             }
-          }
-        },
-        {
-          "not": {
-            "field": "paid_income_tax_last_year",
-            "op": "is_true"
           }
         }
       ],
       "fixable": []
     },
-    "benefit_text_en": "Financial Assistance of ₹ 1,20,000 per unit for plain areas; and ₹ 1,30,000 per unit for hilly areas, difficult areas, and IAP districts (Himalayan states, North-Eastern states, and Union Territories of Jammu & Kashmir).",
-    "benefit_text_hi": null,
+    "benefit_text_en": "Money to build a pucca house: ₹1,20,000 in plain areas, or ₹1,30,000 in hilly and difficult areas. You can also take a loan of up to ₹70,000 at 3% lower interest.",
+    "benefit_text_hi": "पक्का घर बनाने के लिए पैसा: समतल इलाकों में ₹1,20,000, या पहाड़ी और कठिन इलाकों में ₹1,30,000। आप ₹70,000 तक का कर्ज़ भी 3% कम ब्याज पर ले सकते हैं।",
     "not_checked_en": [
-      "The household must not own a motorized two/three/four wheeler, fishing boat, or mechanized agricultural equipment.",
-      "The household must not have a Kisan Credit Card with a credit limit of ₹50,000 or above.",
-      "The household must not run a government-registered non-agricultural enterprise.",
-      "No family member should earn more than ₹10,000 per month or pay professional tax.",
-      "The household must not own a refrigerator or a landline phone.",
-      "The household must not own 2.5 acres or more of irrigated land with irrigation equipment, or 7.5 acres or more of land.",
-      "The household's house must not have more than 2 rooms.",
-      "Beneficiaries must be identified using SECC data and verified by the Gram Sabha.",
-      "The applicant must provide an MGNREGA Job Card, Swachh Bharat Mission (SBM) number, and an affidavit confirming they do not own a pucca house."
+      "Your family must not own a motorised vehicle (a two, three or four wheeler) or a fishing boat, mechanised farm equipment, a refrigerator or a landline phone. This app does not check this.",
+      "Your family must not have a Kisan Credit Card with a limit of ₹50,000 or more, a business registered with the government (other than farming), a member earning more than ₹10,000 a month, or a member who pays professional tax. This app does not check this.",
+      "Your family must not own much irrigated land: 2.5 acres or more with irrigation equipment, 5 acres or more irrigated for two or more crop seasons, or 7.5 acres or more with irrigation equipment. This app does not check this.",
+      "Your house must have kutcha walls and a kutcha roof and no more than two rooms. This app only asks what kind of house you live in.",
+      "If anyone in your family works in a government job now, you cannot apply.",
+      "You must be on the official list of beneficiaries made from the Socio-Economic and Caste Census (SECC), and the Gram Sabha must verify you. This app does not check this.",
+      "Some families are included automatically: families with no shelter, people who live on alms, manual scavengers, primitive tribal groups and legally released bonded labourers.",
+      "You must give an affidavit (a sworn, signed paper) saying that nobody in your family owns a pucca house. This app does not check this.",
+      "Ask the office whether applications are open now."
+    ],
+    "not_checked_hi": [
+      "आपके परिवार के पास कोई मोटर वाहन (दो, तीन या चार पहिया) या मछली पकड़ने की नाव, मशीन से चलने वाले खेती के औज़ार, फ़्रिज या लैंडलाइन फ़ोन नहीं होना चाहिए। यह ऐप इसकी जाँच नहीं करता।",
+      "आपके परिवार के पास ₹50,000 या उससे ज़्यादा की सीमा वाला किसान क्रेडिट कार्ड, सरकार में पंजीकृत (खेती के अलावा) कोई कारोबार नहीं होना चाहिए, और कोई सदस्य महीने में ₹10,000 से ज़्यादा कमाने वाला या प्रोफ़ेशनल टैक्स देने वाला नहीं होना चाहिए। यह ऐप इसकी जाँच नहीं करता।",
+      "आपके परिवार के पास बहुत ज़्यादा सिंचित ज़मीन नहीं होनी चाहिए: सिंचाई के साधन के साथ 2.5 एकड़ या ज़्यादा, दो या ज़्यादा फ़सल मौसम में 5 एकड़ या ज़्यादा सिंचित, या सिंचाई के साधन के साथ 7.5 एकड़ या ज़्यादा। यह ऐप इसकी जाँच नहीं करता।",
+      "आपके घर की दीवारें और छत कच्ची होनी चाहिए और कमरे दो से ज़्यादा नहीं होने चाहिए। यह ऐप सिर्फ़ यह पूछता है कि आप किस तरह के घर में रहते हैं।",
+      "अगर आपके परिवार में कोई अभी सरकारी नौकरी में है, तो आप आवेदन नहीं कर सकते।",
+      "आपका नाम सामाजिक-आर्थिक जाति जनगणना (SECC) से बनी लाभार्थियों की सरकारी सूची में होना चाहिए और ग्राम सभा को आपका सत्यापन करना होगा। यह ऐप इसकी जाँच नहीं करता।",
+      "कुछ परिवार अपने-आप शामिल होते हैं: बिना छत वाले परिवार, भीख या दान पर जीने वाले लोग, हाथ से मैला ढोने वाले, आदिम जनजाति समूह और कानूनी रूप से छुड़ाए गए बँधुआ मज़दूर।",
+      "आपको एक शपथ-पत्र (हलफ़नामा) देना होगा कि आपके परिवार में किसी के पास पक्का घर नहीं है। यह ऐप इसकी जाँच नहीं करता।",
+      "दफ़्तर से पूछें कि अभी आवेदन खुले हैं या नहीं।"
     ],
     "deadline_start": null,
     "deadline_end": null,
@@ -65,6 +80,11 @@
     "documents": [
       {
         "code": "aadhaar_card",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "mgnrega_job_card",
         "required": true,
         "applies_to": "applicant"
       },

@@ -308,6 +308,33 @@ def test_up_obc_papers_alternatives_are_optional_and_the_institute_papers_are_re
         assert papers[needed] is True, needed
 
 
+def test_pmay_g_keeps_its_three_rules_and_leaves_out_the_two_traps() -> None:
+    """The workflow wrote the income-tax rule without any_member (so it only looked at the person
+    being checked), and the owner decided against a government-employee rule (our answer also
+    counts people who used to work in a government job). No deadline is set: the page's date is
+    stale."""
+    scheme = load("schemes_seed/pmay-g.json")
+    rules = scheme["version"]["rules"]["all"]
+
+    assert rules[0] == {"field": "area_type", "op": "eq", "value": "rural"}
+    assert rules[1] == {"field": "house_type", "op": "in", "value": ["no_house", "kutcha"]}
+    assert rules[2] == {
+        "not": {"any_member": {"field": "paid_income_tax_last_year", "op": "is_true"}}
+    }
+    assert len(rules) == 3
+    assert "govt_employee" not in json.dumps(rules)
+    assert scheme["version"]["deadline_start"] is None and scheme["version"]["deadline_end"] is None
+    english = scheme["version"]["not_checked_en"]
+    assert "If anyone in your family works in a government job now, you cannot apply." in english
+    assert english[-1] == "Ask the office whether applications are open now."
+    papers = {d["code"]: d["required"] for d in scheme["version"]["documents"]}
+    assert papers == {
+        "aadhaar_card": True,
+        "mgnrega_job_card": True,
+        "bank_account_aadhaar_linked": True,
+    }
+
+
 def test_ignoaps_says_what_it_does_not_check_in_plain_words() -> None:
     version = load("schemes_seed/ignoaps.json")["version"]
     english = " ".join(version["not_checked_en"])
