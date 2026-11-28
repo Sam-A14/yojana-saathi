@@ -9,6 +9,7 @@ import { Card, Skeleton } from "@/components/ui";
 import { type ErrorKind, api, errorKind } from "@/lib/api";
 import { nextPathFor } from "@/lib/next-path";
 import { type Session, setHouseholdId, useSession } from "@/lib/session";
+import { useResetWhenShown } from "@/lib/use-reset-when-shown";
 import type { HouseholdFields } from "@/lib/types";
 
 // The form is a child that exists only for a signed-in person with no household yet, so what was
@@ -45,6 +46,12 @@ function BasicsForm({ session }: { session: Session }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<ErrorKind | null>(null);
+  // A good save navigates away, but this page is kept alive (hidden). Without this, coming back
+  // would show the button stuck on "Saving…" (see lib/use-reset-when-shown.ts).
+  useResetWhenShown(() => {
+    setSaving(false);
+    setProblem(null);
+  });
 
   async function create(data: HouseholdFields) {
     setSaving(true);

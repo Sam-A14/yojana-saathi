@@ -45,6 +45,7 @@ export const en = {
   errors: {
     network:
       "We could not reach the server. Check your internet and try again. The first try can take up to a minute.",
+    timeout: "Saving is taking too long. Your answers are still here. Try again.",
     signedOut: "Your sign-in has ended. Please sign in again.",
     denied: "We could not open this family. Please sign in again.",
     limit: "You have added the most people allowed.",

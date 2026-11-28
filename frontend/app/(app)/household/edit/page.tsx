@@ -8,6 +8,7 @@ import { Button, ButtonLink, ErrorNote } from "@/components/ui";
 import { api, errorKind, type ErrorKind } from "@/lib/api";
 import type { Family, Household, HouseholdFields } from "@/lib/types";
 import { useFamily } from "@/lib/use-family";
+import { useResetWhenShown } from "@/lib/use-reset-when-shown";
 
 type Problem = ErrorKind;
 
@@ -40,6 +41,12 @@ function HouseholdEditor({ family }: { family: Family }) {
   const [attempt, setAttempt] = useState(0);
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<Problem | null>(null);
+  // After a good save we navigate away, but this page is kept alive (hidden): without this, coming
+  // back would show the form stuck on "Saving…".
+  useResetWhenShown(() => {
+    setSaving(false);
+    setProblem(null);
+  });
 
   useEffect(() => {
     let cancelled = false;

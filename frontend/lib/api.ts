@@ -17,23 +17,25 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 // status 0 means the request never reached the server (offline, or the server is still waking up).
 // `code` is the machine-readable reason the sign-in endpoints send (detail.code), e.g. "invalid_code".
+// `timedOut` is true when we gave up waiting (see WRITE_TIMEOUT_MS): the answer may still be coming.
 export class ApiError extends Error {
   constructor(
     readonly status: number,
     message: string,
     readonly code: string | null = null,
     readonly attemptsLeft: number | null = null,
+    readonly timedOut = false,
   ) {
     super(message);
   }
 }
 
-export type ErrorKind = "network" | "signedOut" | "denied" | "limit" | "generic";
+export type ErrorKind = "network" | "timeout" | "signedOut" | "denied" | "limit" | "generic";
 
 // What the screen should say. One place, so every page words the same problem the same way.
 export function errorKind(error: unknown): ErrorKind {
   if (!(error instanceof ApiError)) return "generic";
-  if (error.status === 0) return "network";
+  if (error.status === 0) return error.timedOut ? "timeout" : "network";
   if (error.status === 401) return "signedOut"; // not signed in, or the session ended
   if (error.status === 403) return "denied"; // signed in, but not this household
   if (error.status === 409) return "limit";
@@ -60,6 +62,44 @@ async function problemFrom(response: Response): Promise<ApiError> {
   return new ApiError(response.status, response.statusText, code, attemptsLeft);
 }
 
+// A save that gets no answer at all (a connection that went stale while the page sat open) used to
+// leave "Saving…" on the screen forever, because fetch has no time limit of its own. Every request
+// that changes something now gives up after this long.
+//
+// Reads (GET) are NOT timed out: the first request after the host has slept can legitimately take up
+// to a minute, and the "waking up" banner promises exactly that. Giving up at 15 s would turn a slow
+// start into an error. `limits` is an object so a test can shorten it.
+export const limits = { writeTimeoutMs: 15_000 };
+
+// PATCH and PUT set fields to the values sent, so doing one twice leaves the same result: safe to
+// repeat. POST (adds something), DELETE and the rest are never repeated automatically, because a
+// first attempt that "timed out" may still have arrived.
+const RETRIED_AFTER_TIMEOUT = new Set(["PATCH", "PUT"]);
+
+/** fetch that gives up after `ms` (null = wait as long as it takes). True in `timedOut` when it was
+ * our timer, not the network, that ended it. */
+async function fetchWithin(
+  url: string,
+  init: RequestInit,
+  ms: number | null,
+): Promise<{ response: Response } | { timedOut: true }> {
+  if (ms === null) return { response: await fetch(url, init) };
+  const controller = new AbortController();
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, ms);
+  try {
+    return { response: await fetch(url, { ...init, signal: controller.signal }) };
+  } catch (error) {
+    if (timedOut) return { timedOut: true };
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function request<T>(path: string, { method = "GET", token, body }: Options = {}): Promise<T> {
   const headers: Record<string, string> = {};
   if (body !== undefined) headers["Content-Type"] = "application/json";
@@ -67,15 +107,26 @@ async function request<T>(path: string, { method = "GET", token, body }: Options
 
   const finished = trackRequest(); // shows "waking up the server" if this takes over 4 seconds
   try {
-    let response: Response;
-    try {
-      response = await fetch(`${API_URL}${path}`, {
-        method,
-        headers,
-        body: body === undefined ? undefined : JSON.stringify(body),
-      });
-    } catch {
-      throw new ApiError(0, "Could not reach the server.");
+    const init: RequestInit = {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    };
+    const limit = method === "GET" ? null : limits.writeTimeoutMs;
+    const attempts = RETRIED_AFTER_TIMEOUT.has(method) ? 2 : 1;
+    let response: Response | undefined;
+    for (let attempt = 1; response === undefined; attempt++) {
+      let outcome: Awaited<ReturnType<typeof fetchWithin>>;
+      try {
+        outcome = await fetchWithin(`${API_URL}${path}`, init, limit);
+      } catch {
+        throw new ApiError(0, "Could not reach the server.");
+      }
+      if ("response" in outcome) {
+        response = outcome.response;
+      } else if (attempt >= attempts) {
+        throw new ApiError(0, "The server did not answer in time.", null, null, true);
+      } // else: stalled once, so try again on a fresh connection
     }
     if (!response.ok) {
       // A request that carried a session and got 401: that session is over. Forget it, so every

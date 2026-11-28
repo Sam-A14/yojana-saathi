@@ -9,6 +9,7 @@ import { Button, ButtonLink, ChoiceGroup, ErrorNote, Skeleton, YesNoGroup } from
 import { api, errorKind, type ErrorKind } from "@/lib/api";
 import { GOVT_EMPLOYEE, PENSION_BANDS } from "@/lib/options";
 import type { Member } from "@/lib/types";
+import { useResetWhenShown } from "@/lib/use-reset-when-shown";
 import { useSetupFamily } from "@/lib/use-setup-family";
 
 const ADULT_AGE = 18;
@@ -50,6 +51,12 @@ export default function ExclusionsPage() {
   const [data, setData] = useState<Loaded | null>(null);
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<ErrorKind | null>(null);
+  // A good save navigates away, but this page is kept alive (hidden). Without this, coming back
+  // would show the button stuck on "Saving…" (see lib/use-reset-when-shown.ts).
+  useResetWhenShown(() => {
+    setSaving(false);
+    setProblem(null);
+  });
 
   useEffect(() => {
     if (!family) return;

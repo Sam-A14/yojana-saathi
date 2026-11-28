@@ -10,6 +10,7 @@ import { DocumentChoice } from "@/components/DocumentChoice";
 import { Button, ButtonLink, ErrorNote, Skeleton } from "@/components/ui";
 import { api, errorKind, type ErrorKind } from "@/lib/api";
 import type { DocumentInfo, Member } from "@/lib/types";
+import { useResetWhenShown } from "@/lib/use-reset-when-shown";
 import { useSetupFamily } from "@/lib/use-setup-family";
 
 // true = has it, false = does not, null = not sure (the API stores nothing for it).
@@ -66,6 +67,12 @@ export default function DocumentsPage() {
   const [data, setData] = useState<Loaded | null>(null);
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<ErrorKind | null>(null);
+  // A good save navigates away, but this page is kept alive (hidden). Without this, coming back
+  // would show the button stuck on "Saving…" (see lib/use-reset-when-shown.ts).
+  useResetWhenShown(() => {
+    setSaving(false);
+    setProblem(null);
+  });
 
   useEffect(() => {
     if (!family) return;
