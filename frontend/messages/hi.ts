@@ -276,6 +276,7 @@ export const hi: typeof en = {
     // needs native review (owner): whole-family scheme page
     forFamily: "आपके पूरे परिवार के लिए",
     docsFor: "{name} के लिए कागज़:",
+    docsPick: "इनके कागज़ दिखाएँ:",
     summaryTitle: "आपको क्या मिलता है",
     noSummary: "इस योजना का सरल सार अभी हमारे पास नहीं है। सरकारी वेबसाइट देखें।",
     whyTitle: "यह क्यों ठीक बैठ सकती है",

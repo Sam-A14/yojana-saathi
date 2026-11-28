@@ -119,6 +119,7 @@ export type ExcludedScheme = {
 export type MemberEligibility = {
   member_id: string;
   nickname: string;
+  relation?: string; // "self", "mother", ...; absent from an older server
   schemes: SchemeResult[];
   excluded: ExcludedScheme[];
   not_eligible_count: number;

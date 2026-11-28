@@ -2,7 +2,7 @@
 
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { benefitText, documentName, formatDate, notCheckedLines, schemeName } from "@/lib/format";
 import { neededAnswers } from "@/lib/rules";
 import type { DocumentInfo, Eligibility, ExcludedScheme, Family, MemberEligibility, SchemeResult } from "@/lib/types";
@@ -84,6 +84,8 @@ export function SchemeDetail({
   const t = useTranslations("scheme");
   const locale = useLocale() === "hi" ? "hi" : "en";
   const describe = useRuleText(documents);
+  const router = useRouter();
+  const pathname = usePathname();
 
   const back = (
     <ButtonLink href={backHref} variant="secondary">
@@ -185,7 +187,24 @@ export function SchemeDetail({
 
       {found && (
         <Section title={t("docsTitle")} icon={SECTION_ICONS.docs}>
-          {/* A whole-family scheme is opened for the first person: say whose papers these are. */}
+          {/* A whole-family scheme is opened for the family's main person; papers are a person's, so
+              the person can be changed here. The page's address names the person (?member=). */}
+          {scheme.for_whole_family && eligibility.members.length > 1 && (
+            <label className="flex flex-col gap-2 text-lg font-bold">
+              {t("docsPick")}
+              <select
+                className="min-h-14 w-full rounded-xl border-2 border-line bg-surface px-4 text-lg font-normal"
+                value={member.member_id}
+                onChange={(event) => router.replace(`${pathname}?member=${event.target.value}`)}
+              >
+                {eligibility.members.map((m) => (
+                  <option key={m.member_id} value={m.member_id}>
+                    {m.nickname}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           {scheme.for_whole_family && found.missing_documents.length > 0 && (
             <p className="font-semibold">{t("docsFor", { name: member.nickname })}</p>
           )}

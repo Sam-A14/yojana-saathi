@@ -11,7 +11,8 @@ import type { Eligibility, ExcludedScheme, MemberEligibility, SchemeResult } fro
 export type FamilyResults = {
   schemes: SchemeResult[];
   excluded: ExcludedScheme[];
-  /** The member whose result stands for the family (the first one): used for links and papers. */
+  /** The member whose result stands for the family: the person who set the family up (relation
+   * "self"), else the first. Used for links and, to start with, for papers. */
   viaMemberId: string | null;
   viaMemberName: string | null;
 };
@@ -40,7 +41,7 @@ export function splitFamilyLevel(eligibility: Eligibility): {
     }
   }
   schemes.sort((a, b) => ORDER[a.status] - ORDER[b.status] || a.scheme.name_en.localeCompare(b.scheme.name_en));
-  const first = eligibility.members[0];
+  const first = eligibility.members.find((m) => m.relation === "self") ?? eligibility.members[0];
   const members = eligibility.members.map((member) => ({
     ...member,
     schemes: member.schemes.filter((s) => !s.scheme.for_whole_family),

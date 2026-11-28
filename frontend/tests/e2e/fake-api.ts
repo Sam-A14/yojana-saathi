@@ -63,11 +63,17 @@ function eligibilityFor(fixture: Fixture, householdId: string, household: Stored
     const sample =
       fixture.members.find((m) => m.nickname === member.nickname) ??
       fixture.members[index % fixture.members.length];
-    const own = [ignoapsFor(member, household), pmayGFor(household)].filter(Boolean);
+    const own = [ignoapsFor(member, household), pmayGFor(household, member)].filter(Boolean);
     const schemes = (sample.schemes as { scheme: { slug: string } }[]).filter(
       (s) => s.scheme.slug !== "ignoaps" && s.scheme.slug !== "pmay-g",
     );
-    return { ...sample, schemes: [...own, ...schemes], member_id: member.id, nickname: member.nickname };
+    return {
+      ...sample,
+      schemes: [...own, ...schemes],
+      member_id: member.id,
+      nickname: member.nickname,
+      relation: member.relation,
+    };
   });
   return { ...fixture, household_id: householdId, members };
 }
@@ -115,7 +121,7 @@ function ignoapsFor(member: Json, household: StoredHousehold) {
 // house is kutcha or it has none. This fake mirrors those two rules so a test can change the
 // answers on the edit screen and watch the scheme come and go. The real engine's answer for the
 // same facts is proved in the backend tests (a rule on area_type and house_type).
-function pmayGFor(household: StoredHousehold) {
+function pmayGFor(household: StoredHousehold, member: StoredMember) {
   const { area_type, house_type } = household.fields;
   if (area_type !== "rural" || (house_type !== "no_house" && house_type !== "kutcha")) return null;
   return {
@@ -146,7 +152,21 @@ function pmayGFor(household: StoredHousehold) {
     failed_rules: [],
     unknown_rules: [],
     excluded_by: [],
-    missing_documents: [],
+    // Papers are about the person: a person who said they have no Aadhaar card is missing it.
+    missing_documents:
+      member.documents.aadhaar_card === false
+        ? [
+            {
+              code: "aadhaar_card",
+              name_en: "Aadhaar card",
+              name_hi: "आधार कार्ड",
+              how_to_get_en: null,
+              how_to_get_hi: null,
+              official_link: null,
+              state: "no",
+            },
+          ]
+        : [],
   };
 }
 
@@ -236,7 +256,7 @@ export class FakeApi {
 
   /** Give an existing household members, as if they were added earlier: a number of anonymous
    * people, or a list of names. */
-  seedMembers(householdId: string, who: number | string[]) {
+  seedMembers(householdId: string, who: number | string[], relations: Record<string, string> = {}) {
     const household = this.households.get(householdId);
     const names = typeof who === "number" ? Array.from({ length: who }, (_, i) => `Person ${i + 1}`) : who;
     for (const name of names) {
@@ -245,7 +265,7 @@ export class FakeApi {
         household_id: householdId,
         ...UNANSWERED_FACTS,
         nickname: name,
-        relation: "other",
+        relation: relations[name] ?? "other",
         documents: {},
       });
     }
