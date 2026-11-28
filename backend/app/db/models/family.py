@@ -60,6 +60,8 @@ class Household(Base):
     area_type: Mapped[str | None]
     income_band: Mapped[str | None]
     category: Mapped[str | None]
+    # What kind of house the family lives in (a HOUSE_TYPE_VALUES word). NULL = not answered.
+    house_type: Mapped[str | None]
     # Is the whole family on the state's Below Poverty Line list? A yes/no about the household, not
     # about a card: the BPL card is a document (member_documents). NULL = not answered = unknown.
     is_bpl: Mapped[bool | None]

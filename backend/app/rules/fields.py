@@ -29,10 +29,11 @@ MEMBER_FIELDS = frozenset(
     }
 )
 
-# Facts about the household as a whole. The same for every member. is_bpl is a yes/no: the family is
+# Facts about the household as a whole. The same for every member. house_type is the kind of house
+# the family lives in (no_house, kutcha or pucca). is_bpl is a yes/no: the family is
 # on the state's Below Poverty Line list (a different thing from holding the has_bpl_card document).
 HOUSEHOLD_FIELDS = frozenset(
-    {"state", "district", "area_type", "income_band_max", "category", "is_bpl"}
+    {"state", "district", "area_type", "income_band_max", "category", "house_type", "is_bpl"}
 )
 
 ATTRIBUTE_FIELDS = MEMBER_FIELDS | HOUSEHOLD_FIELDS

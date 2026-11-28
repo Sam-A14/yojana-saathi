@@ -88,6 +88,17 @@ def test_household_facts_are_read_from_the_household_not_the_member() -> None:
     assert status_of(rule, person(state="BR"), state="UP") == "eligible"
 
 
+def test_house_type_is_a_household_fact_and_missing_leaves_unknown() -> None:
+    rule = condition("house_type", "in", ["no_house", "kutcha"])
+
+    assert status_of(rule, person(), house_type="kutcha") == "eligible"
+    assert status_of(rule, person(), house_type="no_house") == "eligible"
+    assert status_of(rule, person(), house_type="pucca") == "not_eligible"
+    assert status_of(rule, person()) == "unknown"  # never answered
+    # A member fact with the same name is not read: it is a household fact.
+    assert status_of(rule, person(house_type="kutcha")) == "unknown"
+
+
 def test_is_bpl_is_a_household_yes_no_that_missing_leaves_unknown() -> None:
     rule = condition("is_bpl", "is_true")
 

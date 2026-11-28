@@ -27,6 +27,7 @@ from app.rules.fields import GOVT_EMPLOYEE_VALUES, PENSION_BAND_VALUES
 from app.rules.values import (
     CATEGORY_VALUES,
     EDUCATION_VALUES,
+    HOUSE_TYPE_VALUES,
     INCOME_BAND_VALUES,
     MARITAL_STATUS_VALUES,
     OCCUPATION_VALUES,
@@ -57,6 +58,7 @@ class HouseholdFields(Strict):
     area_type: Literal[*AREA_TYPES] | None = None  # type: ignore[valid-type]
     income_band: Literal[*INCOME_BAND_VALUES] | None = None  # type: ignore[valid-type]
     category: Literal[*CATEGORY_VALUES] | None = None  # type: ignore[valid-type]
+    house_type: Literal[*HOUSE_TYPE_VALUES] | None = None  # type: ignore[valid-type]
     # StrictBool: "yes" or 1 is a 422, never a quiet guess. null clears the answer (= unknown).
     is_bpl: StrictBool | None = None
 
