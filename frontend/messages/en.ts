@@ -268,6 +268,7 @@ export const en = {
     forName: "For {name}",
     forFamily: "For your whole family",
     docsFor: "Papers for {name}:",
+    docsPick: "Show papers for:",
     summaryTitle: "What you get",
     noSummary: "We do not have a plain summary for this scheme yet. See the official website.",
     whyTitle: "Why this may fit",

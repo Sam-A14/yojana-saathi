@@ -374,6 +374,19 @@ def test_a_family_scheme_is_flagged_and_gives_every_member_the_same_answer(
     assert [r["rule"] for r in asha["unknown_rules"]] == [r["rule"] for r in ravi["unknown_rules"]]
 
 
+def test_each_member_result_says_how_the_person_is_related(
+    client: TestClient, seeded, today, make_family
+) -> None:
+    """The dashboard uses the family's main person (relation "self") for a whole-family scheme."""
+    family = make_family()
+    add_member(client, family, "Meena", relation="mother", birth_year=1960)
+    add_member(client, family, "Asha", relation="self", birth_year=1990)
+
+    members = eligibility(client, family)["members"]
+
+    assert {m["nickname"]: m["relation"] for m in members} == {"Meena": "mother", "Asha": "self"}
+
+
 def test_a_scheme_with_a_rule_about_a_person_is_not_a_family_scheme(
     client: TestClient, db: Session, seeded, today, make_family
 ) -> None:

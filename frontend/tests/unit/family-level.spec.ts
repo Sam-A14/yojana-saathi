@@ -75,6 +75,17 @@ test.describe("the whole-family section", () => {
     expect(shown.viaMemberName).toBe("Asha");
   });
 
+  test("the family's main person (relation self) stands for the family, else the first", () => {
+    const withRelation = (m: MemberEligibility, relation: string) => ({ ...m, relation });
+    const a = withRelation(person("a", "Meena", [result("pmay-g", true, "eligible")]), "mother");
+    const b = withRelation(person("b", "Asha", [result("pmay-g", true, "eligible")]), "self");
+
+    expect(splitFamilyLevel(family([a, b])).family.viaMemberId).toBe("b");
+    expect(splitFamilyLevel(family([a, b])).family.viaMemberName).toBe("Asha");
+    // no "self" among them (or an older server): the first person
+    expect(splitFamilyLevel(family([person("a", "Meena", [result("pmay-g", true, "eligible")]), person("b", "Ravi", [])])).family.viaMemberId).toBe("a");
+  });
+
   test("a scheme that is about a person stays on that person's card", () => {
     const e = family([person("a", "Asha", [result("pension", false, "eligible")]), person("b", "Ravi", [])]);
 

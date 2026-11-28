@@ -88,6 +88,8 @@ class ExcludedScheme(BaseModel):
 class MemberEligibility(BaseModel):
     member_id: uuid.UUID
     nickname: str
+    # "self", "mother", ... : lets the dashboard pick the family's main person (relation "self").
+    relation: str
     schemes: list[SchemeResult]
     excluded: list[ExcludedScheme]
     # All other schemes that definitely do not fit. Counted, not listed, so the dashboard stays
@@ -232,6 +234,7 @@ def compute_eligibility(db: Session, household: Household, today: date) -> Eligi
             MemberEligibility(
                 member_id=member.id,
                 nickname=member.nickname,
+                relation=member.relation,
                 schemes=listed,
                 excluded=excluded,
                 not_eligible_count=not_eligible,
