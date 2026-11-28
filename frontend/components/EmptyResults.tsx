@@ -2,6 +2,7 @@
 
 import { SearchX } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { MySchemeLink } from "./MySchemeLink";
 import { ButtonLink } from "./ui";
 
 /** Shown instead of the summary when we found nothing for anyone in the family (no scheme that may
@@ -39,6 +40,7 @@ export function EmptyResults({
         <ButtonLink href="/schemes" variant="secondary" className="w-full">
           {t("empty.allSchemes")}
         </ButtonLink>
+        <MySchemeLink />
       </div>
     </section>
   );

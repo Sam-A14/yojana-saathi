@@ -3,10 +3,12 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { CategoryIcon, categoryKey } from "@/components/icons";
+import { MySchemeLink } from "@/components/MySchemeLink";
 import { SchemeCard } from "@/components/SchemeCard";
 import { Button, Skeleton } from "@/components/ui";
 import { api } from "@/lib/api";
 import { GROUP_ORDER } from "@/lib/categories";
+import { categoryWords } from "@/lib/myscheme";
 import type { SchemeSummary } from "@/lib/types";
 
 
@@ -55,6 +57,7 @@ export function SchemesList() {
       {GROUP_ORDER.map((group) => {
         const schemes = state.filter((scheme) => categoryKey(scheme.category) === group);
         if (schemes.length === 0) return null;
+        const words = categoryWords(group, schemes.some((s) => s.level === "state"));
         return (
           <section key={group} aria-labelledby={`group-${group}`} className="flex flex-col gap-4">
             <h2 id={`group-${group}`} className="flex items-center gap-3 text-2xl font-extrabold">
@@ -68,9 +71,12 @@ export function SchemesList() {
                 </li>
               ))}
             </ul>
+            {/* More schemes than the ones we check, for this topic (state schemes too, if we have one). */}
+            {words.length > 0 && <MySchemeLink words={words} />}
           </section>
         );
       })}
+      <MySchemeLink />
     </div>
   );
 }

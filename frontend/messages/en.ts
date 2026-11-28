@@ -559,6 +559,10 @@ export const en = {
     state: "State scheme",
     stateNamed: "State scheme: {state}",
   },
+  myScheme: {
+    link: "See more schemes on myScheme (not checked by Yojana Saathi)",
+    newTab: "(opens in a new tab)",
+  },
   schemesPage: {
     title: "All the schemes we check",
     intro:
