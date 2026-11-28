@@ -60,7 +60,7 @@ test.describe("topic cards", () => {
     await schemesAre(page, [scheme({ category: "farmer" })]);
     await page.goto("/");
 
-    for (const name of ["Education", "Healthcare", "Families", "Senior Citizens"]) {
+    for (const name of ["Education", "Healthcare", "Families", "Pensions"]) {
       await expect(card(page, name)).toContainText("Coming soon");
       await expect(card(page, name).getByRole("link")).toHaveCount(0);
     }
@@ -91,7 +91,7 @@ test.describe("topic cards", () => {
     await schemesAre(page, [scheme({ category: "replace_with_category" })]);
     await page.goto("/");
 
-    for (const name of ["Education", "Agriculture", "Women & Family", "Senior Citizens"]) {
+    for (const name of ["Education", "Agriculture", "Women & Family", "Pensions"]) {
       await expect(card(page, name)).toContainText("Coming soon");
     }
   });

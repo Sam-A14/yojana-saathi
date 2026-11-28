@@ -52,6 +52,13 @@ export function SchemesList() {
   }
   if (state.length === 0) return <p className="text-lg">{t("none")}</p>;
 
+  // One link to myScheme at the end of the page, not two: each topic with words has its own (a
+  // search for that topic); the general link is only for a page where no topic has one.
+  const topicHasLink = (group: string) =>
+    categoryWords(group, state.some((s) => categoryKey(s.category) === group && s.level === "state")).length > 0 &&
+    state.some((s) => categoryKey(s.category) === group);
+  const anyTopicLink = GROUP_ORDER.some(topicHasLink);
+
   return (
     <div className="flex flex-col gap-8">
       {GROUP_ORDER.map((group) => {
@@ -76,7 +83,7 @@ export function SchemesList() {
           </section>
         );
       })}
-      <MySchemeLink />
+      {!anyTopicLink && <MySchemeLink />}
     </div>
   );
 }
