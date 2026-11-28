@@ -162,12 +162,23 @@ def test_benefit_quotes_noted_in_a_seed_file_are_word_for_word_in_its_source_tex
     assert checked >= 1  # ignoaps records its benefit quotes
 
 
-def test_examples_are_marked_unverified() -> None:
+def test_the_hand_labelled_examples_are_marked_unverified() -> None:
+    """The ground-truth copies (data/ground_truth/) are the hand-labelled examples: not checked
+    against the source page by anyone, so they must say so."""
     for slug in ("pm-kisan", "ignwps"):
-        scheme = load(f"schemes_seed/{slug}.json")
+        scheme = load(f"ground_truth/{slug}.json")
         assert scheme["labeller_notes"]["example"] is True
         assert scheme["labeller_notes"]["source_reached"] is False
         assert scheme["version"]["verified_at"] is None
+
+
+def test_a_seed_file_still_marked_as_an_example_is_unverified() -> None:
+    """A seed file may be replaced by a reviewed proposal (bump_version), which is no example. One
+    that still says it is an example must also say nobody has checked it."""
+    for scheme in read_seed_files().schemes:
+        notes = scheme.get("labeller_notes", {})
+        if notes.get("example") is True:
+            assert scheme["version"]["verified_at"] is None, scheme["slug"]
 
 
 def test_field_list_matches_attributes_and_document_catalogue() -> None:
