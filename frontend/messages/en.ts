@@ -57,7 +57,7 @@ export const en = {
       "Tell us about your family once. We show which government schemes each person may qualify for, and which papers are still needed.",
     start: "Find schemes for my family",
     signIn: "Sign in",
-    example: "See an example",
+    example: "Try a demo family",
     free: "Free. Sign in with just your email.",
     photoAlt: "A smiling family of several generations standing together in a park",
   },
@@ -407,10 +407,10 @@ export const en = {
     google_unavailable: "Sign-in with Google is not available right now. Please use your email instead.",
   },
   example: {
-    label: "Example",
-    title: "An example family",
+    label: "Demo, not a real family",
+    title: "A demo family",
     banner:
-      "This is a made-up family, only to show you how the results look. Nothing here is about you.",
+      "This is a made-up family, only to show you how the results look. Nothing here is about you, and nothing you do here is saved.",
     cta: "Check my own family",
     back: "Back to the example",
   },

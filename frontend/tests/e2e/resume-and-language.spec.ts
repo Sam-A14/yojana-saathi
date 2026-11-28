@@ -5,7 +5,7 @@ test("home page shows the disclaimer and the ways in", async ({ page }) => {
 
   await expect(page.getByRole("link", { name: "Find schemes for my family" })).toBeVisible();
   await expect(page.getByRole("main").getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "See an example" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Try a demo family" })).toBeVisible();
   await expect(
     page.getByText(
       "Guidance only, not an official decision. Not a government app. We never ask for Aadhaar numbers.",
