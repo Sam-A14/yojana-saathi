@@ -49,7 +49,7 @@ test("saving sends only the household, with the token, and the dashboard asks ag
       path: `/households/${family.id}`,
       authorization: `Bearer ${family.token}`,
       // Everything on the form is sent; null means "no answer" (the API clears it).
-      body: { state: "UP", district: "Kanpur", area_type: null, income_band: "2_to_2_5_lakh", category: null, is_bpl: null },
+      body: { state: "UP", district: "Kanpur", area_type: null, house_type: null, income_band: "2_to_2_5_lakh", category: null, is_bpl: null },
     }),
   ]);
   expect(api.households.get(family.id)!.fields).toMatchObject({

@@ -63,6 +63,14 @@ test.describe("the wording of the rules a family sees", () => {
     expect(english(rule)).toBe("No one in the family: Paid income tax last year");
   });
 
+  test("the kind of house reads in words, in both languages", () => {
+    const rule = { field: "house_type", op: "in", value: ["no_house", "kutcha"] };
+    expect(english(rule)).toBe("Kind of house: We have no house of our own or A kutcha house (mud, thatch, bamboo)");
+    const hindi = words("hi")(rule);
+    expect(hindi).toContain("कच्चा घर");
+    expect(hindi).not.toMatch(/rules\.|options\.|[{}]/);
+  });
+
   test("the study level reads in words, in both languages", () => {
     const rule = { field: "current_study_level", op: "eq", value: "class_9_10" };
     expect(english(rule)).toBe("Studying now: Class 9 or 10");

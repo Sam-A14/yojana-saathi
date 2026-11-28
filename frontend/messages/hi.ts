@@ -87,6 +87,9 @@ export const hi: typeof en = {
     state: "राज्य",
     district: "ज़िला (चाहें तो)",
     area: "आप कहाँ रहते हैं?",
+    // needs native review (owner): the house question and its answers
+    house: "आपका परिवार किस तरह के घर में रहता है?",
+    houseHint: "कच्चा घर मिट्टी, फूस या बाँस का होता है। पक्का घर ईंट या सीमेंट का होता है।",
     income: "पूरे परिवार की सालाना आमदनी",
     incomeHint:
       "साल भर में सब लोग जितना कमाते हैं, उसे जोड़ें: मज़दूरी, खेती, दुकान, पेंशन। मोटा अंदाज़ा भी चलेगा।",
@@ -257,6 +260,8 @@ export const hi: typeof en = {
     state: "आपका परिवार किस राज्य में रहता है?",
     district: "आपका परिवार किस ज़िले में रहता है?",
     area_type: "आपका परिवार गाँव में रहता है या कस्बे में?",
+    // needs native review (owner): house type
+    house_type: "आपका परिवार किस तरह के घर में रहता है?",
     income_band_max: "आपके परिवार की सालाना आमदनी कितनी है?",
     category: "आपके परिवार का सामाजिक वर्ग क्या है?",
     document: "क्या {name} के पास यह कागज़ है: {document}?",
@@ -317,6 +322,8 @@ export const hi: typeof en = {
       state: "राज्य",
       district: "ज़िला",
       area_type: "परिवार कहाँ रहता है",
+      // needs native review (owner): house type
+      house_type: "घर किस तरह का है",
       income_band_max: "परिवार की सालाना आमदनी",
       category: "सामाजिक वर्ग",
       // needs native review (owner): BPL
@@ -422,6 +429,12 @@ export const hi: typeof en = {
   // needs native review
   options: {
     area: { rural: "गाँव (ग्रामीण)", urban: "कस्बा या शहर (शहरी)" },
+    // needs native review (owner): the house answers
+    house: {
+      no_house: "हमारा अपना कोई घर नहीं है",
+      kutcha: "कच्चा घर (मिट्टी, फूस, बाँस)",
+      pucca: "पक्का घर (ईंट, सीमेंट)",
+    },
     income: {
       up_to_1_lakh: "सालाना ₹1 लाख तक",
       "1_to_2_lakh": "सालाना ₹1 से ₹2 लाख",

@@ -39,7 +39,7 @@ const SCHEMES = [
 type Json = Record<string, unknown>;
 
 // The real API always sends all five answers about a home, null when never answered.
-const HOME_DEFAULTS = { state: null, district: null, area_type: null, income_band: null, category: null, is_bpl: null };
+const HOME_DEFAULTS = { state: null, district: null, area_type: null, house_type: null, income_band: null, category: null, is_bpl: null };
 
 type Fixture = { members: ({ nickname: string } & Record<string, unknown>)[] } & Record<string, unknown>;
 

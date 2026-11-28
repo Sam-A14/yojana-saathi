@@ -105,6 +105,7 @@ function HouseholdEditor({ family }: { family: Family }) {
           state: household.state,
           district: household.district ?? "",
           area: household.area_type,
+          house: household.house_type ?? null, // an older server may not send it yet
           income: household.income_band,
           category: household.category,
           bpl: household.is_bpl ?? null, // an older server may not send it yet
