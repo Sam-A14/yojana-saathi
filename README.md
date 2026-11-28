@@ -235,11 +235,13 @@ setup once:
 1. In your GitHub repository open Settings > Secrets and variables > Actions > New repository secret.
 2. Name: `DATABASE_URL`. Value: the same direct Neon connection string you gave Render. Save.
 
-Then, each time:
-
-1. Open the Actions tab, choose **Seed database** on the left, click Run workflow, keep branch
-   `main`, and click the green button.
-2. Open the finished run. The "Summary" at the top lists what was created, updated or left alone.
+After that it runs **by itself**: merging a pull request that changes `data/schemes_seed/` or
+`data/documents.json` to `main` starts **Seed database**. It first waits (up to 15 minutes) for the
+backend deploy to finish its database migrations, then loads the data. A merged scheme is live for
+families when that run is green; if it fails, GitHub emails you and the run says why. To run it by
+hand: open the Actions tab, choose **Seed database** on the left, click Run workflow, keep branch
+`main`, and click the green button. Either way, open the finished run: the "Summary" at the top
+lists what was created, updated or left alone.
 
 Notes: the workflow only runs from `main` (it refuses other branches, so unreviewed data cannot
 reach production), and it shows up in the Actions list only after the file is on `main`. If it
