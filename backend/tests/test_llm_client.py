@@ -184,3 +184,73 @@ def test_gemini_other_http_library_errors_fail_at_once() -> None:
 
     assert len(seen) == 1
     assert waits == []
+
+
+# --- the error message keeps the quota that was hit ---------------------------------------------
+
+LONG_QUOTA_ERROR = {
+    "error": {
+        "code": 429,
+        "message": (
+            "You exceeded your current quota, please check your plan and billing details. "
+            + "For more information on this error, head to the rate-limits page. " * 3
+            + "* Quota exceeded for metric: "
+            + "generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0"
+        ),
+        "status": "RESOURCE_EXHAUSTED",
+        "details": [
+            {
+                "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+                "violations": [
+                    {
+                        "quotaMetric": (
+                            "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+                        ),
+                        "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+                    }
+                ],
+            }
+        ],
+    }
+}
+
+
+def test_a_quota_error_keeps_its_whole_message_and_the_names_of_the_quota() -> None:
+    """The message was cut at 300 characters, so the log ended at 'Quota exceede' and nobody could
+    tell which limit was hit."""
+    transport = httpx.MockTransport(lambda request: httpx.Response(429, json=LONG_QUOTA_ERROR))
+
+    with pytest.raises(LLMError) as caught:
+        gemini_with(transport, []).complete_json(system="s", prompt="p", temperature=0)
+
+    message = str(caught.value)
+    assert len(LONG_QUOTA_ERROR["error"]["message"]) > 300  # the old cut would have lost the end
+    assert "limit: 0" in message  # the end of the long message
+    assert "GenerateRequestsPerDayPerProjectPerModel-FreeTier" in message  # which quota
+    assert "generate_content_free_tier_requests" in message
+    assert "failed after 3 retries" in message
+
+
+def test_an_error_that_is_not_json_still_shows_its_text_up_to_the_limit() -> None:
+    from app.llm.gemini import MAX_ERROR_CHARS, error_summary
+
+    plain = httpx.Response(502, text="x" * 5000)
+    assert error_summary(plain) == "x" * MAX_ERROR_CHARS
+    assert error_summary(httpx.Response(400, json={"error": {"message": "bad key"}})) == "bad key"
+    listed = httpx.Response(400, json=["not", "an", "object"])
+    assert error_summary(listed) == listed.text
+
+
+def test_the_error_summary_never_contains_the_api_key() -> None:
+    from app.llm.gemini import error_summary
+
+    transport = httpx.MockTransport(
+        lambda request: httpx.Response(403, json={"error": {"message": "denied"}})
+    )
+    with pytest.raises(LLMError) as caught:
+        gemini_with(transport, []).complete_json(system="s", prompt="p", temperature=0)
+
+    assert "denied" in str(caught.value)
+    assert "secret-key" not in str(caught.value)
+    denied = httpx.Response(403, json={"error": {"message": "denied"}})
+    assert "secret-key" not in error_summary(denied)

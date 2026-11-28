@@ -51,9 +51,9 @@ class GeminiClient(LLMClient):
                     return _text_of(failure)
                 if failure.status_code not in RETRY_STATUSES:
                     raise LLMError(
-                        f"Gemini returned HTTP {failure.status_code}: {failure.text[:300]}"
+                        f"Gemini returned HTTP {failure.status_code}: {error_summary(failure)}"
                     )
-                reason = f"HTTP {failure.status_code}: {failure.text[:300]}"
+                reason = f"HTTP {failure.status_code}: {error_summary(failure)}"
             else:
                 reason = f"could not reach Gemini: {type(failure).__name__}"
             if wait is None:
@@ -82,4 +82,29 @@ def _text_of(response: httpx.Response) -> str:
         return "".join(part["text"] for part in parts)
     except (ValueError, KeyError, IndexError, TypeError) as error:
         # Typically a safety block or an empty answer: there is no candidate to read.
-        raise LLMError(f"Gemini sent no usable answer: {response.text[:300]}") from error
+        raise LLMError(f"Gemini sent no usable answer: {error_summary(response)}") from error
+
+
+# Long enough for a quota message and its metric names; short enough for a log line.
+MAX_ERROR_CHARS = 2000
+
+
+def error_summary(response: httpx.Response) -> str:
+    """What Gemini said went wrong, readable in a log.
+
+    For a quota error (429) the message alone does not say WHICH limit was hit (requests a day,
+    tokens a minute, a model with no free quota), so the quota names from the error's details are
+    added. Falls back to the plain text. The API key is sent in a header, never in the body, so
+    nothing secret is in here."""
+    try:
+        error = response.json()["error"]
+        parts = [str(error.get("message", "")).strip()]
+        for detail in error.get("details", []):
+            for violation in detail.get("violations", []) if isinstance(detail, dict) else []:
+                names = [violation.get("quotaMetric"), violation.get("quotaId")]
+                if any(names):
+                    parts.append("quota: " + " / ".join(str(n) for n in names if n))
+        text = " | ".join(p for p in parts if p)
+    except (ValueError, KeyError, TypeError, AttributeError):
+        text = ""
+    return (text or response.text)[:MAX_ERROR_CHARS]
