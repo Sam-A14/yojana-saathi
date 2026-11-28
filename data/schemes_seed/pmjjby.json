@@ -1,0 +1,43 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": false,
+    "notes": [
+      "Proposed by the LLM extractor (review item 15, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request."
+    ]
+  },
+  "slug": "pmjjby",
+  "name_en": "Pradhan Mantri Jeevan Jyoti Bima Yojana",
+  "name_hi": null,
+  "level": "central",
+  "state": null,
+  "category": "family_welfare",
+  "official_url": "https://www.myscheme.gov.in/schemes/pmjjby",
+  "version": {
+    "rules": {
+      "all": [
+        {
+          "field": "age",
+          "op": "between",
+          "value": [
+            18,
+            50
+          ]
+        }
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "Offers a 1-year term life cover of ₹ 2.00 Lakh for death due to any reason at a premium of ₹ 436/- per annum.",
+    "benefit_text_hi": null,
+    "not_checked_en": [
+      "The applicant must hold an individual bank or post office account."
+    ],
+    "not_checked_hi": null,
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://www.myscheme.gov.in/schemes/pmjjby",
+    "verified_at": "2026-11-28",
+    "approved_by": "Sam-A14",
+    "documents": []
+  }
+}
