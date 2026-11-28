@@ -3,15 +3,22 @@
   "labeller_notes": {
     "example": false,
     "notes": [
-      "Proposed by the LLM extractor (review item 16, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request."
+      "Proposed by the LLM extractor (review item 16, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request.",
+      "Reviewed by hand (assistant, against docs/scheme-review-checklist.md). Rule age 18-70 matches the Eligibility sentence ('aged between 18 years (completed) and 70 years (age nearer birthday)'). The app holds a birth year, so near 18 and 70 the engine says 'may qualify'.",
+      "Category changed by hand from health to family_welfare, to sit with PMJJBY (the other Jan Suraksha insurance scheme). The allowed list has no insurance topic. Either is defensible: owner may change it.",
+      "not_checked lines reworded by hand into plain sentences. Both come from the Eligibility sentence (bank account holder; consent / enable auto-debit). No papers are listed: the page's 'Documents Required' section is empty.",
+      "Not encoded: premium Rs.20 a year and the 1 June to 31 May cover year (Details, not Eligibility); cover ends at age 70 (already covered by the age rule); cover limited to Rs. 2 lakh if a person is enrolled through more than one account (Details). The premium is deliberately left out of benefit_text_en because the benefit quote (Benefits section) does not contain it.",
+      "Page typo: the Details section says 'Coverage under PMJJBY is valid for one year' inside the PMSBY page. Nothing from that sentence is used.",
+      "Hand-written Hindi added (name_hi, benefit_text_hi, not_checked_hi). Rupee amounts match the English: Rs. 2 Lakhs and Rs. 1 Lakh.",
+      "NEEDS NATIVE REVIEW (owner): name_hi, benefit_text_hi and not_checked_hi."
     ]
   },
   "slug": "pmsby",
   "name_en": "Pradhan Mantri Suraksha Bima Yojana",
-  "name_hi": null,
+  "name_hi": "प्रधानमंत्री सुरक्षा बीमा योजना",
   "level": "central",
   "state": null,
-  "category": "health",
+  "category": "family_welfare",
   "official_url": "https://www.myscheme.gov.in/schemes/pmsby",
   "version": {
     "rules": {
@@ -28,12 +35,15 @@
       "fixable": []
     },
     "benefit_text_en": "In case of accidental death or total irrecoverable loss of both eyes, hands, or feet, the benefit is Rs. 2 Lakhs. In case of irrecoverable loss of sight of one eye or loss of use of one hand or foot, the benefit is Rs. 1 Lakh.",
-    "benefit_text_hi": null,
+    "benefit_text_hi": "दुर्घटना बीमा: दुर्घटना में मृत्यु होने पर, या दोनों आँखें, दोनों हाथ या दोनों पैर पूरी तरह और हमेशा के लिए खो जाने पर ₹2 लाख। एक आँख की रोशनी या एक हाथ या पैर पूरी तरह खो जाने पर ₹1 लाख।",
     "not_checked_en": [
-      "Must be an individual bank account holder of a participating bank.",
-      "Must give consent to join and enable auto-debit for premium payment."
+      "You must have your own bank account in a bank that takes part in the scheme. This app does not check it.",
+      "You must agree to join and allow the yearly premium to be taken from your account automatically (auto-debit). This app does not check it."
     ],
-    "not_checked_hi": null,
+    "not_checked_hi": [
+      "आपका उस बैंक में अपना खाता होना चाहिए जो इस योजना में शामिल है। यह ऐप इसकी जाँच नहीं करता।",
+      "आपको योजना में जुड़ने के लिए सहमति देनी होगी और सालाना प्रीमियम आपके खाते से अपने-आप कटने (ऑटो-डेबिट) की अनुमति देनी होगी। यह ऐप इसकी जाँच नहीं करता।"
+    ],
     "deadline_start": null,
     "deadline_end": null,
     "source_url": "https://www.myscheme.gov.in/schemes/pmsby",
