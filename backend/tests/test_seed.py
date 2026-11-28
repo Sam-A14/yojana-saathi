@@ -52,13 +52,14 @@ def committed_schemes(data_dir: Path) -> list[dict[str, Any]]:
 
 def test_first_load_creates_everything(db: Session, data_dir: Path) -> None:
     schemes = committed_schemes(data_dir)
+    documents = seed.read_seed_files(data_dir).documents
     summary = load(db, data_dir)
 
-    assert count(db, Document) == 15
+    assert count(db, Document) == len(documents)
     assert count(db, Scheme) == len(schemes)
     assert count(db, SchemeVersion) == len(schemes)
     assert count(db, SchemeDocument) == sum(len(s["version"]["documents"]) for s in schemes)
-    assert summary.count("document", "created") == 15
+    assert summary.count("document", "created") == len(documents)
     assert summary.count("scheme", "created") == len(schemes)
     kisan = scheme(db, "pm-kisan")
     assert kisan.current_version is not None
@@ -212,12 +213,13 @@ def test_scheme_and_document_text_updates_in_place(db: Session, data_dir: Path) 
 
 def test_document_missing_from_file_is_kept_and_warned(db: Session, data_dir: Path) -> None:
     load(db, data_dir)
+    in_file = len(seed.read_seed_files(data_dir).documents)
     db.add(Document(code="extra_doc", name_en="Extra", name_hi="अतिरिक्त"))
     db.flush()
 
     summary = load(db, data_dir)
 
-    assert count(db, Document) == 16
+    assert count(db, Document) == in_file + 1  # the extra one is kept
     assert any("extra_doc" in w for w in summary.warnings)
 
 
@@ -271,11 +273,14 @@ def test_command_commits_and_is_repeatable(
     assert seed.main([]) == 0
     first = capsys.readouterr().out
     schemes = len(seed.read_seed_files().schemes)
-    assert "Documents: 15 created" in first and f"Schemes: {schemes} created" in first
+    documents = seed.read_seed_files().documents
+    assert (
+        f"Documents: {len(documents)} created" in first and f"Schemes: {schemes} created" in first
+    )
 
     assert seed.main([]) == 0
     second = capsys.readouterr().out
-    assert "Documents: 0 created, 0 updated, 15 unchanged" in second
+    assert f"Documents: 0 created, 0 updated, {len(documents)} unchanged" in second
     assert "Nothing changed" in second
     with engine.connect() as connection:  # a fresh connection sees only committed rows
         assert connection.scalar(text("SELECT count(*) FROM scheme_versions")) == schemes

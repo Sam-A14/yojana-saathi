@@ -75,6 +75,36 @@
       "code": "family_register",
       "name_en": "Family register copy (Parivar Register)",
       "name_hi": "परिवार रजिस्टर की नकल"
+    },
+    {
+      "code": "student_id_card",
+      "name_en": "Student ID card",
+      "name_hi": "विद्यार्थी पहचान पत्र",
+      "how_to_get_en": "Your school or college gives it. Ask the office of your institution.",
+      "how_to_get_hi": "यह आपका स्कूल या कॉलेज देता है। अपने संस्थान के दफ़्तर से माँगें।"
+    },
+    {
+      "code": "fee_receipt_or_admission_letter",
+      "name_en": "Fee receipt or admission letter (this year)",
+      "name_hi": "फ़ीस की रसीद या प्रवेश पत्र (इस साल का)",
+      "how_to_get_en": "Your school or college gives it when you pay the fee or take admission. Ask the office of your institution for a copy.",
+      "how_to_get_hi": "फ़ीस जमा करने या प्रवेश लेने पर आपका स्कूल या कॉलेज देता है। अपने संस्थान के दफ़्तर से उसकी कॉपी माँगें।"
+    },
+    {
+      "code": "driving_licence",
+      "name_en": "Driving licence",
+      "name_hi": "ड्राइविंग लाइसेंस",
+      "how_to_get_en": "Apply at the Regional Transport Office (RTO), or online on the Parivahan website.",
+      "how_to_get_hi": "अपने क्षेत्रीय परिवहन कार्यालय (RTO) में आवेदन करें, या परिवहन की वेबसाइट पर ऑनलाइन करें।",
+      "official_link": "https://parivahan.gov.in/"
+    },
+    {
+      "code": "pan_card",
+      "name_en": "PAN card",
+      "name_hi": "पैन कार्ड",
+      "how_to_get_en": "Apply online on the Income Tax Department website, or at a PAN service centre.",
+      "how_to_get_hi": "आयकर विभाग की वेबसाइट पर ऑनलाइन आवेदन करें, या किसी पैन सेवा केंद्र पर करें।",
+      "official_link": "https://www.incometax.gov.in/"
     }
   ]
 }
