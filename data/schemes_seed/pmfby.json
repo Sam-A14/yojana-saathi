@@ -1,0 +1,69 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": false,
+    "notes": [
+      "Proposed by the LLM extractor (review item 18, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request."
+    ]
+  },
+  "slug": "pmfby",
+  "name_en": "Pradhan Mantri Fasal Bima Yojna (PMFBY)",
+  "name_hi": null,
+  "level": "central",
+  "state": null,
+  "category": "farmer",
+  "official_url": "https://pmfby.gov.in/",
+  "version": {
+    "rules": {
+      "all": [
+        {
+          "field": "occupation",
+          "op": "eq",
+          "value": "farmer"
+        }
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "The maximum premium payable by the farmer will be 2% for the Kharif food and oilseed crops, 1.5% for rabi food and oilseeds crop, and 5% for yearly commercial or horticultural crops, with the remaining premium subsidized by the government.",
+    "benefit_text_hi": null,
+    "not_checked_en": [
+      "The farmer must be growing notified crops in notified areas.",
+      "Farmers must have an insurable interest in the insured crops.",
+      "The farmer must apply for insurance coverage within the prescribed time frame, usually within 2 weeks of the start of the sowing season.",
+      "Farmers must not have received compensation for the same crop loss from any other medium or source.",
+      "Farmers must pay their required premium contributions to be eligible for coverage."
+    ],
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://www.myscheme.gov.in/schemes/pmfby",
+    "verified_at": "2026-11-28",
+    "approved_by": "Sam-A14",
+    "documents": [
+      {
+        "code": "aadhaar_card",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "pan_card",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "voter_id",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "mgnrega_job_card",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "land_record",
+        "required": true,
+        "applies_to": "applicant"
+      }
+    ]
+  }
+}
