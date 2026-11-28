@@ -74,6 +74,8 @@ export const en = {
     state: "State",
     district: "District (optional)",
     area: "Where do you live?",
+    house: "What kind of house does your family live in?",
+    houseHint: "A kutcha house is made of mud, thatch or bamboo. A pucca house is made of brick or cement.",
     income: "Yearly income of the whole family",
     incomeHint:
       "Add up what everyone earns in a year: wages, farming, shop, pension. A rough guess is fine.",
@@ -232,6 +234,7 @@ export const en = {
     state: "Which state does your family live in?",
     district: "Which district does your family live in?",
     area_type: "Does your family live in a village or a town?",
+    house_type: "What kind of house does your family live in?",
     income_band_max: "How much does your family earn in a year?",
     category: "What is your family’s social category?",
     document: "Does {name} have this paper: {document}?",
@@ -288,6 +291,7 @@ export const en = {
       state: "State",
       district: "District",
       area_type: "Where the family lives",
+      house_type: "Kind of house",
       income_band_max: "Family income in a year",
       category: "Social category",
       is_bpl: "Family is on the BPL list",
@@ -386,6 +390,11 @@ export const en = {
   },
   options: {
     area: { rural: "Village (rural)", urban: "Town or city (urban)" },
+    house: {
+      no_house: "We have no house of our own",
+      kutcha: "A kutcha house (mud, thatch, bamboo)",
+      pucca: "A pucca house (brick, cement)",
+    },
     income: {
       up_to_1_lakh: "Up to ₹1 lakh a year",
       "1_to_2_lakh": "₹1 to ₹2 lakh a year",

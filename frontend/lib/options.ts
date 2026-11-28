@@ -10,6 +10,8 @@ export const INCOME_BANDS = [
   "5_to_8_lakh",
   "above_8_lakh",
 ] as const;
+// What kind of house the family lives in. Same words as the API (backend/app/rules/values.py).
+export const HOUSE_TYPES = ["no_house", "kutcha", "pucca"] as const;
 export const CATEGORIES = ["General", "SC", "ST", "OBC"] as const;
 
 export const RELATIONS = [

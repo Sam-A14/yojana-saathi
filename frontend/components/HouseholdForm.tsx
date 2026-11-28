@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { type FormEvent, useState } from "react";
-import { AREA_TYPES, CATEGORIES, INCOME_BANDS } from "@/lib/options";
+import { AREA_TYPES, CATEGORIES, HOUSE_TYPES, INCOME_BANDS } from "@/lib/options";
 import { STATES } from "@/lib/states";
 import type { HouseholdFields } from "@/lib/types";
 import { Button, ChoiceGroup, ErrorNote, SelectField, TextField, YesNoGroup } from "./ui";
@@ -11,13 +11,14 @@ export type HouseholdValues = {
   state: string | null;
   district: string;
   area: string | null;
+  house: string | null; // no_house, kutcha or pucca; null = "Not sure"
   income: string | null;
   category: string | null;
   bpl: boolean | null; // null = "Not sure": saved as null, which means unknown, never "no"
 };
 
 /**
- * The six questions about a home. Used twice: to set up a new family (Basics) and to change the
+ * The seven questions about a home. Used twice: to set up a new family (Basics) and to change the
  * answers later (Edit household details). It only collects answers; the caller saves them.
  */
 export function HouseholdForm({
@@ -44,6 +45,7 @@ export function HouseholdForm({
   const [state, setState] = useState(initial.state);
   const [district, setDistrict] = useState(initial.district);
   const [area, setArea] = useState(initial.area);
+  const [house, setHouse] = useState(initial.house);
   const [income, setIncome] = useState(initial.income);
   const [category, setCategory] = useState(initial.category);
   const [bpl, setBpl] = useState(initial.bpl);
@@ -54,6 +56,7 @@ export function HouseholdForm({
       state,
       district: district.trim() || null,
       area_type: area,
+      house_type: house,
       income_band: income,
       category,
       is_bpl: bpl,
@@ -75,6 +78,14 @@ export function HouseholdForm({
         options={AREA_TYPES.map((v) => ({ value: v, label: to(`area.${v}`) }))}
         value={area}
         onChange={setArea}
+        notSureLabel={tc("notSure")}
+      />
+      <ChoiceGroup
+        legend={t("house")}
+        hint={t("houseHint")}
+        options={HOUSE_TYPES.map((v) => ({ value: v, label: to(`house.${v}`) }))}
+        value={house}
+        onChange={setHouse}
         notSureLabel={tc("notSure")}
       />
       <SelectField

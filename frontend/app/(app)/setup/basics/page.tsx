@@ -79,7 +79,7 @@ function BasicsForm({ session }: { session: Session }) {
         <Card>
         <HouseholdForm
           // Most families live in Uttar Pradesh (the state this version covers), so start there.
-          initial={{ state: "UP", district: "", area: null, income: null, category: null, bpl: null }}
+          initial={{ state: "UP", district: "", area: null, house: null, income: null, category: null, bpl: null }}
           submitLabel={tc("next")}
           savingLabel={t("saving")}
           saving={saving}

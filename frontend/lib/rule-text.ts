@@ -35,6 +35,7 @@ const VALUE_WORDS: Record<string, string> = {
   current_study_level: "options.studyLevel",
   category: "options.category",
   area_type: "options.area",
+  house_type: "options.house",
   govt_employee: "rules.value.govt",
   pension_band: "rules.value.pension",
 };
