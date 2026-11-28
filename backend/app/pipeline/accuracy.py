@@ -1,4 +1,9 @@
-"""How close is an extracted rule set to the hand-labelled seed file for the same scheme?
+"""How close is an extracted rule set to the hand-labelled reference for the same scheme?
+
+The reference is data/ground_truth/<slug>.json, NOT data/schemes_seed/<slug>.json. A seed file is
+what families see and may be replaced by a reviewed proposal (bump_version); the ground-truth file
+is a copy of a file a person labelled by hand and is never overwritten by the pipeline (decision
+052).
 
 Method: cut each rule tree into LEAF conditions and compare the two sets.
   leaf = (wrappers around it, field, operator, value)
@@ -26,6 +31,7 @@ Recall    = matched / expected  (how much of the labelled rules the model found)
 Overall numbers add up the counts of all schemes first (micro-average), so a big scheme weighs more.
 
 Run on saved proposals:  python -m app.pipeline.accuracy proposal.json [more.json ...]
+A scheme with no file in data/ground_truth/ has no score (it is not compared with its seed file).
 """
 
 import argparse
@@ -48,7 +54,7 @@ Leaf = tuple[tuple[str, ...], str, str, str]
 
 
 class AccuracyError(Exception):
-    """The rules cannot be compared (missing seed file, or too malformed to read)."""
+    """The rules cannot be compared (missing ground-truth file, or too malformed to read)."""
 
 
 # --- cutting a rule tree into leaves -------------------------------------------------------
@@ -279,15 +285,15 @@ def _fixable(rules: Any) -> set[str]:
     return {str(n) for n in names} if isinstance(names, list) else set()
 
 
-def seed_path(slug: str, data_dir: Path = DEFAULT_DATA_DIR) -> Path:
-    return data_dir / "schemes_seed" / f"{slug}.json"
+def ground_truth_path(slug: str, data_dir: Path = DEFAULT_DATA_DIR) -> Path:
+    return data_dir / "ground_truth" / f"{slug}.json"
 
 
-def compare_to_seed(
+def compare_to_ground_truth(
     slug: str, extracted_scheme: Mapping[str, Any], data_dir: Path = DEFAULT_DATA_DIR
 ) -> SchemeAccuracy | None:
-    """None when there is no seed file for this slug (nothing to compare against)."""
-    path = seed_path(slug, data_dir)
+    """None when there is no ground-truth file for this slug (nothing to compare against)."""
+    path = ground_truth_path(slug, data_dir)
     if not path.is_file():
         return None
     try:
@@ -390,7 +396,9 @@ def render_accuracy(results: list[SchemeAccuracy]) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Compare saved proposals with the seed files.")
+    parser = argparse.ArgumentParser(
+        description="Compare saved proposals with the ground-truth files."
+    )
     parser.add_argument("files", nargs="+", type=Path, help="proposal JSON ({'scheme': ...})")
     args = parser.parse_args(argv)
 
@@ -399,9 +407,11 @@ def main(argv: list[str] | None = None) -> int:
         for path in args.files:
             data = json.loads(path.read_text(encoding="utf-8"))
             scheme = data.get("scheme", data)  # accept the full answer or just the scheme
-            result = compare_to_seed(str(scheme.get("slug")), scheme)
+            result = compare_to_ground_truth(str(scheme.get("slug")), scheme)
             if result is None:
-                raise AccuracyError(f"{path.name}: no seed file for slug '{scheme.get('slug')}'")
+                raise AccuracyError(
+                    f"{path.name}: no ground-truth file for slug '{scheme.get('slug')}'"
+                )
             results.append(result)
     except (OSError, ValueError, AttributeError, AccuracyError) as error:
         print(f"error: {error}", file=sys.stderr)

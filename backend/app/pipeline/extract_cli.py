@@ -17,7 +17,12 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.db.session import new_session
 from app.llm import LLMError, get_llm_client
-from app.pipeline.accuracy import AccuracyError, compare_to_seed, render_accuracy, seed_path
+from app.pipeline.accuracy import (
+    AccuracyError,
+    compare_to_ground_truth,
+    ground_truth_path,
+    render_accuracy,
+)
 from app.pipeline.extractor import Extraction, extract
 from app.pipeline.proposals import save_proposal
 from app.pipeline.report import render_report
@@ -26,13 +31,13 @@ from app.pipeline.source import SourceError, read_source
 
 def _accuracy_text(extraction: Extraction) -> str | None:
     slug = extraction.source.slug
-    if not seed_path(slug).is_file():
-        return None  # nothing hand-labelled to compare with
+    if not ground_truth_path(slug).is_file():
+        return None  # no ground-truth file: nothing hand-labelled to compare with
     scheme = extraction.validation.scheme
     if scheme is None:
         return "Not computed: the answer had no readable scheme."
     try:
-        result = compare_to_seed(slug, scheme)
+        result = compare_to_ground_truth(slug, scheme)
     except AccuracyError as error:
         return f"Not computed: {error}"
     return None if result is None else render_accuracy([result])

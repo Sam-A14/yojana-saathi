@@ -114,7 +114,7 @@ def test_running_twice_adds_a_second_pending_row(db: Session) -> None:
 
 
 def seed_scheme(slug: str) -> dict[str, Any]:
-    return json.loads((DEFAULT_DATA_DIR / "schemes_seed" / f"{slug}.json").read_text("utf-8"))
+    return json.loads((DEFAULT_DATA_DIR / "ground_truth" / f"{slug}.json").read_text("utf-8"))
 
 
 def run_cli(
@@ -135,7 +135,7 @@ def test_cli_saves_and_reports_without_a_seed_file(
     assert code == 0
     assert "Saved as review item #" in out and "(status: pending)" in out
     assert "### Validation: passed" in out
-    assert "No seed file `data/schemes_seed/test-scheme.json`" in out
+    assert "No ground-truth file `data/ground_truth/test-scheme.json`" in out
     assert '"slug": "test-scheme"' in out  # the proposal is printed
     assert db.scalars(select(ReviewItem).where(ReviewItem.scheme_slug == SLUG)).one().is_valid
 

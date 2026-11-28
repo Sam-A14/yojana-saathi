@@ -6,7 +6,8 @@ Hand-made data files. The database is loaded from these files, so a mistake here
 | --- | --- |
 | `documents.json` | The catalogue of documents (code, English and Hindi name). Checked by `documents.schema.json`. |
 | `scheme.schema.json` | The rules for one scheme file. Checked by tests and by the seed loader. |
-| `schemes_seed/*.json` | One file per scheme, labelled by hand. |
+| `schemes_seed/*.json` | One file per scheme: what families see. Hand-labelled or a reviewed LLM proposal. |
+| `ground_truth/*.json` | Copies of the schemes a person labelled by hand: the reference the accuracy score uses (decision 052). Never loaded into the database; the pipeline never writes here. |
 | `schemes_seed/TEMPLATE.json` | Copy this to start a new scheme. Never loaded. |
 | `scheme_sources/<slug>.txt` | Scheme text pasted by hand (URL on line 1) for the LLM rule extraction. See `scheme_sources/README.md`. |
 | `test_profiles/*.json` | Sample families with the expected result for each member and scheme (PM-KISAN, IGNWPS). Run in CI by `backend/tests/test_rules_profiles.py`. |
@@ -79,10 +80,10 @@ One file per sample family in `test_profiles/`: `household` (state, area_type, .
 
 `scheme_sources/<slug>.txt` is the input; the output is a **proposal** in the `review_items` table,
 never a scheme version. Run the manual workflow **Extract scheme rules** from `main`. The run
-summary shows the proposal, what the validator found, and, if `schemes_seed/<slug>.json` exists,
+summary shows the proposal, what the validator found, and, if `ground_truth/<slug>.json` exists,
 precision and recall against it, with the exact conditions that were missed or invented. The same
 comparison runs on saved proposals with `python -m app.pipeline.accuracy proposal.json`.
 
-The seed files are the answer key, so the score is only as good as the labels: a seed file with
+The ground-truth files are the answer key, so the score is only as good as the labels: a file with
 `verified_at: null` has not been checked by a person, and the score against it means "agrees with
-that unverified file", not "is correct".
+that unverified file", not "is correct". A scheme with only a seed file has no score.
