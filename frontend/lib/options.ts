@@ -31,6 +31,15 @@ export const isRelation = (value: string): value is (typeof RELATIONS)[number] =
   (RELATIONS as readonly string[]).includes(value);
 export const GENDERS = ["male", "female", "other"] as const;
 export const MARITAL_STATUSES = ["unmarried", "married", "widow", "divorced", "separated"] as const;
+// What the person is studying NOW (not the schooling they finished). Same words as the API.
+export const STUDY_LEVELS = [
+  "class_1_8",
+  "class_9_10",
+  "class_11_12",
+  "undergraduate",
+  "postgraduate",
+  "other",
+] as const;
 export const OCCUPATIONS = [
   "farmer",
   "agricultural_labourer",

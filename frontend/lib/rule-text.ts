@@ -32,6 +32,7 @@ const VALUE_WORDS: Record<string, string> = {
   marital_status: "options.marital",
   occupation: "options.occupation",
   education: "options.education",
+  current_study_level: "options.studyLevel",
   category: "options.category",
   area_type: "options.area",
   govt_employee: "rules.value.govt",

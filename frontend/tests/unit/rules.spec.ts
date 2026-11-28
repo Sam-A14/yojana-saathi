@@ -63,6 +63,14 @@ test.describe("the wording of the rules a family sees", () => {
     expect(english(rule)).toBe("No one in the family: Paid income tax last year");
   });
 
+  test("the study level reads in words, in both languages", () => {
+    const rule = { field: "current_study_level", op: "eq", value: "class_9_10" };
+    expect(english(rule)).toBe("Studying now: Class 9 or 10");
+    const hindi = words("hi")(rule);
+    expect(hindi).toContain("कक्षा 9 या 10");
+    expect(hindi).not.toMatch(/rules\.|options\.|[{}]/);
+  });
+
   test("a requirement on someone reads as 'at least one person'", () => {
     const rule = { any_member: { field: "owns_cultivable_land", op: "is_true" } };
     expect(english(rule)).toBe("At least one person in the family: Owns farmland");

@@ -8,6 +8,7 @@ import {
   MARITAL_STATUSES,
   OCCUPATIONS,
   RELATIONS,
+  STUDY_LEVELS,
 } from "@/lib/options";
 import type { Member, MemberInput } from "@/lib/types";
 import { Button, ChoiceGroup, ErrorNote, SelectField, TextField, YesNoGroup } from "./ui";
@@ -43,6 +44,7 @@ export function MemberForm({
   const [occupation, setOccupation] = useState(member?.occupation ?? null);
   const [education, setEducation] = useState(member?.education ?? null);
   const [student, setStudent] = useState(member?.is_student ?? null);
+  const [studyLevel, setStudyLevel] = useState(member?.current_study_level ?? null);
   const [disability, setDisability] = useState(member?.disability ?? null);
   const [land, setLand] = useState(member?.owns_cultivable_land ?? null);
   const [remarried, setRemarried] = useState(member?.is_remarried ?? null);
@@ -71,6 +73,8 @@ export function MemberForm({
       occupation,
       education,
       is_student: student,
+      // Only asked of students; cleared for anyone else, so an old answer cannot stay behind.
+      current_study_level: student === true ? studyLevel : null,
       disability,
       owns_cultivable_land: land,
       // Only asked of widows; clear it if the person is no longer one, so no stale answer stays.
@@ -142,6 +146,15 @@ export function MemberForm({
         emptyLabel={tc("notSure")}
       />
       <YesNoGroup legend={t("student")} value={student} onChange={setStudent} labels={yesNo} />
+      {student === true && (
+        <SelectField
+          label={t("studyLevel")}
+          value={studyLevel}
+          onChange={setStudyLevel}
+          options={STUDY_LEVELS.map((v) => ({ value: v, label: to(`studyLevel.${v}`) }))}
+          emptyLabel={tc("notSure")}
+        />
+      )}
       <YesNoGroup legend={t("disability")} value={disability} onChange={setDisability} labels={yesNo} />
       <YesNoGroup legend={t("land")} value={land} onChange={setLand} labels={yesNo} />
       {problem && <ErrorNote>{problem}</ErrorNote>}

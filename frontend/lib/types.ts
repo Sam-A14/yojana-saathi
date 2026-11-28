@@ -25,6 +25,7 @@ export type MemberFields = {
   occupation: string | null;
   education: string | null;
   is_student: boolean | null;
+  current_study_level: string | null; // what they study now; asked only of students
   disability: boolean | null;
   owns_cultivable_land: boolean | null;
   is_remarried: boolean | null;
