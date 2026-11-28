@@ -1,0 +1,40 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": false,
+    "notes": [
+      "Proposed by the LLM extractor (review item 11, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request."
+    ]
+  },
+  "slug": "ayushman-vay-vandana",
+  "name_en": "Ayushman Vay Vandana Card",
+  "name_hi": null,
+  "level": "central",
+  "state": null,
+  "category": "health",
+  "official_url": "https://www.beneficiary.nha.gov.in",
+  "version": {
+    "rules": {
+      "all": [
+        {
+          "field": "age",
+          "op": "gte",
+          "value": 70
+        }
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "Free health cover of Rs 5 lakh per year for all senior citizens aged 70 years and above.",
+    "benefit_text_hi": null,
+    "not_checked_en": [
+      "Senior citizens enrolled in other government health schemes such as CGHS, ECHS, or CAPF must choose between their existing scheme or AB PM-JAY."
+    ],
+    "not_checked_hi": null,
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://pib.gov.in/PressReleasePage.aspx?PRID=2082288",
+    "verified_at": "2026-11-28",
+    "approved_by": "Sam-A14",
+    "documents": []
+  }
+}
