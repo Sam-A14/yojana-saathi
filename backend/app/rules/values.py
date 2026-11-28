@@ -18,6 +18,17 @@ EDUCATION_VALUES = (
     "graduate",
     "postgraduate",
 )
+# What the person is studying NOW. Not the same as `education` (the highest level finished): a child
+# in Class 9 has finished Class 8, which no `education` value says. Asked only when is_student is
+# true. Post-Matric schemes reuse it (class_11_12, undergraduate, postgraduate).
+STUDY_LEVEL_VALUES = (
+    "class_1_8",
+    "class_9_10",
+    "class_11_12",
+    "undergraduate",
+    "postgraduate",
+    "other",
+)
 OCCUPATION_VALUES = (
     "farmer",
     "agricultural_labourer",

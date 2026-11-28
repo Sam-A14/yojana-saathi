@@ -96,6 +96,8 @@ class Member(Base):
     occupation: Mapped[str | None]
     education: Mapped[str | None]
     is_student: Mapped[bool | None]
+    # What they are studying now (a STUDY_LEVEL_VALUES word). NULL = not answered = unknown.
+    current_study_level: Mapped[str | None]
     disability: Mapped[bool | None]
     # Facts used by exclusion rules (for example PM-KISAN). All nullable for the same reason as
     # above: "not answered" must stay different from "no". Yes/no answers only, never a number

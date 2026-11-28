@@ -4,6 +4,7 @@ import json
 from typing import Any
 
 from app.rules.fields import ALLOWED_VALUES
+from app.rules.values import STUDY_LEVEL_VALUES
 
 SYSTEM_PROMPT = """\
 You turn the text of an Indian government scheme into eligibility rules in a fixed JSON format.
@@ -49,6 +50,8 @@ FIELD_HINTS = {
     "state": "state code such as UP",
     "gender": "female / male / other",
     "area_type": "rural / urban",
+    "current_study_level": "what the person is studying now, not the highest level finished. "
+    "One of " + ", ".join(STUDY_LEVEL_VALUES) + " (class_9_10 means Class 9 or Class 10)",
     "is_bpl": "the whole family is on the Below Poverty Line list; a yes/no about the household. "
     "The BPL card is a different thing (has_bpl_card, a document)",
 }

@@ -13,6 +13,7 @@ FULL_MEMBER: dict[str, Any] = {
     "occupation": "farmer",
     "education": "primary",
     "is_student": False,
+    "current_study_level": "class_9_10",
     "disability": False,
     "owns_cultivable_land": False,
     "paid_income_tax_last_year": False,
@@ -71,6 +72,19 @@ def test_list_get_update_delete(client: TestClient, make_family) -> None:
     assert len(client.get(f"{family.url}/members", headers=family.headers).json()) == 1
 
 
+def test_current_study_level_starts_unanswered_and_is_set_and_cleared(
+    client: TestClient, make_family
+) -> None:
+    family = make_family()
+    member = add(client, family, nickname="Ravi").json()
+    assert member["current_study_level"] is None  # not asked yet: unknown, not any level
+
+    url = f"{family.url}/members/{member['id']}"
+    for value in ("class_9_10", "undergraduate", None):
+        response = client.patch(url, json={"current_study_level": value}, headers=family.headers)
+        assert response.json()["current_study_level"] == value
+
+
 def test_at_most_twenty_members(client: TestClient, make_family) -> None:
     family = make_family()
     for i in range(20):
@@ -95,6 +109,8 @@ def test_at_most_twenty_members(client: TestClient, make_family) -> None:
         {"gender": "unknown"},
         {"marital_status": "single"},  # the word used here is "unmarried"
         {"is_student": "yes"},  # real true/false only
+        {"current_study_level": "class_9"},  # only the listed words
+        {"current_study_level": "Class_9_10"},  # exact spelling
         {"govt_employee": "clerk"},
         {"pension_band": "5k"},
         {"aadhaar_number": "123412341234"},
