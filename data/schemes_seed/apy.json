@@ -1,0 +1,47 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": false,
+    "notes": [
+      "Proposed by the LLM extractor (review item 17, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request."
+    ]
+  },
+  "slug": "apy",
+  "name_en": "Atal Pension Yojana",
+  "name_hi": null,
+  "level": "central",
+  "state": null,
+  "category": "pension",
+  "official_url": "https://www.myscheme.gov.in/schemes/apy",
+  "version": {
+    "rules": {
+      "all": [
+        {
+          "field": "age",
+          "op": "between",
+          "value": [
+            18,
+            40
+          ]
+        },
+        {
+          "field": "paid_income_tax_last_year",
+          "op": "eq",
+          "value": false
+        }
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "Subscribers receive a guaranteed minimum pension of Rs. 1000, Rs. 2000, Rs. 3000, Rs. 4000, or Rs. 5000 per month after reaching 60 years of age until death.",
+    "benefit_text_hi": null,
+    "not_checked_en": [
+      "Must hold a savings bank account."
+    ],
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://www.myscheme.gov.in/schemes/apy",
+    "verified_at": "2026-11-28",
+    "approved_by": "Sam-A14",
+    "documents": []
+  }
+}
