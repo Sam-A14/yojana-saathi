@@ -8,6 +8,9 @@ This is the "Approve scheme proposal" workflow's engine. It only READS the datab
 person merges it. Nothing reaches the database from here: the "Seed database" workflow loads the
 file after the merge, by itself (decisions 004 and 046). Prints the slug on stdout; every refusal
 goes to stderr and exits 1, with nothing written.
+
+If data/schemes_seed/<slug>.json already exists it is hand-labelled ground truth, so the command
+refuses to touch it unless --bump-version is given (the workflow's bump_version input).
 """
 
 import argparse
@@ -248,6 +251,7 @@ def render_body(
     benefit_quote: str | None,
     actor: str | None,
     run_url: str | None,
+    replaces: bool,
 ) -> str:
     version = seed["version"]
     lines = [
@@ -261,6 +265,16 @@ def render_body(
     ]
     if run_url:
         lines.append(f"- Workflow run: {run_url}")
+    if replaces:
+        lines += [
+            "",
+            f"> **This replaces the existing `data/schemes_seed/{seed['slug']}.json`** "
+            "(bump_version was set). The old file stays in git history. Its hand-written "
+            "`labeller_notes` are replaced too: read the diff below. When **Seed database** runs, "
+            "the loader adds a new version of the scheme if the rules, benefit text, deadlines, "
+            "source or documents differ, and keeps the old version for past results "
+            "(decision 004). The file has no version number of its own.",
+        ]
     lines += [
         "",
         "**Merging this publishes the scheme.** The **Seed database** workflow runs by itself on "
@@ -334,9 +348,19 @@ def prepare(
     data_dir: Path = DEFAULT_DATA_DIR,
     actor: str | None = None,
     run_url: str | None = None,
+    bump_version: bool = False,
 ) -> Approval:
     """Check the item and build the file and the description. Writes nothing."""
     proposed = _check_approvable(item, approver)
+    slug = proposed["slug"]
+    path = data_dir / "schemes_seed" / f"{slug}.json"
+    replaces = path.exists()
+    if replaces and not bump_version:
+        raise ApproveError(
+            f"seed exists; this would overwrite hand-labelled ground truth "
+            f"(data/schemes_seed/{slug}.json). To propose a new version of it, run again with "
+            "bump_version set to true; the old file stays in git history."
+        )
     rule_quotes, benefit_quote = _quotes(item)
     seed = build_seed_file(proposed, item, approver, today or datetime.now(UTC).date())
     problems = _problems_with(seed, data_dir)
@@ -344,8 +368,6 @@ def prepare(
         raise ApproveError("the file would not load: " + _one_line("; ".join(problems)))
     _check_quotes_stored(seed, rule_quotes, benefit_quote)
 
-    slug = seed["slug"]
-    path = data_dir / "schemes_seed" / f"{slug}.json"
     old = path.read_text(encoding="utf-8") if path.is_file() else None
     new_text = file_text(seed)
     all_quotes = [*rule_quotes.values(), *([benefit_quote] if benefit_quote else [])]
@@ -359,6 +381,7 @@ def prepare(
         benefit_quote=benefit_quote,
         actor=actor,
         run_url=run_url,
+        replaces=replaces,
     )
     return Approval(slug=slug, seed=seed, body=body)
 
@@ -373,6 +396,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("review_item_id", type=int)
     parser.add_argument("--approver", required=True)
     parser.add_argument("--body-file", type=Path, required=True)
+    parser.add_argument(
+        "--bump-version",
+        action="store_true",
+        help="allow replacing an existing seed file (the loader then adds a new scheme version)",
+    )
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR, help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
 
@@ -391,6 +419,7 @@ def main(argv: list[str] | None = None) -> int:
                 data_dir=args.data_dir,
                 actor=os.environ.get("GITHUB_ACTOR"),
                 run_url=run_url,
+                bump_version=args.bump_version,
             )
     except ApproveError as error:
         print(f"error: {error}", file=sys.stderr)

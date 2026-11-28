@@ -60,6 +60,53 @@ def test_an_existing_source_or_seed_file_is_never_overwritten(data_dir: Path) ->
     assert not (data_dir / "scheme_sources" / "have-seed.txt").exists()
 
 
+def test_bump_version_replaces_an_existing_scheme_on_purpose(data_dir: Path) -> None:
+    (data_dir / "scheme_sources" / "have-seed.txt").write_text("old page\n")
+    (data_dir / "schemes_seed" / "have-seed.json").write_text("{}")
+
+    path = add_scheme.write_source("have-seed", PAGE, data_dir, bump_version=True)
+
+    assert path.read_text().startswith("https://example.org/")  # the source is now the new page
+    assert (data_dir / "schemes_seed" / "have-seed.json").read_text() == "{}"  # seed untouched here
+
+
+def test_an_existing_seed_without_bump_version_says_how_to_replace_it(data_dir: Path) -> None:
+    (data_dir / "schemes_seed" / "have-seed.json").write_text("{}")
+
+    with pytest.raises(add_scheme.AddSchemeError, match="bump_version"):
+        add_scheme.write_source("have-seed", PAGE, data_dir)
+
+
+def test_bump_version_for_a_slug_that_is_not_a_scheme_is_refused(data_dir: Path) -> None:
+    with pytest.raises(add_scheme.AddSchemeError, match="nothing to replace"):
+        add_scheme.write_source("typo-slug", PAGE, data_dir, bump_version=True)
+    assert not (data_dir / "scheme_sources" / "typo-slug.txt").exists()
+
+
+def test_the_pull_request_says_when_it_replaces_a_scheme() -> None:
+    plain = add_scheme.pr_notice("Sam-A14", "pmay-g", None)
+    bumped = add_scheme.pr_notice("Sam-A14", "pmay-g", None, replaces=True)
+
+    assert "REPLACES" not in plain
+    assert "REPLACES the existing `data/schemes_seed/pmay-g.json`" in bumped
+    assert "labeller_notes" in bumped and "new version" in bumped
+
+
+def test_the_command_passes_bump_version_only_when_asked(
+    monkeypatch: pytest.MonkeyPatch, data_dir: Path
+) -> None:
+    calls: list[dict] = []
+    monkeypatch.setattr(
+        add_scheme, "write_source", lambda slug, text, **kw: calls.append(kw) or data_dir
+    )
+    monkeypatch.setenv("SOURCE_TEXT", PAGE)
+
+    add_scheme.main(["write-source", "have-seed"])
+    add_scheme.main(["write-source", "have-seed", "--bump-version"])
+
+    assert calls == [{}, {"bump_version": True}]
+
+
 @pytest.mark.parametrize(
     "page", ["", "no url on the first line\nsome text", "https://example.org/x\n\n   \n"]
 )
@@ -306,3 +353,20 @@ def test_the_address_reaches_the_script_only_through_the_environment() -> None:
 
     assert step["env"]["SOURCE_URL"] == "${{ inputs.source_url }}"
     assert "${{" not in step["run"]  # nothing typed by a person is pasted into the shell text
+
+
+def test_bump_version_is_an_optional_box_that_reaches_every_step_through_the_environment() -> None:
+    inputs = workflow()[True]["workflow_dispatch"]["inputs"]
+    assert inputs["bump_version"]["type"] == "boolean"
+    assert inputs["bump_version"]["required"] is False
+    assert inputs["bump_version"]["default"] is False
+
+    steps = {s.get("name"): s for s in workflow()["jobs"]["add"]["steps"]}
+    for name in ("Write the source file", "Write the seed file from the review item"):
+        step = steps[name]
+        assert step["env"]["BUMP_VERSION"] == "${{ inputs.bump_version }}", name
+        assert "--bump-version" in step["run"], name
+        assert "${{" not in step["run"], name
+    # an existing scheme is refused when the source is written, before the model is called
+    names = [s.get("name") for s in workflow()["jobs"]["add"]["steps"]]
+    assert names.index("Write the source file") < names.index("Extract and validate the rules")

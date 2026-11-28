@@ -114,7 +114,7 @@ Notes are for people and never reach the database. Record:
    myScheme page address works only if the owner has switched fetching on with the
    `FETCH_ALLOWED_HOSTS` variable; it is off by default, decision 050.) When the workflow fetched the
    page, the pull request shows the fetched text: **compare it with the page** before merging.
-2. **Assistant:** triggers the **Add scheme** workflow with the slug and the text. The workflow
+2. **Assistant:** triggers the **Add scheme** workflow with the slug and the text. A slug that is already a scheme is refused unless the **bump_version** box is ticked (then the pull request says it replaces the files). The workflow
    writes `data/scheme_sources/<slug>.txt`, extracts, validates and, if valid, opens one pull
    request with the source file and the seed file. If the proposal is invalid it opens or updates
    a GitHub issue with the problems. It does not retry: a repeated failure means the prompt or the
