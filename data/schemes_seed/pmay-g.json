@@ -1,0 +1,78 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": false,
+    "notes": [
+      "Proposed by the LLM extractor (review item 14, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request."
+    ]
+  },
+  "slug": "pmay-g",
+  "name_en": "Pradhan Mantri Awaas Yojana - Gramin",
+  "name_hi": null,
+  "level": "central",
+  "state": null,
+  "category": "housing",
+  "official_url": "https://www.myscheme.gov.in/schemes/pmay-g",
+  "version": {
+    "rules": {
+      "all": [
+        {
+          "field": "area_type",
+          "op": "eq",
+          "value": "rural"
+        },
+        {
+          "field": "house_type",
+          "op": "neq",
+          "value": "pucca"
+        },
+        {
+          "not": {
+            "any_member": {
+              "field": "govt_employee",
+              "op": "neq",
+              "value": "none"
+            }
+          }
+        },
+        {
+          "not": {
+            "field": "paid_income_tax_last_year",
+            "op": "is_true"
+          }
+        }
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "Financial Assistance of ₹ 1,20,000 per unit for plain areas; and ₹ 1,30,000 per unit for hilly areas, difficult areas, and IAP districts (Himalayan states, North-Eastern states, and Union Territories of Jammu & Kashmir).",
+    "benefit_text_hi": null,
+    "not_checked_en": [
+      "The household must not own a motorized two/three/four wheeler, fishing boat, or mechanized agricultural equipment.",
+      "The household must not have a Kisan Credit Card with a credit limit of ₹50,000 or above.",
+      "The household must not run a government-registered non-agricultural enterprise.",
+      "No family member should earn more than ₹10,000 per month or pay professional tax.",
+      "The household must not own a refrigerator or a landline phone.",
+      "The household must not own 2.5 acres or more of irrigated land with irrigation equipment, or 7.5 acres or more of land.",
+      "The household's house must not have more than 2 rooms.",
+      "Beneficiaries must be identified using SECC data and verified by the Gram Sabha.",
+      "The applicant must provide an MGNREGA Job Card, Swachh Bharat Mission (SBM) number, and an affidavit confirming they do not own a pucca house."
+    ],
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://www.myscheme.gov.in/schemes/pmay-g",
+    "verified_at": "2026-11-28",
+    "approved_by": "Sam-A14",
+    "documents": [
+      {
+        "code": "aadhaar_card",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "bank_account_aadhaar_linked",
+        "required": true,
+        "applies_to": "applicant"
+      }
+    ]
+  }
+}
