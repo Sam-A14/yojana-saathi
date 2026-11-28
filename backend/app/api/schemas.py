@@ -219,7 +219,8 @@ class SchemeSummary(BaseModel):
     official_url: str
     benefit_text_en: str | None
     benefit_text_hi: str | None
-    # "What we did not check": plain sentences. Hindi is null until written (show the English).
+    # "Rules we can't check: ask the office": plain sentences. Hindi is null until written (show
+    # the English).
     not_checked_en: list[str]
     not_checked_hi: list[str] | None
     deadline_start: date | None

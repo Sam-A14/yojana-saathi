@@ -1,4 +1,4 @@
-# 045 — "What we did not check": conditions the app cannot test, shown to families
+# 045 — "Rules we can't check: ask the office": conditions the app cannot test, shown to families
 
 ## Context
 Some official conditions cannot be written as rules (citizenship, a sworn affidavit, "no other
@@ -17,9 +17,9 @@ honesty gap in the product, not only a data gap.
 - The approve step copies the extractor's `not_encoded` lines into `version.not_checked_en` and no
   longer keeps a second copy in `labeller_notes`. The extractor prompt now asks for plain sentences a
   parent can follow aloud, because these lines are read by families. The approve PR lists them under
-  "What we did not check" so the reviewer reads them as a family would.
+  "Rules we can't check: ask the office" so the reviewer reads them as a family would.
 - The API sends both lists with every scheme summary (so the results response carries them too). The
-  scheme page shows a "What we did not check" section when the English list is not empty. Hindi
+  scheme page shows a "Rules we can't check: ask the office" section when the English list is not empty. Hindi
   shows the English lines until a Hindi list exists, the same fallback as the benefit text.
 - IGNOAPS gets two lines: citizenship, and not receiving another pension (the affidavit).
 
@@ -37,3 +37,9 @@ honesty gap in the product, not only a data gap.
   "nothing was left unchecked"; their `labeller_notes.not_encoded` still lists what was.
 - Every extracted scheme's `not_encoded` lines now reach families after review, so the reviewer
   must read them as a parent would.
+
+## Naming
+The section was first called "What we did not check", which sat next to the older "What we could
+not check yet" (answers the family has not given). Parents could read them as one thing. They are
+now "Rules we can't check: ask the office" (the app cannot test them) and "Answers we still need
+from you" (the family can fix this by answering). Hindi words for both are marked for review.

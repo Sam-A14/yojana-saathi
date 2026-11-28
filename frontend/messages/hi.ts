@@ -266,12 +266,13 @@ export const hi: typeof en = {
     whyTitle: "यह क्यों ठीक बैठ सकती है",
     met: "जो ठीक बैठता है",
     notMet: "जो ठीक नहीं बैठता",
-    notChecked: "जो हम अभी जाँच नहीं पाए",
+    // needs native review (owner): renamed from "What we could not check yet"
+    notChecked: "आपसे हमें अभी ये जवाब चाहिए",
     fixable: "इसे ठीक किया जा सकता है",
     marks: { met: "पूरा", notMet: "पूरा नहीं", notChecked: "अभी जाँचा नहीं" },
-    // needs native review (owner): the "What we did not check" section
-    notCheckedTitle: "जो हमने नहीं जाँचा",
-    notCheckedIntro: "यह ऐप इन बातों की जाँच नहीं कर सकता। आवेदन से पहले इन्हें सरकारी वेबसाइट पर ज़रूर पढ़ें।",
+    // needs native review (owner): the "Rules we can't check: ask the office" section
+    notCheckedTitle: "जो नियम हम नहीं जाँच सकते: दफ़्तर से पूछें",
+    notCheckedIntro: "यह ऐप इन बातों की जाँच नहीं कर सकता। आवेदन से पहले दफ़्तर से पूछें, या सरकारी वेबसाइट पर पढ़ें।",
     excludedTitle: "यह उपलब्ध क्यों नहीं है",
     excludedBecause: "{names} की वजह से:",
     docsTitle: "जो कागज़ अभी चाहिए",

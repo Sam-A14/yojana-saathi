@@ -105,7 +105,7 @@ def test_conditions_the_fields_cannot_express_become_what_we_did_not_check(
         "You must be a citizen of India. This app does not ask about it."
     ]
     assert "not_encoded" not in approval.seed["labeller_notes"]
-    assert "What we did not check" in approval.body
+    assert "Rules we can't check: ask the office" in approval.body
     assert "citizen of India" in approval.body
     (data_dir / "schemes_seed" / f"{SLUG}.json").write_text(file_text(approval.seed), "utf-8")
     assert read_seed_files(data_dir).schemes[0]["version"]["not_checked_en"]  # the loader accepts
@@ -115,7 +115,7 @@ def test_no_such_conditions_means_no_section_and_no_list(data_dir: Path) -> None
     approval = prepare(make_item(), "octocat", today=TODAY, data_dir=data_dir)
 
     assert "not_checked_en" not in approval.seed["version"]
-    assert "What we did not check" not in approval.body
+    assert "Rules we can't check: ask the office" not in approval.body
 
 
 def test_rule_keys_are_written_in_the_order_a_person_writes_them(data_dir: Path) -> None:

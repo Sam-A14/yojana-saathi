@@ -176,7 +176,7 @@
             "type": "string",
             "minLength": 1
           },
-          "description": "Conditions of the scheme this app does not check, one plain sentence each, written for a parent (no field names). Shown on the scheme page as 'What we did not check'. [] = nothing to say."
+          "description": "Conditions of the scheme this app does not check, one plain sentence each, written for a parent (no field names). Shown on the scheme page as 'Rules we can't check: ask the office'. [] = nothing to say."
         },
         "not_checked_hi": {
           "type": [

@@ -1,7 +1,7 @@
 """scheme_versions.not_checked_en / not_checked_hi
 
 The conditions of a scheme that this app does not check, in plain words, shown to families on the
-scheme page as "What we did not check". Two JSONB lists of strings. The English list is never NULL
+scheme page as "Rules we can't check: ask the office". Two JSONB lists of strings. The English list is never NULL
 (an empty list means there is nothing to say), so existing versions get []. The Hindi list is NULL
 until someone writes it; the page then shows the English one.
 

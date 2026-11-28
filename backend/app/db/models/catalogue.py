@@ -78,9 +78,9 @@ class SchemeVersion(Base):
     rules_json: Mapped[dict[str, Any]] = mapped_column(JSONB)
     benefit_text_en: Mapped[str | None]
     benefit_text_hi: Mapped[str | None]
-    # Conditions of the scheme this app does not check ("What we did not check" on the scheme
-    # page), one plain sentence each. A list of strings; [] = nothing to say. The Hindi list is
-    # NULL until someone writes it, and the page then shows the English one.
+    # Conditions of the scheme this app does not check ("Rules we can't check: ask the office" on
+    # the scheme page), one plain sentence each. A list of strings; [] = nothing to say. The Hindi
+    # list is NULL until someone writes it, and the page then shows the English one.
     not_checked_en: Mapped[list[str]] = mapped_column(
         JSONB, default=list, server_default=text("'[]'::jsonb")
     )

@@ -164,8 +164,8 @@ def build_seed_file(
             "Every rule has a word-for-word source quote, shown in that pull request.",
         ],
     }
-    # Conditions the rule fields cannot express go to families as "What we did not check". They
-    # live in the version only, so there is one list to review and one to keep right.
+    # Conditions the rule fields cannot express go to families as "Rules we can't check: ask the
+    # office". They live in the version only, so there is one list to review and one to keep right.
     proposed_notes = proposed.get("labeller_notes")
     if isinstance(proposed_notes, dict) and proposed_notes.get("not_encoded"):
         version["not_checked_en"] = list(proposed_notes["not_encoded"])
@@ -303,7 +303,8 @@ def render_body(
     if not_checked:
         lines += [
             "",
-            "### What we did not check (families will read these lines on the scheme page)",
+            "### Rules we can't check: ask the office "
+            "(families will read these lines on the scheme page)",
             "Conditions the rule fields cannot express. Each line must make sense to a parent "
             "reading it aloud. There is no Hindi yet: the page shows these English lines.",
             *[f"- `{_one_line(n)}`" for n in not_checked],
