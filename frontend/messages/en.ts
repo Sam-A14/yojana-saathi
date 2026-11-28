@@ -213,6 +213,28 @@ export const en = {
     checkOfficial: "The official website shows the exact limit.",
     everyone: "everyone in your family",
   },
+  // The same questions when the rule is about the whole family ("no one in the family pays income
+  // tax"): one yes from anyone settles a yes/no fact, so those say "anyone"; the others ask about
+  // everyone. See lib/question-text.ts.
+  familyQuestions: {
+    age: "What year was everyone in your family born?",
+    gender: "Is everyone in your family male, female or other?",
+    marital_status: "What is the marital status of everyone in your family?",
+    occupation: "What is the main work of everyone in your family?",
+    education: "How much schooling did everyone in your family finish?",
+    is_student: "Is anyone in your family studying now?",
+    current_study_level: "What is each student in your family studying now?",
+    disability: "Does anyone in your family have a disability?",
+    owns_cultivable_land: "Does anyone in your family own farmland?",
+    is_remarried: "Has anyone in your family married again?",
+    paid_income_tax_last_year: "Did anyone in your family pay income tax last year?",
+    govt_employee: "Does anyone in your family work, or did they work, in a government job?",
+    pension_band: "Does anyone in your family get a government pension?",
+    is_registered_professional:
+      "Is anyone in your family a registered doctor, engineer, lawyer, chartered accountant or architect?",
+    holds_constitutional_post: "Does anyone in your family hold, or did they hold, a high public post?",
+    document: "Does anyone in your family have this paper: {document}?",
+  },
   questions: {
     age: "What year was {name} born?",
     gender: "Is {name} male, female or other?",
