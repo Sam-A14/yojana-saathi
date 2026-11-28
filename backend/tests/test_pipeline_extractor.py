@@ -34,7 +34,7 @@ def test_extract_sends_text_fields_and_schema_at_low_temperature() -> None:
     assert SOURCE_URL in prompt and "aged 60 years or above" in prompt
     assert "- owns_cultivable_land" in prompt  # from rules/fields.py
     assert "- has_land_record" in prompt  # from documents.json
-    assert "govt_employee (one of none, group_d, other)" in prompt
+    assert 'govt_employee (one of "none", "group_d", "other")' in prompt
     assert '"$id":"https://github.com/Sam-A14/yojana-saathi/data/scheme.schema.json"' in prompt
     assert "only a human sets them" in str(call["system"])
 

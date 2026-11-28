@@ -3,8 +3,8 @@
 import json
 from typing import Any
 
-from app.rules.fields import ALLOWED_VALUES
-from app.rules.values import STUDY_LEVEL_VALUES
+from app.pipeline.field_types import CLOSED_VALUES
+from app.rules.values import INCOME_BANDS
 
 SYSTEM_PROMPT = """\
 You turn the text of an Indian government scheme into eligibility rules in a fixed JSON format.
@@ -53,10 +53,8 @@ FIELD_HINTS = {
     "age": "whole years",
     "income_band_max": "the household's yearly income in rupees, as the upper edge of its band",
     "state": "state code such as UP",
-    "gender": "female / male / other",
-    "area_type": "rural / urban",
-    "current_study_level": "what the person is studying now, not the highest level finished. "
-    "One of " + ", ".join(STUDY_LEVEL_VALUES) + " (class_9_10 means Class 9 or Class 10)",
+    "current_study_level": "what the person is studying now, not the highest level finished; "
+    "class_9_10 means Class 9 or Class 10",
     "is_bpl": "the whole family is on the Below Poverty Line list; a yes/no about the household. "
     "The BPL card is a different thing (has_bpl_card, a document)",
 }
@@ -90,7 +88,8 @@ section itself says the applicant must hold that paper as a condition, and then 
 from that section.
 Values must fit their field: a yes/no field (such as is_bpl or any has_<document>) takes
 {"op": "is_true"} or eq / neq with true or false, never the text "yes"; a field with a list of
-allowed answers takes only those answers; age and income are numbers.
+allowed answers takes only those answers, spelled exactly as listed under ALLOWED FIELDS, capital
+letters included (category is "OBC", never "obc"); age and income are numbers.
 """
 
 RULE_FORMAT = _RULE_FORMAT_START + _EXCEPTION_EXAMPLE_TEXT + _RULE_FORMAT_END
@@ -134,12 +133,22 @@ example "Residential proof: any one of voter card, electricity bill, Aadhaar car
 """
 
 
+def _income_edges() -> str:
+    """The band edges a family's income can be cut at, from the same table the engine uses."""
+    return ", ".join(str(band.upper) for band in INCOME_BANDS.values() if band.upper is not None)
+
+
 def _describe_field(name: str) -> str:
+    """One line per field. The allowed answers of a closed-list field come from CLOSED_VALUES, the
+    table the validator checks against, so the prompt and the validator cannot disagree. Each is
+    quoted so its exact spelling and capitals show: the validator compares exactly."""
     notes = []
     if name in FIELD_HINTS:
         notes.append(FIELD_HINTS[name])
-    if name in ALLOWED_VALUES:
-        notes.append("one of " + ", ".join(ALLOWED_VALUES[name]))
+    if name in CLOSED_VALUES:
+        notes.append("one of " + ", ".join(f'"{value}"' for value in CLOSED_VALUES[name]))
+    if name == "income_band_max":
+        notes.append(f"band edges: {_income_edges()}; a limit at an edge gets a definite answer")
     return f"- {name}" + (f" ({'; '.join(notes)})" if notes else "")
 
 
