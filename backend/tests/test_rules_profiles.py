@@ -29,7 +29,10 @@ def test_profile(path: Path) -> None:
     profile: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
     household = HouseholdFacts(profile["household"], profile["members"])
     names = {m["nickname"] for m in profile["members"]}
-    assert set(profile["expected"]) == {"pm-kisan", "ignwps"}, "every profile covers both schemes"
+    # Every profile covers both original schemes. A profile may add more (profile 17 adds the
+    # old-age pension), and each added scheme must be a real one, with every member decided.
+    assert {"pm-kisan", "ignwps"} <= set(profile["expected"]), "every profile covers both schemes"
+    assert set(profile["expected"]) <= set(RULES), "an expected scheme that does not exist"
 
     for slug, expected in profile["expected"].items():
         # Every member needs an expectation, so adding a person forces a decision about them.

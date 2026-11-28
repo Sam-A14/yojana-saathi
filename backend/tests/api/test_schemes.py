@@ -66,7 +66,7 @@ def test_detail_and_list_carry_what_we_did_not_check(client: TestClient, seeded)
     listed = {s["slug"]: s for s in client.get("/schemes").json()}
     assert listed["ignoaps"]["not_checked_en"] == detail["not_checked_en"]
     assert len(listed["pm-kisan"]["not_checked_en"]) == 3
-    assert len(listed["ignwps"]["not_checked_en"]) == 2
+    assert len(listed["ignwps"]["not_checked_en"]) == 3
 
 
 def test_a_scheme_with_nothing_to_say_has_an_empty_list_and_no_hindi_yet(

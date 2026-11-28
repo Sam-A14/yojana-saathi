@@ -86,7 +86,7 @@ def test_changed_rules_add_a_new_version_and_keep_the_old(db: Session, data_dir:
     old_rules = scheme(db, "ignwps").current_version.rules_json  # type: ignore[union-attr]
 
     def raise_age(content: dict[str, Any]) -> None:
-        content["version"]["rules"]["all"][1]["value"] = 60  # the age rule
+        content["version"]["rules"]["all"][1]["value"] = [60, 79]  # the age rule (between)
 
     edit_scheme(data_dir, "ignwps", raise_age)
     summary = load(db, data_dir)
@@ -96,7 +96,7 @@ def test_changed_rules_add_a_new_version_and_keep_the_old(db: Session, data_dir:
     assert [v.version_no for v in widow.versions] == [1, 2]
     assert widow.current_version is widow.versions[1]
     assert widow.versions[0].rules_json == old_rules  # history is never rewritten
-    assert widow.current_version.rules_json["all"][1]["value"] == 60
+    assert widow.current_version.rules_json["all"][1]["value"] == [60, 79]
     assert summary.count("version", "created") == 1
     # every other scheme is untouched
     assert summary.count("version", "unchanged") == len(committed_schemes(data_dir)) - 1
@@ -138,7 +138,7 @@ def test_not_checked_lines_are_stored_and_a_change_adds_a_version(
     load(db, data_dir)
     first = scheme(db, "ignoaps").current_version
     assert first is not None and len(first.not_checked_en) == 2
-    for slug, lines in (("pm-kisan", 3), ("ignwps", 2)):
+    for slug, lines in (("pm-kisan", 3), ("ignwps", 3)):
         version = scheme(db, slug).current_version
         assert version is not None and len(version.not_checked_en) == lines
         assert version.not_checked_hi is not None and len(version.not_checked_hi) == lines

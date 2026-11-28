@@ -5,10 +5,10 @@
     "notes": [
       "Proposed by the LLM extractor (review item 21, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request.",
       "Reviewed by hand (assistant, against docs/scheme-review-checklist.md). Replaces the old hand-labelled example (a copy is in data/ground_truth/ignwps.json, which the accuracy score uses).",
-      "HAND EDIT, age rule: the extractor wrote age between [40, 79] from Eligibility ('The applicant must be a widow in the age group of 40-79 years.'). Changed to age gte 40. The Benefits section says 'For persons who are 80 years and above the pension is Rs.500/- per month', so a widow of 80 or more still gets the pension and must not be told she does not qualify. The page contradicts itself; this follows the Benefits section and the old labelled file (gte 40). OWNER: confirm.",
-      "Rules kept from the extractor: marital_status = widow, is_bpl is true (Eligibility, 'a household living below the poverty line'), is_remarried = false (Exclusions, 'In case of remarriage of widow'; the app asks it only of widows, and an unanswered answer gives 'may qualify'). The old example also required gender = female; the page says only 'widow', so it is not encoded.",
+      "Rules kept as the extractor wrote them: marital_status = widow, age between [40, 79] (Eligibility: 'The applicant must be a widow in the age group of 40-79 years.'), is_bpl is true (Eligibility, 'a household living below the poverty line'), is_remarried = false (Exclusions, 'In case of remarriage of widow'; the app asks it only of widows, and an unanswered answer gives 'may qualify'). The old example also required gender = female; the page says only 'widow', so it is not encoded.",
+      "OWNER DECISION on age (kept as Eligibility says, 40 to 79): the Benefits section also says 'For persons who are 80 years and above the pension is Rs.500/- per month', which could be read as the widow pension continuing at 80. Under NSAP, at 80 a widow moves to the old-age pension (IGNOAPS, Rs.500 a month from 80), which the app already shows for her. So at 80 the widow pension rule stops matching and IGNOAPS takes over; a not_checked line says so. Test profile 17 pins this (aged 85: IGNWPS not eligible, IGNOAPS eligible).",
       "Documents: spouse_death_certificate and bpl_card required (Documents Required). The age proof is 'any one of': birth certificate, school certificate (no code), then ration card and EPIC (voter_id), then a medical officer's certificate; listed with required: false. bpl_card and ration_card are household papers (applies_to household). The old example also listed aadhaar_card and a bank account; this page lists neither, so they are dropped.",
-      "Not encoded (see not_checked): the government's definition of 'below the poverty line' (the app uses the family's own yes or no); the pension stopping when a widow remarries or the family rises above the line (checked only as today's answers).",
+      "Not encoded (see not_checked): the government's definition of 'below the poverty line' (the app uses the family's own yes or no); the pension stopping when a widow remarries or the family rises above the line (checked only as today's answers); and the move to IGNOAPS at 80 (said in a line; the IGNOAPS scheme itself decides at 80).",
       "Source quote (benefit_text_en): A pension of Rs.300/- per month is provided to Widows between 40 years and 79 years. For persons who are 80 years and above the pension is Rs.500/- per month.",
       "Hand-written Hindi added (name_hi, benefit_text_hi, not_checked_hi). The amounts match the English.",
       "NEEDS NATIVE REVIEW (owner): name_hi, benefit_text_hi and not_checked_hi."
@@ -31,8 +31,11 @@
         },
         {
           "field": "age",
-          "op": "gte",
-          "value": 40
+          "op": "between",
+          "value": [
+            40,
+            79
+          ]
         },
         {
           "field": "is_bpl",
@@ -50,11 +53,13 @@
     "benefit_text_hi": "विधवाओं को हर महीने पेंशन: 40 से 79 साल की उम्र में ₹300, और 80 साल या उससे ज़्यादा की उम्र में ₹500।",
     "not_checked_en": [
       "Which families count as below the poverty line is decided by the Government of India's rules. This app goes by your own yes or no answer, so the office may decide differently. Ask the office.",
-      "The pension stops if the widow marries again or her family moves above the poverty line. Tell the office if that happens. This app only checks today's answers."
+      "The pension stops if the widow marries again or her family moves above the poverty line. Tell the office if that happens. This app only checks today's answers.",
+      "At 80, the widow pension moves to the old-age pension (IGNOAPS), which pays ₹500 a month."
     ],
     "not_checked_hi": [
       "कौन-से परिवार ग़रीबी रेखा से नीचे माने जाएँगे, यह भारत सरकार के नियमों से तय होता है। यह ऐप आपके अपने हाँ या नहीं के जवाब पर चलता है, इसलिए दफ़्तर का फ़ैसला अलग हो सकता है। दफ़्तर से पूछें।",
-      "अगर विधवा दोबारा शादी कर ले या परिवार ग़रीबी रेखा से ऊपर चला जाए तो पेंशन बंद हो जाती है। ऐसा हो तो दफ़्तर को बताएँ। यह ऐप सिर्फ़ आज के जवाब जाँचता है।"
+      "अगर विधवा दोबारा शादी कर ले या परिवार ग़रीबी रेखा से ऊपर चला जाए तो पेंशन बंद हो जाती है। ऐसा हो तो दफ़्तर को बताएँ। यह ऐप सिर्फ़ आज के जवाब जाँचता है।",
+      "80 साल की उम्र में विधवा पेंशन की जगह वृद्धावस्था पेंशन (IGNOAPS) मिलती है, जो हर महीने ₹500 है।"
     ],
     "deadline_start": null,
     "deadline_end": null,
