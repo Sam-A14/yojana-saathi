@@ -80,6 +80,8 @@ class Alert(Base):
         Index("ix_alerts_user_id_created_at", "user_id", "created_at"),
         # The scheduler's question: "which alerts are pending and due now?"
         Index("ix_alerts_status_scheduled_for", "status", "scheduled_for"),
+        # One alert per (family, reason): the daily job inserts with ON CONFLICT DO NOTHING on this.
+        Index("uq_alerts_user_id_dedupe_key", "user_id", "dedupe_key", unique=True),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -90,4 +92,9 @@ class Alert(Base):
     payload_json: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default="{}")
     scheduled_for: Mapped[datetime]
     sent_at: Mapped[datetime | None]
+    # NULL = the family has not seen it yet (the "What's new" list on the dashboard).
+    read_at: Mapped[datetime | None]
+    # Says what the alert is about ("new_scheme:<member>:<scheme>:<version>"), so the same news is
+    # never made twice. NULL for alerts that do not need it.
+    dedupe_key: Mapped[str | None]
     created_at: Mapped[datetime] = created_at_column()

@@ -234,6 +234,68 @@ def test_log_lines_from_model_text_cannot_start_a_workflow_command(data_dir: Pat
     assert "\n" not in str(caught.value)
 
 
+# --- an existing seed file is ground truth ---------------------------------------------------
+
+
+def put_existing_seed(data_dir: Path, text: str = "hand-labelled, do not touch\n") -> Path:
+    path = data_dir / "schemes_seed" / f"{SLUG}.json"
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+def test_an_existing_seed_file_is_refused_without_bump_version(data_dir: Path) -> None:
+    existing = put_existing_seed(data_dir)
+
+    with pytest.raises(ApproveError) as caught:
+        prepare(make_item(), "octocat", today=TODAY, data_dir=data_dir)
+
+    message = str(caught.value)
+    assert message.startswith("seed exists; this would overwrite hand-labelled ground truth")
+    assert "bump_version" in message and f"data/schemes_seed/{SLUG}.json" in message
+    assert existing.read_text("utf-8") == "hand-labelled, do not touch\n"
+
+
+def test_bump_version_false_is_the_default_and_refuses_too(data_dir: Path) -> None:
+    put_existing_seed(data_dir)
+    with pytest.raises(ApproveError, match="seed exists"):
+        prepare(make_item(), "octocat", data_dir=data_dir, bump_version=False)
+
+
+def test_bump_version_allows_replacing_and_the_pull_request_says_so(data_dir: Path) -> None:
+    existing = put_existing_seed(data_dir)
+
+    approval = prepare(make_item(), "octocat", today=TODAY, data_dir=data_dir, bump_version=True)
+
+    assert f"**This replaces the existing `data/schemes_seed/{SLUG}.json`**" in approval.body
+    assert "stays in git history" in approval.body
+    assert "labeller_notes" in approval.body and "adds a new version" in approval.body
+    assert existing.read_text("utf-8") == "hand-labelled, do not touch\n"  # prepare writes nothing
+    assert approval.seed["version"]["approved_by"] == "octocat"
+
+
+def test_bump_version_does_not_loosen_any_other_check(data_dir: Path) -> None:
+    put_existing_seed(data_dir)
+    with pytest.raises(ApproveError, match="did not pass validation"):
+        prepare(
+            make_item(is_valid=False, validation_errors=[{"code": "x"}]),
+            "octocat",
+            data_dir=data_dir,
+            bump_version=True,
+        )
+
+
+def test_bump_version_on_a_new_scheme_changes_nothing(data_dir: Path) -> None:
+    body = prepare(make_item(), "octocat", today=TODAY, data_dir=data_dir, bump_version=True).body
+    assert "This replaces the existing" not in body
+
+
+def test_a_slug_that_cannot_name_a_file_is_refused_before_the_exists_check(data_dir: Path) -> None:
+    item = make_item(scheme_slug="../schemes_seed/x")
+    item.proposed_rules_json["slug"] = "../schemes_seed/x"
+    with pytest.raises(ApproveError, match="slug"):
+        prepare(item, "octocat", data_dir=data_dir, bump_version=True)
+
+
 # --- the pull request description ---------------------------------------------------------------
 
 
@@ -294,7 +356,7 @@ def test_an_existing_seed_file_gives_a_real_diff(data_dir: Path) -> None:
 
     changed = make_item()
     changed.proposed_rules_json["version"]["rules"]["all"][0]["value"] = 65
-    body = prepare(changed, "octocat", today=TODAY, data_dir=data_dir).body
+    body = prepare(changed, "octocat", today=TODAY, data_dir=data_dir, bump_version=True).body
 
     assert f"--- a/data/schemes_seed/{SLUG}.json" in body
     assert re.search(r'^-\s+"value": 60$', body, re.M)
@@ -316,6 +378,7 @@ def run(
     db: Session,
     data_dir: Path,
     item_id: int,
+    *flags: str,
     approver: str = "octocat",
 ) -> int:
     monkeypatch.setattr(approve, "new_session", lambda: contextlib.nullcontext(db))
@@ -327,6 +390,7 @@ def run(
         str(data_dir / "body.md"),
         "--data-dir",
         str(data_dir),
+        *flags,
     ]
     return approve.main(argv)
 
@@ -347,6 +411,25 @@ def test_the_command_writes_the_file_and_changes_nothing_in_the_database(
     assert item.status == "pending" and item.reviewed_by is None  # a person approves in the PR
     assert db.scalar(select(func.count()).select_from(Scheme)) == 0
     assert db.scalar(select(func.count()).select_from(SchemeVersion)) == 0
+
+
+def test_the_command_refuses_an_existing_seed_file_unless_told_to_bump(
+    monkeypatch: pytest.MonkeyPatch, db: Session, data_dir: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    item = save_proposal(db, extract(SOURCE, FakeLLM(response=answer_text(answer_with_benefit()))))
+    existing = put_existing_seed(data_dir)
+
+    assert run(monkeypatch, db, data_dir, item.id) == 1
+    captured = capsys.readouterr()
+    assert "seed exists; this would overwrite hand-labelled ground truth" in captured.err
+    assert captured.out == ""  # no slug printed, so the workflow cannot go on
+    assert existing.read_text("utf-8") == "hand-labelled, do not touch\n"
+    assert not (data_dir / "body.md").exists()
+
+    assert run(monkeypatch, db, data_dir, item.id, "--bump-version") == 0
+    assert capsys.readouterr().out == f"{SLUG}\n"
+    assert json.loads(existing.read_text("utf-8"))["slug"] == SLUG
+    assert "This replaces the existing" in (data_dir / "body.md").read_text("utf-8")
 
 
 def test_the_command_refuses_a_flagged_or_missing_item_and_writes_nothing(

@@ -24,17 +24,43 @@ from app.pipeline.source import read_source
 
 AGENT = user_agent()
 GOOD = "https://www.myscheme.gov.in/schemes/pmay-g"
+MYSCHEME = frozenset({"www.myscheme.gov.in"})
+
+
+@pytest.fixture(autouse=True)
+def _no_hosts_unless_a_test_names_them(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The real default is "no site allowed". A test that needs a site says so."""
+    monkeypatch.delenv(fetch_page.ALLOWED_HOSTS_ENV, raising=False)
 
 
 # --- which pages -------------------------------------------------------------------------------
 
 
-def test_a_myscheme_scheme_page_is_accepted_and_tidied() -> None:
+def test_no_site_is_allowed_by_default_not_even_myscheme() -> None:
+    assert fetch_page.ALLOWED_HOSTS == frozenset()
+    assert fetch_page.allowed_hosts() == frozenset()
+    with pytest.raises(FetchError) as error:
+        check_url(GOOD)
+    message = str(error.value)
+    assert "switched off" in message and "source_text" in message
+
+
+def test_the_owner_can_name_a_host_with_the_environment_variable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(fetch_page.ALLOWED_HOSTS_ENV, " WWW.myscheme.gov.in , ")
+    assert fetch_page.allowed_hosts() == MYSCHEME
     assert check_url(GOOD) == GOOD
-    assert check_url(GOOD + "/") == GOOD
-    assert check_url("  https://www.myscheme.gov.in/schemes/up-obc-post-matric  ").endswith(
-        "matric"
-    )
+    with pytest.raises(FetchError):  # a host that was not named is still refused
+        check_url("https://example.com/schemes/pmay-g")
+
+
+def test_a_myscheme_scheme_page_is_accepted_and_tidied() -> None:
+    assert check_url(GOOD, MYSCHEME) == GOOD
+    assert check_url(GOOD + "/", MYSCHEME) == GOOD
+    assert check_url(
+        "  https://www.myscheme.gov.in/schemes/up-obc-post-matric  ", MYSCHEME
+    ).endswith("matric")
 
 
 @pytest.mark.parametrize(
@@ -58,7 +84,7 @@ def test_a_myscheme_scheme_page_is_accepted_and_tidied() -> None:
 )
 def test_anything_else_is_refused_with_the_way_out(url: str) -> None:
     with pytest.raises(FetchError) as error:
-        check_url(url)
+        check_url(url, MYSCHEME)
     assert (
         "source_text" in str(error.value)
         or "scheme address" in str(error.value)
@@ -222,9 +248,27 @@ def test_the_written_file_is_read_by_the_normal_source_reader(tmp_path: Path) ->
 # --- the command: refusals happen before anything is opened --------------------------------------
 
 
+def test_the_command_refuses_everything_by_default_without_fetching_anything(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def boom(*args: object, **kwargs: object) -> None:
+        raise AssertionError("must not reach the network or the browser")
+
+    monkeypatch.setattr(fetch_page, "fetch_robots_txt", boom)
+    monkeypatch.setattr(fetch_page, "extract_tabs", boom)
+    out = tmp_path / "out.txt"
+
+    assert fetch_page.main([GOOD, "--out", str(out)]) == 1
+
+    assert "switched off" in capsys.readouterr().err
+    assert not out.exists()
+
+
 def test_the_command_refuses_a_bad_address_without_fetching_anything(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    monkeypatch.setenv(fetch_page.ALLOWED_HOSTS_ENV, "www.myscheme.gov.in")
+
     def boom(*args: object, **kwargs: object) -> None:
         raise AssertionError("must not reach the network or the browser")
 
@@ -241,6 +285,7 @@ def test_the_command_refuses_a_bad_address_without_fetching_anything(
 def test_the_command_stops_at_robots_txt_before_opening_the_page(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    monkeypatch.setenv(fetch_page.ALLOWED_HOSTS_ENV, "www.myscheme.gov.in")
     monkeypatch.setattr(
         fetch_page, "fetch_robots_txt", robots(200, "User-agent: *\nDisallow: /schemes/\n")
     )

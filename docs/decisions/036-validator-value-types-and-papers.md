@@ -26,4 +26,4 @@ mistakes it can catch mechanically.
 - A flagged item cannot be approved (decision 032). Review items already in the database were validated by the older code and stay "valid"; extract again to get the new checks.
 - A scheme whose Eligibility section is not a separate heading will have its paper rules refused. Acceptable: those papers belong in documents anyway.
 - "Required" on alternatives is still a human check in the pull request (the prompt asks for `required: false` and a note).
-- The reconstruction of item 4 in `tests/ignoaps_item4.py` is rebuilt from the real source text and the three reported defects; swap in the real JSON when available.
+- `backend/tests/ignoaps_item4.json` is review item 4's exact Proposal block from the Extract run summary, unedited. The old validator called it valid (checked on `main`); the new one flags it with 7 problems (`invalid_value_type` once, `document_as_rule` six times), and the same proposal with only those mistakes fixed passes.

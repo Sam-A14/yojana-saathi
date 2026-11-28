@@ -251,7 +251,7 @@ Actions > **Add scheme** > Run workflow (branch `main`): type the slug and **eit
 reads the site's robots.txt first and refuses if the path is disallowed, opens that one page in headless
 Chromium with a User-Agent that names the project, clicks each tab and saves its text, and the pull
 request shows the fetched text so you can compare it with the page. It never crawls or follows a link
-(see `docs/decisions/049-fetching-a-scheme-page.md`; read the site's terms of use first). It writes `data/scheme_sources/<slug>.txt`,
+(see `docs/decisions/049-fetching-a-scheme-page.md`; **switched off by default**: no site is allowed until the owner sets the repository variable `FETCH_ALLOWED_HOSTS`, after reading the site's terms, see `docs/decisions/050-myscheme-terms.md`). It writes `data/scheme_sources/<slug>.txt`,
 extracts and validates the rules, and then either opens **one pull request** containing the source
 file and the seed file, or, if the proposal failed validation, opens (or adds to) a GitHub issue
 that lists the problems. There is no automatic retry. Same one-time setup as the two workflows below
@@ -271,6 +271,12 @@ slug. The run summary shows the proposal, whether it passed validation, and the 
 `data/schemes_seed/<slug>.json` if that exists. The proposal is saved to `review_items` as
 `pending`; nothing is published. Deploy the backend first so the latest migration has run.
 
+**Replacing a scheme that already exists** (the same guard): **Add scheme** refuses a slug that is
+already a scheme, before the model is called. Tick **bump_version** to propose a replacement on
+purpose; the pull request says it replaces the existing source and seed file, which stay in git
+history, and Seed database then adds a new scheme version. Ticking it for a slug that is not a
+scheme yet is refused too.
+
 ### Approve a scheme proposal (after you have read it)
 
 Turns a proposal you have checked into a pull request, so adding a verified scheme takes one click
@@ -285,16 +291,25 @@ Then, each time:
    (the "Saved as review item #N" line).
 2. Actions > **Approve scheme proposal** > Run workflow, keep branch `main`, type the review item
    number and **your GitHub user name** (it is saved in the file as `approved_by`; the pull request
-   also records who ran the workflow).
+   also records who ran the workflow). Leave **bump_version** off for a new scheme.
 3. Open the pull request it creates. Read each rule next to its source quote, and the benefit text
    next to its quote. Merge it if they agree. Merging publishes nothing yet.
 4. After the merge, run **Seed database**. Only then does the scheme reach families.
 
 It refuses a proposal that did not pass validation, is no longer pending, or whose benefit text has
-no stored quote (extract again). If the file would be identical to the one already on `main`, it
+no stored quote (extract again). **If `data/schemes_seed/<slug>.json` already exists it refuses too**
+(that file is hand-labelled ground truth, and accuracy is scored against it). To replace it on
+purpose, tick **bump_version**: the pull request then says it replaces the file, the old file stays
+in git history, and Seed database adds a new version of the scheme. If the file would be identical to the one already on `main`, it
 says so and opens nothing. Pull requests opened by a workflow do not start the normal CI checks:
 close and reopen the pull request to run them (the frontend test that every rule can be shown in
 words runs there). The workflow itself already ran the seed-file and test-profile tests.
+
+### Daily alerts ("What's new for your family")
+The **Daily alerts** workflow runs once a day (02:47 India time) and from the Actions tab. It needs
+the `DATABASE_URL` secret only. It makes the in-app list (new scheme fits, an age soon, rules
+changed; decision 051). The first run only saves a baseline, so alerts start from the second day.
+Check it in the run summary: `households`, `new_alerts`, `first_time_members`, `failed`.
 
 ### Close old review items
 Actions tab, **Supersede review items**, type the numbers (for example `2,3,4,5,6,7,8,9,11,12`).
