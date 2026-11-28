@@ -86,10 +86,60 @@ def issue_body(result: dict[str, Any], run_url: str | None) -> str:
     return "\n".join(lines) + "\n"
 
 
-def pr_notice(actor: str, slug: str, run_url: str | None) -> str:
-    """The paragraph that starts a pull request opened by the "Add scheme" workflow."""
-    where = f" ([run]({run_url}))" if run_url else ""
+# GitHub refuses a pull request description over 65,536 characters; the fetched text is cut well
+# below that so the rest of the description always fits.
+MAX_SHOWN_SOURCE_CHARS = 40_000
+
+
+def fetched_section(page_url: str, source_text: str) -> str:
+    """The page text a robot fetched, shown in the pull request so a person can compare it with the
+    page before merging. Inside a code fence the text cannot close, and a collapsible block so it
+    does not push the review down."""
+    shown = source_text.strip("\n")
+    cut = len(shown) > MAX_SHOWN_SOURCE_CHARS
+    if cut:
+        shown = shown[:MAX_SHOWN_SOURCE_CHARS]
     return "\n".join(
+        [
+            "## The fetched source text: compare it with the page before merging",
+            "",
+            f"This text was **read from {page_url} by a program**, not pasted by a person. The "
+            "quotes behind every rule and the benefit text come from it word for word. Open the "
+            "page and check that it says the same, tab by tab, and that nothing is missing.",
+            "",
+            "<details><summary>Show the fetched text</summary>",
+            "",
+            _fence(shown),
+            *(
+                [
+                    "",
+                    f"*(Cut after {MAX_SHOWN_SOURCE_CHARS:,} characters; the whole file is in the "
+                    "pull request's changes.)*",
+                ]
+                if cut
+                else []
+            ),
+            "",
+            "</details>",
+            "",
+            "---",
+            "",
+        ]
+    )
+
+
+def pr_notice(
+    actor: str,
+    slug: str,
+    run_url: str | None,
+    fetched_from: str | None = None,
+    source_text: str | None = None,
+) -> str:
+    """The paragraph that starts a pull request opened by the "Add scheme" workflow. When the page
+    was fetched by the workflow (not pasted), it also shows the fetched text."""
+    where = f" ([run]({run_url}))" if run_url else ""
+    fetched = fetched_section(fetched_from, source_text or "") if fetched_from is not None else ""
+    notice = "\n".join(
         [
             f"## Added by the Add scheme workflow{where}",
             "",
@@ -107,6 +157,7 @@ def pr_notice(actor: str, slug: str, run_url: str | None) -> str:
             "",
         ]
     )
+    return notice + fetched
 
 
 def _run_url() -> str | None:
@@ -121,21 +172,34 @@ def main(argv: list[str] | None = None) -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     write = commands.add_parser("write-source")
     write.add_argument("slug")
+    write.add_argument("--from-file", type=Path, help="read the page text from this file")
     issue = commands.add_parser("issue-body")
     issue.add_argument("result_file", type=Path)
     notice = commands.add_parser("pr-notice")
     notice.add_argument("--actor", required=True)
     notice.add_argument("--slug", required=True)
+    notice.add_argument("--fetched-from", help="the page address, when the workflow fetched it")
     args = parser.parse_args(argv)
 
     try:
         if args.command == "write-source":
-            write_source(args.slug, os.environ.get("SOURCE_TEXT", ""))
+            text = (
+                args.from_file.read_text(encoding="utf-8")
+                if args.from_file
+                else os.environ.get("SOURCE_TEXT", "")
+            )
+            write_source(args.slug, text)
         elif args.command == "issue-body":
             result = json.loads(args.result_file.read_text(encoding="utf-8"))
             sys.stdout.write(issue_body(result, _run_url()))
         else:
-            sys.stdout.write(pr_notice(args.actor, args.slug, _run_url()))
+            source = None
+            if args.fetched_from:  # show exactly what was saved for this scheme
+                path = DEFAULT_DATA_DIR / "scheme_sources" / f"{args.slug}.txt"
+                source = path.read_text(encoding="utf-8")
+            sys.stdout.write(
+                pr_notice(args.actor, args.slug, _run_url(), args.fetched_from, source)
+            )
     except (AddSchemeError, OSError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1

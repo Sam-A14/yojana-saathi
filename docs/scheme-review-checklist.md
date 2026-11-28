@@ -110,7 +110,9 @@ Notes are for people and never reach the database. Record:
 
 # Adding a scheme: the process
 
-1. **Owner:** pastes the source text (page URL on its first line) and names the scheme.
+1. **Owner:** pastes the source text (page URL on its first line) or gives one myScheme page address,
+   and names the scheme. When the workflow fetched the page, the pull request shows the fetched text:
+   **compare it with the page** before merging.
 2. **Assistant:** triggers the **Add scheme** workflow with the slug and the text. The workflow
    writes `data/scheme_sources/<slug>.txt`, extracts, validates and, if valid, opens one pull
    request with the source file and the seed file. If the proposal is invalid it opens or updates
