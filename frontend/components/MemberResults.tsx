@@ -6,7 +6,7 @@ import Link from "next/link";
 import { schemeName } from "@/lib/format";
 import { neededAnswers } from "@/lib/rules";
 import { useRuleText } from "@/lib/use-text";
-import type { DocumentInfo, MemberEligibility, SchemeResult, SchemeSummary } from "@/lib/types";
+import type { DocumentInfo, ExcludedScheme, MemberEligibility, SchemeResult, SchemeSummary } from "@/lib/types";
 import { Avatar } from "./Avatar";
 import { CategoryIcon, StatusIcon, categoryKey } from "./icons";
 import { NeededAnswers } from "./NeededAnswers";
@@ -25,7 +25,7 @@ const EDGE: Record<ResultKind, string> = {
   excluded: "border-l-block-fg",
 };
 
-function SchemeRow({
+export function SchemeRow({
   href,
   scheme,
   kind,
@@ -65,6 +65,79 @@ function SchemeRow({
   );
 }
 
+/** The groups of results (may fit, close, needs an answer, blocked) as lists of schemes. Used for
+ * one person's card and for the "whole family" section. */
+export function ResultGroups({
+  schemes,
+  excluded,
+  hrefFor,
+  askedName,
+  documents,
+}: {
+  schemes: SchemeResult[];
+  excluded: ExcludedScheme[];
+  hrefFor: (slug: string) => string;
+  /** The name used in a question about one person (a family question does not use it). */
+  askedName: string;
+  documents: DocumentInfo[];
+}) {
+  const t = useTranslations("dashboard");
+  const describe = useRuleText(documents);
+  const byStatus = (kind: SchemeResult["status"]) => schemes.filter((s) => s.status === kind);
+
+  return (
+    <>
+      {GROUPS.map((kind) => {
+        const results = byStatus(kind);
+        if (results.length === 0) return null;
+        return (
+          <div key={kind} className="flex flex-col gap-3">
+            <h3 className="flex items-center gap-2 text-lg font-extrabold">
+              <StatusIcon kind={kind} size={22} />
+              {t(`sections.${kind}`)}
+            </h3>
+            <ul className="flex flex-col gap-3">
+              {results.map((result) => (
+                <SchemeRow key={result.scheme.slug} href={hrefFor(result.scheme.slug)} scheme={result.scheme} kind={kind}>
+                  {kind === "near_miss" && (
+                    <div>
+                      <p className="font-semibold">{t("closeHint")}</p>
+                      <RuleList
+                        rules={result.failed_rules.filter((r) => r.fixable)}
+                        mark="notMet"
+                        describe={describe}
+                      />
+                    </div>
+                  )}
+                  {kind === "unknown" && (
+                    <NeededAnswers needed={neededAnswers(result)} memberName={askedName} documents={documents} />
+                  )}
+                </SchemeRow>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
+
+      {excluded.length > 0 && (
+        <div className="flex flex-col gap-3">
+          <h3 className="flex items-center gap-2 text-lg font-extrabold">
+            <StatusIcon kind="excluded" size={22} />
+            {t("sections.excluded")}
+          </h3>
+          <ul className="flex flex-col gap-3">
+            {excluded.map((item) => (
+              <SchemeRow key={item.scheme.slug} href={hrefFor(item.scheme.slug)} scheme={item.scheme} kind="excluded">
+                <p>{t("excludedBecause", { names: item.excluded_by.join(", ") })}</p>
+              </SchemeRow>
+            ))}
+          </ul>
+        </div>
+      )}
+    </>
+  );
+}
+
 /** One person's card: the schemes that may fit, are close, need an answer, or are blocked. */
 export function MemberResults({
   member,
@@ -80,8 +153,6 @@ export function MemberResults({
   actions?: React.ReactNode;
 }) {
   const t = useTranslations("dashboard");
-  const describe = useRuleText(documents);
-  const byStatus = (kind: SchemeResult["status"]) => member.schemes.filter((s) => s.status === kind);
   const nothing = member.schemes.length === 0 && member.excluded.length === 0;
 
   return (
@@ -97,62 +168,13 @@ export function MemberResults({
       </div>
       {nothing && <p>{t("nothing", { name: member.nickname })}</p>}
 
-      {GROUPS.map((kind) => {
-        const results = byStatus(kind);
-        if (results.length === 0) return null;
-        return (
-          <div key={kind} className="flex flex-col gap-3">
-            <h3 className="flex items-center gap-2 text-lg font-extrabold">
-              <StatusIcon kind={kind} size={22} />
-              {t(`sections.${kind}`)}
-            </h3>
-            <ul className="flex flex-col gap-3">
-              {results.map((result) => (
-                <SchemeRow
-                  key={result.scheme.slug}
-                  href={schemeHref(member.member_id, result.scheme.slug)}
-                  scheme={result.scheme}
-                  kind={kind}
-                >
-                  {kind === "near_miss" && (
-                    <div>
-                      <p className="font-semibold">{t("closeHint")}</p>
-                      <RuleList
-                        rules={result.failed_rules.filter((r) => r.fixable)}
-                        mark="notMet"
-                        describe={describe}
-                      />
-                    </div>
-                  )}
-                  {kind === "unknown" && (
-                    <NeededAnswers
-                      needed={neededAnswers(result)}
-                      memberName={member.nickname}
-                      documents={documents}
-                    />
-                  )}
-                </SchemeRow>
-              ))}
-            </ul>
-          </div>
-        );
-      })}
-
-      {member.excluded.length > 0 && (
-        <div className="flex flex-col gap-3">
-          <h3 className="flex items-center gap-2 text-lg font-extrabold">
-            <StatusIcon kind="excluded" size={22} />
-            {t("sections.excluded")}
-          </h3>
-          <ul className="flex flex-col gap-3">
-            {member.excluded.map((item) => (
-              <SchemeRow key={item.scheme.slug} href={schemeHref(member.member_id, item.scheme.slug)} scheme={item.scheme} kind="excluded">
-                <p>{t("excludedBecause", { names: item.excluded_by.join(", ") })}</p>
-              </SchemeRow>
-            ))}
-          </ul>
-        </div>
-      )}
+      <ResultGroups
+        schemes={member.schemes}
+        excluded={member.excluded}
+        hrefFor={(slug) => schemeHref(member.member_id, slug)}
+        askedName={member.nickname}
+        documents={documents}
+      />
 
       {member.not_eligible_count > 0 && (
         <p className="text-base text-muted">

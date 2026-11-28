@@ -70,6 +70,14 @@ def test_a_scheme_with_nothing_to_say_has_an_empty_list_and_no_hindi_yet(
     assert body["not_checked_hi"] is None  # not written yet, which is not the same as nothing
 
 
+def test_each_scheme_says_if_it_is_for_the_whole_family(client: TestClient, seeded) -> None:
+    listed = {s["slug"]: s for s in client.get("/schemes").json()}
+
+    assert listed["pm-kisan"]["for_whole_family"] is True
+    assert listed["ignwps"]["for_whole_family"] is False
+    assert client.get("/schemes/pm-kisan").json()["for_whole_family"] is True
+
+
 def test_unknown_scheme_is_404(client: TestClient, seeded) -> None:
     assert client.get("/schemes/no-such-scheme").status_code == 404
 

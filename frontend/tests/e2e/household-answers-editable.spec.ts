@@ -22,8 +22,9 @@ async function openDashboard(page: Page, api: FakeApi, fields: Record<string, un
   return family;
 }
 
-const card = (page: Page) => page.getByRole("region", { name: "Asha", exact: true });
-const pmayG = (page: Page) => card(page).getByRole("listitem").filter({ hasText: PMAY_G });
+// PMAY-Gramin is about the whole family, so the dashboard shows it once, in its own section.
+const family = (page: Page) => page.getByRole("region", { name: "For the whole family" });
+const pmayG = (page: Page) => family(page).getByRole("listitem").filter({ hasText: PMAY_G });
 
 async function openEdit(page: Page) {
   await page.getByRole("link", { name: "Edit household details" }).click();
