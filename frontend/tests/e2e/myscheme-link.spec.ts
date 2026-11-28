@@ -63,14 +63,24 @@ test.describe("the myScheme link", () => {
 
     const farmers = page.getByRole("region", { name: "Farmers" });
     await expect(links(farmers)).toHaveAttribute("href", `${SEARCH}?keyword=Farmer`);
-    const pension = page.getByRole("region", { name: "Elders" });
+    const pension = page.getByRole("region", { name: "Pensions" });
     await expect(links(pension)).toHaveAttribute("href", `${SEARCH}?keyword=Pension+Uttar+Pradesh`);
-    // a topic we have no words for has none of its own; the page has one general link at the end
+    // a topic we have no words for has none of its own, and the page ends with ONE link, not two:
+    // the general link is shown only when no topic has its own
     await expect(links(page.getByRole("region", { name: "Other" }))).toHaveCount(0);
-    await expect(links(page)).toHaveCount(3);
-    await expect(links(page).last()).toHaveAttribute("href", SEARCH);
+    await expect(links(page)).toHaveCount(2);
+    await expect(page.locator(`a[href="${SEARCH}"]`)).toHaveCount(0);
     for (const link of await links(page).all()) await expect(link).toHaveAttribute("target", "_blank");
     expect(touched).toEqual([]);
+  });
+
+  test("a Schemes page where no topic has words ends with the one general link", async ({ page }) => {
+    await schemesAre(page, [scheme({ slug: "mystery", category: "something-new", name_en: "A mystery scheme" })]);
+    await page.goto("/schemes");
+    await expect(page.getByRole("heading", { name: "A mystery scheme" })).toBeVisible();
+
+    await expect(links(page)).toHaveCount(1);
+    await expect(links(page)).toHaveAttribute("href", SEARCH);
   });
 
   test("the words are in Hindi too, and the address does not change with the language", async ({ page }) => {
