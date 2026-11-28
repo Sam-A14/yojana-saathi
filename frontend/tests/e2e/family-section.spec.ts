@@ -113,9 +113,14 @@ test.describe("whose papers a whole-family scheme lists", () => {
     const { article } = await openScheme(page, api);
 
     await article.getByLabel("Show papers for:").selectOption({ label: "Meena" });
+    // Wait for the page to show Meena's papers first. Without this the check below passes at once,
+    // before the page has changed, and proves nothing.
+    await expect(article.getByText("Papers for Meena:")).toBeVisible();
 
     await expect(article.getByText("For your whole family")).toBeVisible();
-    await expect(article.getByText("For Meena")).toHaveCount(0);
+    // Exact text: "Papers for Meena:" contains "for Meena" and is meant to be there. A title that
+    // said "For Meena" would be the whole text of its element.
+    await expect(article.getByText("For Meena", { exact: true })).toHaveCount(0);
   });
 
   test("a scheme about one person has no picker", async ({ page, api }) => {
