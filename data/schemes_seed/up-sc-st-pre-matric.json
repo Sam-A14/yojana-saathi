@@ -1,0 +1,84 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": false,
+    "notes": [
+      "Proposed by the LLM extractor (review item 6, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request."
+    ]
+  },
+  "slug": "up-sc-st-pre-matric",
+  "name_en": "SC/ST Pre Matric Scholarship - Uttar Pradesh",
+  "name_hi": null,
+  "level": "state",
+  "state": "UP",
+  "category": "education",
+  "official_url": "https://scholarship.up.gov.in/PDFS/GO/PreScst(class%209-10)%20niyamawali%202016.pdf",
+  "version": {
+    "rules": {
+      "all": [
+        {
+          "field": "state",
+          "op": "eq",
+          "value": "UP"
+        },
+        {
+          "field": "category",
+          "op": "in",
+          "value": [
+            "SC",
+            "ST"
+          ]
+        },
+        {
+          "field": "age",
+          "op": "between",
+          "value": [
+            12,
+            20
+          ]
+        },
+        {
+          "field": "current_study_level",
+          "op": "eq",
+          "value": "class_9_10"
+        }
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "Day students receive up to ₹3,500 per year, and residential students receive up to ₹8,000 per year depending on the component.",
+    "benefit_text_hi": null,
+    "not_checked_en": [
+      "For Component 1, the family's annual income must not exceed Rs. 2,50,000.",
+      "Students whose parents are in occupations traditionally considered untouchable are eligible under Component 2.",
+      "Applicants cannot hold another scholarship at the same time, except as allowed by rules.",
+      "Must provide bank passbook photocopy, fee receipt number, enrollment number, and passport photo."
+    ],
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://www.myscheme.gov.in/schemes/pmcup",
+    "verified_at": "2026-11-28",
+    "approved_by": "Sam-A14",
+    "documents": [
+      {
+        "code": "marksheet",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "caste_certificate",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "income_certificate",
+        "required": true,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "aadhaar_card",
+        "required": true,
+        "applies_to": "applicant"
+      }
+    ]
+  }
+}
