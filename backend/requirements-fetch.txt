@@ -1,0 +1,4 @@
+# Only the "Add scheme" workflow's page-fetching step installs this (with its browser). The API,
+# Render and the normal CI do not: they never open a web page.
+-r requirements.txt
+playwright==1.49.0
