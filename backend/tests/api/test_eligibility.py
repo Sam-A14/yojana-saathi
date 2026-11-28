@@ -306,6 +306,43 @@ def test_is_bpl_is_independent_of_holding_the_bpl_card(
     assert result["status"] == "eligible"
 
 
+# --- the kind of house the family lives in ---
+
+
+HOUSE_RULE = {"all": [{"field": "house_type", "op": "in", "value": ["no_house", "kutcha"]}]}
+
+
+def test_house_type_unanswered_is_unknown_not_no(
+    client: TestClient, db: Session, seeded, today, make_family
+) -> None:
+    add_scheme(db, "house-test", HOUSE_RULE)
+    family = make_family()  # house_type never answered
+    add_member(client, family, "Asha")
+
+    result = schemes_of(eligibility(client, family), "Asha")["house-test"]
+
+    assert result["status"] == "unknown"
+    assert [r["rule"] for r in result["unknown_rules"]] == [HOUSE_RULE["all"][0]]
+
+
+@pytest.mark.parametrize(
+    ("house", "listed"), [("no_house", "eligible"), ("kutcha", "eligible"), ("pucca", None)]
+)
+def test_house_type_answers_decide_the_rule(
+    client: TestClient, db: Session, seeded, today, make_family, house: str, listed: str | None
+) -> None:
+    add_scheme(db, "house-test", HOUSE_RULE)
+    family = make_family(house_type=house)
+    add_member(client, family, "Asha")
+
+    results = schemes_of(eligibility(client, family), "Asha")
+
+    if listed is None:  # a definite "no": counted, not listed
+        assert "house-test" not in results
+    else:
+        assert results["house-test"]["status"] == listed
+
+
 # --- what the person is studying now ---
 
 

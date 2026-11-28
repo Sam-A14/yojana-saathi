@@ -20,6 +20,7 @@ from app.rules.fields import ALLOWED_VALUES, DOCUMENT_FIELD_PREFIX
 from app.rules.values import (
     CATEGORY_VALUES,
     EDUCATION_VALUES,
+    HOUSE_TYPE_VALUES,
     MARITAL_STATUS_VALUES,
     OCCUPATION_VALUES,
     STUDY_LEVEL_VALUES,
@@ -30,6 +31,7 @@ from app.rules.values import (
 CLOSED_VALUES: dict[str, tuple[str, ...]] = {
     "gender": GENDERS,
     "area_type": AREA_TYPES,
+    "house_type": HOUSE_TYPE_VALUES,
     "marital_status": MARITAL_STATUS_VALUES,
     "category": CATEGORY_VALUES,
     "education": EDUCATION_VALUES,

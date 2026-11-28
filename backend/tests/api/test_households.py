@@ -40,6 +40,34 @@ def test_is_bpl_can_be_given_when_the_household_is_created(client: TestClient, m
     assert make_family(is_bpl=False).body["is_bpl"] is False
 
 
+def test_house_type_starts_unanswered_and_is_set_and_cleared(
+    client: TestClient, make_family
+) -> None:
+    family = make_family()
+    assert family.body["house_type"] is None  # not asked yet: unknown, not any kind of house
+
+    for value in ("no_house", "kutcha", "pucca"):
+        response = client.patch(family.url, json={"house_type": value}, headers=family.headers)
+        assert response.json()["house_type"] == value
+
+    response = client.patch(family.url, json={"house_type": None}, headers=family.headers)
+    assert response.json()["house_type"] is None
+    assert client.get(family.url, headers=family.headers).json()["house_type"] is None
+
+
+def test_house_type_can_be_given_when_the_household_is_created(
+    client: TestClient, make_family
+) -> None:
+    assert make_family(house_type="kutcha").body["house_type"] == "kutcha"
+
+
+@pytest.mark.parametrize("word", ["Kutcha", "mud", "house", "", "no house"])
+def test_a_house_type_outside_the_list_is_a_422(client: TestClient, make_family, word: str) -> None:
+    family = make_family()
+    response = client.patch(family.url, json={"house_type": word}, headers=family.headers)
+    assert response.status_code == 422
+
+
 def test_other_answers_do_not_touch_is_bpl(client: TestClient, make_family) -> None:
     family = make_family(is_bpl=True, state="UP")
 

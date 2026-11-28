@@ -75,6 +75,13 @@ INCOME_BANDS: dict[str, IncomeBand] = {
 }
 INCOME_BAND_VALUES = tuple(INCOME_BANDS)
 
+# What kind of house the family lives in. A household fact, asked once. "no_house" means the family
+# has no house of its own (rented, on someone else's land, or none). "kutcha" is a house of mud,
+# thatch, bamboo or similar; "pucca" one of brick, cement or concrete. Housing schemes such as
+# PMAY-Gramin are for the first two, and the app cannot tell a "dilapidated" pucca house apart, so
+# the family's own answer is trusted.
+HOUSE_TYPE_VALUES = ("no_house", "kutcha", "pucca")
+
 # Documents one person holds for the whole family. If any member has one, every member counts as
 # having it (see api/facts.py). The one place to add a code when a new family-level document
 # appears; a test checks that each code exists in data/documents.json.

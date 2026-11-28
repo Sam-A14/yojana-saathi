@@ -300,6 +300,7 @@
         "area_type",
         "income_band_max",
         "category",
+        "house_type",
         "is_bpl",
         "has_aadhaar_card",
         "has_income_certificate",
