@@ -63,9 +63,48 @@ function eligibilityFor(fixture: Fixture, householdId: string, household: Stored
     const sample =
       fixture.members.find((m) => m.nickname === member.nickname) ??
       fixture.members[index % fixture.members.length];
-    return { ...sample, member_id: member.id, nickname: member.nickname };
+    const own = ignoapsFor(member, household);
+    const schemes = (sample.schemes as { scheme: { slug: string } }[]).filter((s) => s.scheme.slug !== "ignoaps");
+    return { ...sample, schemes: own ? [own, ...schemes] : schemes, member_id: member.id, nickname: member.nickname };
   });
   return { ...fixture, household_id: householdId, members };
+}
+
+// IGNOAPS is decided by two rules: the family is below the poverty line (the household's yes/no
+// answer) and the person is 60 or over. This fake mirrors them so a test can add a person and see
+// the scheme appear. The real engine's answer for the same facts is proved in the backend test
+// `test_a_person_added_after_setup_is_checked_straight_away`.
+function ignoapsFor(member: Json, household: StoredHousehold) {
+  const born = member.birth_year as number | null | undefined;
+  const age = born ? new Date().getFullYear() - born : null;
+  if (household.fields.is_bpl !== true || age === null || age < 61) return null; // 61: certainly 60 or over
+  return {
+    scheme: {
+      slug: "ignoaps",
+      name_en: "Indira Gandhi National Old Age Pension Scheme",
+      name_hi: "इंदिरा गांधी राष्ट्रीय वृद्धावस्था पेंशन योजना",
+      level: "central",
+      state: null,
+      category: "pension",
+      official_url: "https://www.myscheme.gov.in/schemes/nsap-ignoaps",
+      benefit_text_en: "₹200 a month from the Centre up to age 79, ₹500 from age 80. The State Government may add more on top.",
+      benefit_text_hi: null,
+      deadline_start: null,
+      deadline_end: null,
+      verified: true,
+      verified_at: "2026-11-27T00:00:00Z",
+    },
+    status: "eligible",
+    reasons: [],
+    passed_rules: [
+      { rule: { field: "is_bpl", op: "is_true" }, fields: ["is_bpl"], matched_members: [], fixable: false, reasons: [] },
+      { rule: { field: "age", op: "gte", value: 60 }, fields: ["age"], matched_members: [], fixable: false, reasons: [] },
+    ],
+    failed_rules: [],
+    unknown_rules: [],
+    excluded_by: [],
+    missing_documents: [],
+  };
 }
 
 // What Google's script (accounts.google.com/gsi/client) does, reduced to a plain button. The test
