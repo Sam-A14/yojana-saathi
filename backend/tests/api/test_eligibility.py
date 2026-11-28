@@ -106,15 +106,16 @@ def test_widow_in_a_landowning_family_end_to_end(
     # The reasons are there for the screen: which rules passed, with the scheme's own wording.
     ignwps = kamla["ignwps"]
     assert {r["rule"]["field"] for r in ignwps["passed_rules"]} == {
-        "gender",
         "marital_status",
         "age",
         "is_bpl",
+        "is_remarried",
     }
     assert ignwps["failed_rules"] == [] and ignwps["unknown_rules"] == []
-    assert ignwps["scheme"]["official_url"] == "https://nsap.nic.in/"
-    # Not yet checked by a human: shown, and labelled as such.
-    assert ignwps["scheme"]["verified"] is False
+    assert ignwps["scheme"]["official_url"] == "https://www.myscheme.gov.in/schemes/ignwps"
+    assert ignwps["scheme"]["source_url"] == "https://www.myscheme.gov.in/schemes/ignwps"
+    # The committed file was approved by a pull request, so it carries a verified date.
+    assert ignwps["scheme"]["verified"] is True
 
 
 @pytest.mark.parametrize("path", PROFILES, ids=lambda p: p.stem)
@@ -200,7 +201,13 @@ def test_age_limit_uses_the_range_from_birth_year(
 ) -> None:
     family = make_family(state="UP", is_bpl=True)
     member_id = add_member(
-        client, family, "Kamla", birth_year=birth_year, gender="female", marital_status="widow"
+        client,
+        family,
+        "Kamla",
+        birth_year=birth_year,
+        gender="female",
+        marital_status="widow",
+        is_remarried=False,
     )
     put_documents(client, family, member_id, {"bpl_card": True})
 
@@ -443,20 +450,24 @@ def test_missing_documents_say_no_or_not_asked_and_household_documents_are_share
 ) -> None:
     family = make_family(state="UP")
     kamla = add_member(
-        client, family, "Kamla", birth_year=1964, gender="female", marital_status="widow"
+        client,
+        family,
+        "Kamla",
+        birth_year=1964,
+        gender="female",
+        marital_status="widow",
+        is_remarried=False,
     )
     raju = add_member(client, family, "Raju", birth_year=1991)
-    put_documents(client, family, kamla, {"bank_account_aadhaar_linked": False})
+    put_documents(client, family, kamla, {"spouse_death_certificate": False})
     put_documents(client, family, raju, {"bpl_card": True})  # household document, held by Raju
 
     ignwps = schemes_of(eligibility(client, family), "Kamla")["ignwps"]
 
     missing = {d["code"]: d["state"] for d in ignwps["missing_documents"]}
-    assert missing == {
-        "aadhaar_card": "not_answered",
-        "spouse_death_certificate": "not_answered",
-        "bank_account_aadhaar_linked": "no",
-    }  # bpl_card is not listed: someone in the household has it
+    # "no": the family said she does not have it. bpl_card is not listed: someone in the household
+    # has it. The age proofs are "any one of", so they are never listed as missing.
+    assert missing == {"spouse_death_certificate": "no"}
     sample = ignwps["missing_documents"][0]
     assert {"name_en", "name_hi", "how_to_get_en", "official_link"} <= set(sample)
 
@@ -548,7 +559,13 @@ def test_a_widow_whose_family_has_not_answered_the_bpl_question_is_asked_not_rej
 ) -> None:
     family = make_family(state="UP")  # is_bpl never answered
     member_id = add_member(
-        client, family, "Kamla", birth_year=1964, gender="female", marital_status="widow"
+        client,
+        family,
+        "Kamla",
+        birth_year=1964,
+        gender="female",
+        marital_status="widow",
+        is_remarried=False,
     )
     put_documents(client, family, member_id, {"bpl_card": True})  # a card does not answer it
 
@@ -573,11 +590,14 @@ def test_a_family_that_says_it_is_not_bpl_is_not_offered_ignwps(
 def test_personal_documents_are_not_shared_between_members(
     client: TestClient, seeded, today, make_family
 ) -> None:
-    family = widow_and_husbands_family(client, make_family, {"aadhaar_card": True}, None)
+    family = widow_and_husbands_family(
+        client, make_family, {"spouse_death_certificate": True}, None
+    )
 
     ignwps = schemes_of(eligibility(client, family), "Kamla")["ignwps"]
 
-    assert "aadhaar_card" in {d["code"] for d in ignwps["missing_documents"]}
+    # the husband's answer is his own: Kamla still has no answer for her death certificate
+    assert "spouse_death_certificate" in {d["code"] for d in ignwps["missing_documents"]}
 
 
 # --- safety ------------------------------------------------------------------------------------

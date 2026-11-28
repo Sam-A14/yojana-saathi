@@ -6,7 +6,11 @@ from app.db.models import Scheme, SchemeVersion
 from tests.api.conftest import add_scheme
 
 
-def test_list_is_public_and_includes_unverified_schemes(client: TestClient, seeded) -> None:
+def test_list_is_public_and_includes_unverified_schemes(
+    client: TestClient, db: Session, seeded
+) -> None:
+    # Whatever is committed, a scheme with no verified_at must be shown, labelled, never hidden.
+    db.execute(update(SchemeVersion).values(verified_at=None))
     response = client.get("/schemes")  # no token
 
     assert response.status_code == 200
@@ -45,11 +49,11 @@ def test_detail_has_documents_and_source(client: TestClient, seeded) -> None:
 
     assert response.status_code == 200
     body = response.json()
-    assert body["official_url"] == "https://nsap.nic.in/"
+    assert body["official_url"] == "https://www.myscheme.gov.in/schemes/ignwps"
     assert body["source_url"].startswith("http")
     assert body["version_no"] == 1
     codes = {d["code"] for d in body["documents"]}
-    assert {"aadhaar_card", "bpl_card"} <= codes
+    assert {"spouse_death_certificate", "bpl_card"} <= codes
     bpl = next(d for d in body["documents"] if d["code"] == "bpl_card")
     assert (bpl["required"], bpl["applies_to"]) == (True, "household")
 

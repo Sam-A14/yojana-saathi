@@ -1,0 +1,50 @@
+{
+  "description": "A widow aged 85 in a BPL family still qualifies for IGNWPS: the page's Benefits section pays Rs.500 a month to persons 80 and above, so the age rule is 40 and over, not 40 to 79. Her son's land makes the family PM-KISAN eligible.",
+  "household": {
+    "state": "UP",
+    "district": "Sitapur",
+    "area_type": "rural",
+    "income_band_max": 100000,
+    "category": "OBC",
+    "is_bpl": true
+  },
+  "members": [
+    {
+      "nickname": "Kamla",
+      "age": 85,
+      "gender": "female",
+      "marital_status": "widow",
+      "owns_cultivable_land": false,
+      "paid_income_tax_last_year": false,
+      "govt_employee": "none",
+      "pension_band": "none",
+      "is_registered_professional": false,
+      "holds_constitutional_post": false,
+      "is_remarried": false,
+      "has_bpl_card": true
+    },
+    {
+      "nickname": "Raju",
+      "age": 35,
+      "gender": "male",
+      "marital_status": "married",
+      "owns_cultivable_land": true,
+      "paid_income_tax_last_year": false,
+      "govt_employee": "none",
+      "pension_band": "none",
+      "is_registered_professional": false,
+      "holds_constitutional_post": false,
+      "is_remarried": false
+    }
+  ],
+  "expected": {
+    "pm-kisan": {
+      "Kamla": "eligible",
+      "Raju": "eligible"
+    },
+    "ignwps": {
+      "Kamla": "eligible",
+      "Raju": "not_eligible"
+    }
+  }
+}
