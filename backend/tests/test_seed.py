@@ -137,8 +137,10 @@ def test_not_checked_lines_are_stored_and_a_change_adds_a_version(
     load(db, data_dir)
     first = scheme(db, "ignoaps").current_version
     assert first is not None and len(first.not_checked_en) == 2
-    assert scheme(db, "pm-kisan").current_version.not_checked_en == []  # type: ignore[union-attr]
-    assert scheme(db, "pm-kisan").current_version.not_checked_hi is None  # type: ignore[union-attr]
+    for slug, lines in (("pm-kisan", 3), ("ignwps", 2)):
+        version = scheme(db, slug).current_version
+        assert version is not None and len(version.not_checked_en) == lines
+        assert version.not_checked_hi is not None and len(version.not_checked_hi) == lines
 
     def reword(content: dict[str, Any]) -> None:
         content["version"]["not_checked_en"][0] = "You must be a citizen of India."

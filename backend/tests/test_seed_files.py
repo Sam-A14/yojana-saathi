@@ -2,6 +2,7 @@
 
 import copy
 import json
+import re
 from typing import Any
 
 import pytest
@@ -270,6 +271,19 @@ def test_not_checked_lines_must_line_up_in_both_languages_and_be_real_text() -> 
     for bad in ("one long string", [""], [3]):
         scheme["version"]["not_checked_en"] = bad
         assert schema_problems(_validator(SCHEMA_PATH), scheme), bad
+
+
+def test_every_scheme_with_technical_notes_also_has_lines_a_family_can_read() -> None:
+    """A scheme whose labeller listed conditions the app cannot check must tell families too."""
+    schemes = read_seed_files().schemes
+    with_notes = [s for s in schemes if s["labeller_notes"].get("not_encoded")]
+    assert len(with_notes) >= 3  # ignoaps, pm-kisan, ignwps
+    for scheme in with_notes:
+        lines = scheme["version"].get("not_checked_en", [])
+        assert lines, f"{scheme['slug']}: not_encoded has notes but not_checked_en is empty"
+        # Plain words: no field names (is_bpl, applicant_family) and no quoted code.
+        for line in lines + (scheme["version"].get("not_checked_hi") or []):
+            assert not re.search(r"\b[a-z]+_[a-z_]+\b", line), f"{scheme['slug']}: {line!r}"
 
 
 def test_ignoaps_says_what_it_does_not_check_in_plain_words() -> None:
