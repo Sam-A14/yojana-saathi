@@ -10,7 +10,6 @@ import {
   FileText,
   Gift,
   GraduationCap,
-  HandHeart,
   Hammer,
   Heart,
   HeartPulse,
@@ -71,7 +70,7 @@ const CATEGORY_ICONS: Record<Category, LucideIcon> = {
   housing: House,
   family_welfare: Users,
   farmer: Wheat,
-  pension: HandHeart,
+  pension: BadgeIndianRupee,
   widow_pension: Flower2,
 };
 
