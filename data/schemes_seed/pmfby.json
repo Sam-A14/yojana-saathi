@@ -10,7 +10,9 @@
       "'Any one of' papers: Identity Proof (Aadhaar Card/PAN Card/Voter ID/Bank Passbook with Photo, Kisan Photo Book/NREGA Job Card) and Address Proof (Aadhaar Card/PAN Card/Voter ID/Electricity Bill/Bank Passbook with Photo). Listed with required: false. aadhaar_card, pan_card, voter_id and mgnrega_job_card cover them. No code exists for Kisan Photo Book, electricity bill, passport-size photograph or the crop declaration: none was invented (a code needs its own pull request first).",
       "not_checked rewritten by hand into plain sentences and extended: Eligibility item 4 (cultivator or sharecropper on the insured land, which our occupation field only partly says) added; the premium line (Exclusions, 'Non-Premium Payment') kept but softened to 'ask the office', as 'may not be eligible' is not a firm rule.",
       "Not encoded: the Exclusions about non-notified areas, losses outside the crop cycle, negligence and losses beyond specified limits. They describe which losses are paid, not who may join, so none is an eligibility line. The government paying the entire premium in North-Eastern States, Jammu, Kashmir and Himachal Pradesh is in Benefits and is left out of the benefit text.",
-      "Benefit text numbers 2%, 1.5% and 5% are all in the Benefits quote. Hindi keeps the same numbers.",
+      "Source quote (benefit_text_en): The scheme covers natural disasters (droughts, floods), pests, and diseases.",
+      "Source quote (benefit_text_en): The maximum premium payable by the farmer will be 2% for the Kharif food and oilseed crops. For rabi food and oilseeds crop, it is 1.5% and for yearly commercial or horticultural crops it will be 5%. The remaining premium is subsidized by the government.",
+      "benefit_text_en was rewritten by hand to lead with what the scheme gives (cover against natural disasters, pests and diseases, from the Benefits item 'Comprehensive Coverage'), then the premium the farmer pays (2%, 1.5%, 5%, from 'Affordable Premiums'). It says 'natural disasters', the page's words, not 'natural calamities'. The 'post-harvest losses' and 'North-East, J&K, Himachal: government pays the entire premium' lines of Benefits are left out on purpose. Hindi keeps the same order and the same numbers.",
       "Hand-written Hindi added (name_hi, benefit_text_hi, not_checked_hi).",
       "NEEDS NATIVE REVIEW (owner): name_hi, benefit_text_hi and not_checked_hi."
     ]
@@ -33,8 +35,8 @@
       ],
       "fixable": []
     },
-    "benefit_text_en": "The maximum premium payable by the farmer will be 2% for the Kharif food and oilseed crops, 1.5% for rabi food and oilseeds crop, and 5% for yearly commercial or horticultural crops, with the remaining premium subsidized by the government.",
-    "benefit_text_hi": "फसल बीमा, सस्ते प्रीमियम पर। किसान को ज़्यादा से ज़्यादा 2% (खरीफ की खाद्य और तिलहन फसलें), 1.5% (रबी की खाद्य और तिलहन फसलें) या 5% (साल भर वाली व्यावसायिक या बागवानी फसलें) प्रीमियम देना होता है। बाकी प्रीमियम सरकार देती है।",
+    "benefit_text_en": "Insurance for your crops against loss from natural disasters, pests and diseases. You pay a premium of at most 2% for Kharif food and oilseed crops, 1.5% for rabi food and oilseed crops and 5% for yearly commercial or horticultural crops. The government pays the rest.",
+    "benefit_text_hi": "आपकी फसलों का बीमा: प्राकृतिक आपदाओं, कीड़ों और बीमारियों से फसल के नुकसान पर। आपको ज़्यादा से ज़्यादा 2% (खरीफ की खाद्य और तिलहन फसलें), 1.5% (रबी की खाद्य और तिलहन फसलें) या 5% (साल भर वाली व्यावसायिक या बागवानी फसलें) प्रीमियम देना होता है। बाकी प्रीमियम सरकार देती है।",
     "not_checked_en": [
       "Your crop must be one of the crops notified for the scheme, and your land must be in a notified area. This app does not check it. Ask the office.",
       "You must be the person who grows the crop on the land, as a farmer, a tenant farmer or a sharecropper. This app only asks about your work, so ask the office.",
