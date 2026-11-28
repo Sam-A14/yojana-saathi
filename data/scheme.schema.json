@@ -142,7 +142,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Official conditions the rule fields cannot express yet."
+          "description": "Official conditions the rule fields cannot express yet. For labellers, any wording. What families should see goes in version.not_checked_en."
         }
       }
     },
@@ -169,6 +169,25 @@
             "string",
             "null"
           ]
+        },
+        "not_checked_en": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Conditions of the scheme this app does not check, one plain sentence each, written for a parent (no field names). Shown on the scheme page as 'What we did not check'. [] = nothing to say."
+        },
+        "not_checked_hi": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "The same lines in Hindi, one for one. null = not written yet; the page then shows the English lines."
         },
         "deadline_start": {
           "type": [

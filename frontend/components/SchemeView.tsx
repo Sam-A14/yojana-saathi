@@ -3,7 +3,7 @@
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useParams, useSearchParams } from "next/navigation";
-import { benefitText, documentName, formatDate, schemeName } from "@/lib/format";
+import { benefitText, documentName, formatDate, notCheckedLines, schemeName } from "@/lib/format";
 import { neededAnswers } from "@/lib/rules";
 import type { DocumentInfo, Eligibility, ExcludedScheme, Family, MemberEligibility, SchemeResult } from "@/lib/types";
 import { useFamilyResults } from "@/lib/use-family-results";
@@ -107,6 +107,7 @@ export function SchemeDetail({
   const scheme = (found ?? excluded)!.scheme;
   const kind: ResultKind = found ? found.status : "excluded";
   const summary = benefitText(scheme, locale);
+  const notChecked = notCheckedLines(scheme, locale);
   const dates = [
     scheme.deadline_start && t("deadlineStarts", { date: formatDate(scheme.deadline_start, locale) }),
     scheme.deadline_end && t("deadlineEnds", { date: formatDate(scheme.deadline_end, locale) }),
@@ -164,6 +165,19 @@ export function SchemeDetail({
         <Section title={t("excludedTitle")} icon={SECTION_ICONS.why}>
           <p className="font-semibold">{t("excludedBecause", { names: excluded.excluded_by.join(", ") })}</p>
           <RuleList rules={excluded.failed_rules} mark="notMet" describe={describe} />
+        </Section>
+      )}
+
+      {/* Conditions this app cannot test. Shown for every result, "may qualify" included: that is
+          where a family most needs to hear that the office will ask for more. */}
+      {notChecked.length > 0 && (
+        <Section title={t("notCheckedTitle")} icon={SECTION_ICONS.unchecked}>
+          <p>{t("notCheckedIntro")}</p>
+          <ul className="flex list-disc flex-col gap-2 pl-6">
+            {notChecked.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
         </Section>
       )}
 

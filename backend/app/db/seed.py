@@ -128,7 +128,8 @@ def _read_documents(data_dir: Path, problems: list[str]) -> list[dict[str, Any]]
 def scheme_file_problems(
     data: dict[str, Any], known_codes: set[str], file_stem: str | None
 ) -> list[str]:
-    """Checks a JSON Schema cannot express: file name, deadlines, document references."""
+    """Checks a JSON Schema cannot express: file name, deadlines, document references, the two
+    not_checked lists lining up."""
     problems = []
     if file_stem is not None and data["slug"] != file_stem:
         problems.append(f"slug '{data['slug']}' must equal the file name '{file_stem}'")
@@ -136,6 +137,9 @@ def scheme_file_problems(
     start, end = version.get("deadline_start"), version.get("deadline_end")
     if start and end and date.fromisoformat(end) < date.fromisoformat(start):
         problems.append("deadline_end is before deadline_start")
+    not_checked_hi = version.get("not_checked_hi")
+    if not_checked_hi is not None and len(not_checked_hi) != len(version.get("not_checked_en", [])):
+        problems.append("not_checked_hi must have one line for each line of not_checked_en")
     codes = [d["code"] for d in version["documents"]]
     for code in sorted(set(codes) - known_codes):
         problems.append(f"document '{code}' is not in documents.json")
@@ -199,6 +203,8 @@ def _material_from_file(version: dict[str, Any]) -> dict[str, Any]:
         "rules_json": version["rules"],
         "benefit_text_en": version.get("benefit_text_en"),
         "benefit_text_hi": version.get("benefit_text_hi"),
+        "not_checked_en": version.get("not_checked_en", []),
+        "not_checked_hi": version.get("not_checked_hi"),
         "deadline_start": _to_date(version.get("deadline_start")),
         "deadline_end": _to_date(version.get("deadline_end")),
         "source_url": version["source_url"],
@@ -211,6 +217,8 @@ def _material_from_row(row: SchemeVersion) -> dict[str, Any]:
         "rules_json": row.rules_json,
         "benefit_text_en": row.benefit_text_en,
         "benefit_text_hi": row.benefit_text_hi,
+        "not_checked_en": row.not_checked_en,
+        "not_checked_hi": row.not_checked_hi,
         "deadline_start": row.deadline_start,
         "deadline_end": row.deadline_end,
         "source_url": row.source_url,

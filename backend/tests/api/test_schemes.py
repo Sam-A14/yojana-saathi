@@ -47,6 +47,18 @@ def test_detail_has_documents_and_source(client: TestClient, seeded) -> None:
     assert (bpl["required"], bpl["applies_to"]) == (True, "household")
 
 
+def test_detail_and_list_carry_what_we_did_not_check(client: TestClient, seeded) -> None:
+    detail = client.get("/schemes/ignoaps").json()
+    assert len(detail["not_checked_en"]) == 2 and len(detail["not_checked_hi"]) == 2
+    assert "citizen of India" in detail["not_checked_en"][0]
+
+    listed = {s["slug"]: s for s in client.get("/schemes").json()}
+    assert listed["ignoaps"]["not_checked_en"] == detail["not_checked_en"]
+    # A scheme with nothing to say gets an empty list (never null), and no Hindi yet is null.
+    assert listed["pm-kisan"]["not_checked_en"] == []
+    assert listed["pm-kisan"]["not_checked_hi"] is None
+
+
 def test_unknown_scheme_is_404(client: TestClient, seeded) -> None:
     assert client.get("/schemes/no-such-scheme").status_code == 404
 

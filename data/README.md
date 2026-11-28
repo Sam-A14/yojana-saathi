@@ -23,6 +23,10 @@ Hand-made data files. The database is loaded from these files, so a mistake here
    source, then set it to that day's date, for example `"2026-11-02"`.
 5. In `labeller_notes`, say whether you reached the official page, and list official conditions the
    rule fields cannot express in `not_encoded`. Nothing in `labeller_notes` goes to the database.
+   What families should read about those conditions goes in `version.not_checked_en` instead: one
+   plain sentence each, written for a parent (no field names), shown on the scheme page as "What we
+   did not check". `not_checked_hi` is the same lines in Hindi, one for one, or `null` until written
+   (the page then shows the English). Changing these lines adds a new scheme version.
 6. Check it: `cd backend && pytest tests/test_seed_files.py`. Then open a pull request.
 
 ## Rule format

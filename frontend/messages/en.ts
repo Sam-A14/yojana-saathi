@@ -245,6 +245,8 @@ export const en = {
     notChecked: "What we could not check yet",
     fixable: "You can fix this",
     marks: { met: "Met", notMet: "Not met", notChecked: "Not checked yet" },
+    notCheckedTitle: "What we did not check",
+    notCheckedIntro: "This app cannot check these. Please read them on the official website before you apply.",
     excludedTitle: "Why it is not available",
     excludedBecause: "Because of {names}:",
     docsTitle: "Papers you still need",

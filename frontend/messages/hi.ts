@@ -269,6 +269,9 @@ export const hi: typeof en = {
     notChecked: "जो हम अभी जाँच नहीं पाए",
     fixable: "इसे ठीक किया जा सकता है",
     marks: { met: "पूरा", notMet: "पूरा नहीं", notChecked: "अभी जाँचा नहीं" },
+    // needs native review (owner): the "What we did not check" section
+    notCheckedTitle: "जो हमने नहीं जाँचा",
+    notCheckedIntro: "यह ऐप इन बातों की जाँच नहीं कर सकता। आवेदन से पहले इन्हें सरकारी वेबसाइट पर ज़रूर पढ़ें।",
     excludedTitle: "यह उपलब्ध क्यों नहीं है",
     excludedBecause: "{names} की वजह से:",
     docsTitle: "जो कागज़ अभी चाहिए",
