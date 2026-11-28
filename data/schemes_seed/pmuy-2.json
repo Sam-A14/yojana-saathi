@@ -1,0 +1,56 @@
+{
+  "$schema": "../scheme.schema.json",
+  "labeller_notes": {
+    "example": false,
+    "notes": [
+      "Proposed by the LLM extractor (review item 13, model gemini-3.6-flash), checked by Sam-A14 in the pull request that added this file on 2026-11-28. Every rule has a word-for-word source quote, shown in that pull request."
+    ]
+  },
+  "slug": "pmuy-2",
+  "name_en": "Pradhan Mantri Ujjwala Yojana 2.0",
+  "name_hi": null,
+  "level": "central",
+  "state": null,
+  "category": "family_welfare",
+  "official_url": "https://www.myscheme.gov.in/schemes/pmuy2",
+  "version": {
+    "rules": {
+      "all": [
+        {
+          "field": "gender",
+          "op": "eq",
+          "value": "female"
+        },
+        {
+          "field": "age",
+          "op": "gte",
+          "value": 18
+        }
+      ],
+      "fixable": []
+    },
+    "benefit_text_en": "Free LPG connection with cash assistance of Rs. 1600 for a 14.2 kg cylinder or Rs. 1150 for a 5 kg cylinder, along with a free first LPG refill and stove.",
+    "benefit_text_hi": null,
+    "not_checked_en": [
+      "The applicant must belong to an SC or ST household, PMAY (Gramin), AAY, Most Backward Classes, Tea/Ex-Tea Garden tribes, Forest Dwellers, Island/River Island resident, SECC household, or poor household as per 14-point declaration.",
+      "There should not be any other LPG connection in the same household."
+    ],
+    "deadline_start": null,
+    "deadline_end": null,
+    "source_url": "https://www.myscheme.gov.in/schemes/pmuy2",
+    "verified_at": "2026-11-28",
+    "approved_by": "Sam-A14",
+    "documents": [
+      {
+        "code": "ration_card",
+        "required": false,
+        "applies_to": "applicant"
+      },
+      {
+        "code": "aadhaar_card",
+        "required": true,
+        "applies_to": "applicant"
+      }
+    ]
+  }
+}
