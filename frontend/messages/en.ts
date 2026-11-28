@@ -409,6 +409,20 @@ export const en = {
     invalid_google_token: "We could not check your Google sign-in. Please try again, or use your email instead.",
     google_unavailable: "Sign-in with Google is not available right now. Please use your email instead.",
   },
+  alerts: {
+    title: "What’s new for your family",
+    unread: "{count} new",
+    new: "New",
+    empty: "Nothing new yet. We check once a day, and tell you here when something changes.",
+    markRead: "Mark as read",
+    markAllRead: "Mark all as read",
+    text: {
+      newScheme: "{member} may now qualify for {scheme}.",
+      ageThreshold:
+        "{member} turns {age} in {year}. We only know the year of birth, so it could be any time that year. Then these may fit: {schemes}.",
+      ruleChange: "The rules of {scheme} have changed. Your family’s result may be different now. Please look again.",
+    },
+  },
   example: {
     label: "Demo, not a real family",
     title: "A demo family",

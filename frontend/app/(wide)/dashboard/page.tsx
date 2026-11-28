@@ -11,6 +11,7 @@ import { MemberActions } from "@/components/MemberActions";
 import { MemberPanel } from "@/components/MemberPanel";
 import { MemberResults } from "@/components/MemberResults";
 import { MyData } from "@/components/MyData";
+import { WhatsNew } from "@/components/WhatsNew";
 import { Button, ButtonLink, Card, ErrorNote, Skeleton } from "@/components/ui";
 import { api, errorKind, type ErrorKind } from "@/lib/api";
 import { countResults, nothingFound, splitFamilyLevel } from "@/lib/family-level";
@@ -127,6 +128,8 @@ function DashboardScreen({ family, session }: { family: Family; session: Session
         {notice && <p className="rounded-xl border-2 border-ok-fg bg-ok-bg px-4 py-3 text-lg font-semibold text-ok-fg">{notice}</p>}
       </div>
       {problem && <ErrorNote>{te(problem)}</ErrorNote>}
+
+      <WhatsNew family={family} />
 
       {results.state === "loading" && <Skeleton label={t("loading")} />}
 

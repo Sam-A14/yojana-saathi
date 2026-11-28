@@ -1,0 +1,57 @@
+name: Daily alerts
+
+# Makes the "What's new for your family" list on the dashboard (decision 051). Once a day, and by
+# hand from the Actions tab. For every family it asks the rules engine what is different since the
+# last run: a scheme that now fits a member, a member nearing an age a scheme starts at, a scheme
+# whose rules changed. No email is sent. Safe to run twice: each alert has a key and is made once.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 21 * * *" # 02:47 in India, when nobody is using the app
+
+permissions:
+  contents: read
+
+# Two runs at once could look at the same family together.
+concurrency:
+  group: daily-alerts
+  cancel-in-progress: false
+
+jobs:
+  alerts:
+    # Only the reviewed code on main may touch the production database.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: pip install -r requirements.txt
+      - name: Wait for the database migrations
+        shell: bash
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::The DATABASE_URL secret is not set."
+            exit 1
+          fi
+          python -m app.db.migration_status --timeout 600 --interval 20
+      - name: Make the alerts
+        shell: bash
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          python -m app.alerts.daily | tee alerts-summary.txt
+          {
+            echo '### Daily alerts'
+            echo '```'
+            cat alerts-summary.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
