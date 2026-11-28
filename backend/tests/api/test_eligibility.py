@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.api.facts import MEMBER_FACT_COLUMNS
-from app.db.seed import DEFAULT_DATA_DIR
+from app.db.seed import DEFAULT_DATA_DIR, read_seed_files
 from app.rules.values import INCOME_BANDS
 from tests.api.conftest import Family, add_scheme
 
@@ -96,9 +96,12 @@ def test_widow_in_a_landowning_family_end_to_end(
     assert raju["pm-kisan"]["status"] == "eligible"
     assert "ignwps" not in raju  # a man does not qualify for the widow pension: counted, not listed
     raju_member = next(m for m in body["members"] if m["nickname"] == "Raju")
-    # Counted, not listed: IGNWPS (he is a man), IGNOAPS (he is 35, under 60) and the UP Pre Matric
-    # scholarship (he is 35, not a student). A new scheme in the seed data adds one more here.
-    assert raju_member["not_eligible_count"] == 3
+    # Counted, not listed: every seeded scheme that is neither listed for him nor an exclusion
+    # (IGNWPS: he is a man; the old-age, pre-matric, post-matric and Vay Vandana schemes: he is 35
+    # and not a student). Computed, so that a new scheme in the seed data cannot break this test.
+    seeded = len(read_seed_files().schemes)
+    assert raju_member["not_eligible_count"] == seeded - len(raju) - len(raju_member["excluded"])
+    assert raju_member["not_eligible_count"] >= 3
     assert raju_member["excluded"] == []  # nobody else's facts excluded him
     # The reasons are there for the screen: which rules passed, with the scheme's own wording.
     ignwps = kamla["ignwps"]
