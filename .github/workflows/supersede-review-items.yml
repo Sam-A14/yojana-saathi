@@ -1,0 +1,52 @@
+name: Supersede review items
+
+# Manual, main only. Closes old PENDING review items that a newer proposal or a merged pull request
+# replaced, so the list only holds proposals a person still has to read. They are set to "rejected"
+# with reviewed_by "superseded by <you>"; an item that is not pending is left alone and reported.
+# Needs the DATABASE_URL secret. Nothing is deleted.
+on:
+  workflow_dispatch:
+    inputs:
+      ids:
+        description: "Review item numbers, spaces or commas between, e.g. 2,3,4,5,6,7,8,9,11,12"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  supersede:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: pip install -r requirements.txt
+      - name: Close the items
+        shell: bash
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          IDS: ${{ inputs.ids }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::The DATABASE_URL secret is not set."
+            exit 1
+          fi
+          # The numbers are typed by a person: they reach Python through an environment variable
+          # and are checked there, never pasted into the script text.
+          python -m app.pipeline.supersede "$IDS" --by "$ACTOR" | tee supersede.txt
+          {
+            echo '### Review items closed'
+            echo '```'
+            cat supersede.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -296,6 +296,12 @@ says so and opens nothing. Pull requests opened by a workflow do not start the n
 close and reopen the pull request to run them (the frontend test that every rule can be shown in
 words runs there). The workflow itself already ran the seed-file and test-profile tests.
 
+### Close old review items
+Actions tab, **Supersede review items**, type the numbers (for example `2,3,4,5,6,7,8,9,11,12`).
+It sets each item that is still *pending* to *rejected* with `reviewed_by` = "superseded by <you>"
+(there is no separate "superseded" status). Items that are approved, rejected or missing are left as
+they are and listed in the run summary. Nothing is deleted.
+
 ### Why is the live site slow? Read the timing
 
 Every request prints one line in the Render logs, and sends the same numbers in a `Server-Timing`
