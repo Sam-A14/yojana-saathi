@@ -1,4 +1,4 @@
-"""A rule's quote must come from Details or Eligibility, never a paper list or how-to-apply text.
+"""A rule's quote must come from Details, Eligibility or Exclusions, never a paper list.
 
 Why: the quote is the proof that the source states the condition. Words under Documents Required
 ("Aadhar card number", "Income certificate of your family") only say what to bring, and the model
@@ -55,6 +55,14 @@ def test_quotes_under_details_and_eligibility_are_accepted() -> None:
     assert check(page(details=f"{AGE}\n{CATEGORY}", eligibility=TAX)).problems == []
 
 
+def test_a_quote_under_exclusions_is_accepted() -> None:
+    """PM-KISAN style: the conditions that leave a family out are written under Exclusions."""
+    text = (
+        f"Test Scheme\n\nDetails\n{AGE}\n{CATEGORY}\n\nExclusions\n{TAX}\n\nBenefits\nA pension.\n"
+    )
+    assert check(text).problems == []
+
+
 def test_a_quote_can_run_over_a_line_break() -> None:
     wrapped = "Only persons belonging to SC or ST\ncategories can apply."
     assert check(page(details=AGE, eligibility=f"{wrapped}\n{TAX}")).problems == []
@@ -76,7 +84,7 @@ def test_a_quote_under_any_other_heading_is_refused_and_the_heading_is_named(hea
     problem = result.problems[0]
     assert problem.where == "rule_quotes[2]"
     assert heading.lower() in problem.message
-    assert "Details or Eligibility" in problem.message
+    assert "Details, Eligibility or Exclusions" in problem.message
 
 
 def test_a_wrong_section_quote_is_told_once_not_twice() -> None:

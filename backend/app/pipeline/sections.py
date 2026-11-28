@@ -66,16 +66,18 @@ def eligibility_text(text: str) -> str:
     )
 
 
-# Where a rule's quote may come from. Details and Eligibility state who the scheme is for; a paper
-# list (Documents Required) or a how-to-apply text (Application Process) does not, even when it
-# happens to contain words like "Aadhaar" or "BPL".
-RULE_QUOTE_SECTIONS = ("details", "eligibility", "eligibility criteria")
+# Where a rule's quote may come from. Details, Eligibility and Exclusions state who the scheme is
+# for and who is left out (PM-KISAN's exclusions are real conditions); a paper list (Documents
+# Required) or a how-to-apply text (Application Process) does not, even when it happens to contain
+# words like "Aadhaar" or "BPL".
+RULE_QUOTE_SECTIONS = ("details", "eligibility", "eligibility criteria", "exclusions")
 
 
 def rule_quote_text(text: str) -> str | None:
-    """The text a rule quote may come from: Details plus Eligibility ('' if the source has headings
-    but neither). None when the source has no headings at all (a press release, a PDF): then there
-    is nothing to tell the sections apart by, and the whole text is the only thing to check."""
+    """The text a rule quote may come from: Details, Eligibility and Exclusions ('' if the source
+    has headings but none of them). None when the source has no headings at all (a press release,
+    a PDF): then there is nothing to tell the sections apart by, and the whole text is the only
+    thing to check."""
     sections = split_sections(text)
     if not sections:
         return None

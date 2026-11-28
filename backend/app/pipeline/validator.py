@@ -284,8 +284,9 @@ def _check_quotes(result: ValidationResult, source_text: str) -> None:
     top_level = rules.get("all")
     rule_count = len(top_level) if isinstance(top_level, list) else None
     source = _squash(source_text)
-    # A source with section headings: a rule quote must sit under Details or Eligibility. A source
-    # without headings has no sections to tell apart, so the whole text is accepted as before.
+    # A source with section headings: a rule quote must sit under Details, Eligibility or
+    # Exclusions. A source without headings has no sections to tell apart, so the whole text is
+    # accepted as before.
     allowed_text = rule_quote_text(source_text)
     allowed = source if allowed_text is None else _squash(allowed_text)
     quoted: set[int] = set()
@@ -313,9 +314,9 @@ def _check_quotes(result: ValidationResult, source_text: str) -> None:
         elif squashed not in allowed:
             found_in = ", ".join(sections_containing(source_text, quote)) or "no section"
             message = (
-                "A rule quote must come from the Details or Eligibility section. This quote is "
-                f"under: {found_in}. Papers go in version.documents, and anything else in "
-                "labeller_notes.not_encoded."
+                "A rule quote must come from the Details, Eligibility or Exclusions section. "
+                f"This quote is under: {found_in}. Papers go in version.documents, and anything "
+                "else in labeller_notes.not_encoded."
             )
             result.problems.append(Problem("quote_wrong_section", where, message))
             wrong_section.add(index)
